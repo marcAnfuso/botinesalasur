@@ -4,7 +4,7 @@ import { useEffect } from "react";
 import Image from "next/image";
 import Link from "next/link";
 import { useCart } from "@/context/CartContext";
-import { formatPrice } from "@/lib/data";
+import { formatPrice } from "@/lib/supabase-data";
 
 interface CartDrawerProps {
   isOpen: boolean;

@@ -1,7 +1,12 @@
 import Link from "next/link";
-import { products, categories } from "@/lib/data";
+import { getAllProductsAdmin, categories } from "@/lib/supabase-data";
 
-export default function AdminDashboard() {
+// Revalidar cada 30 segundos para admin
+export const revalidate = 30;
+
+export default async function AdminDashboard() {
+  const products = await getAllProductsAdmin();
+
   const totalProducts = products.length;
   const activeProducts = products.filter((p) => p.active).length;
   const featuredProducts = products.filter((p) => p.featured).length;
@@ -156,14 +161,13 @@ export default function AdminDashboard() {
       </div>
 
       {/* Info Box */}
-      <div className="mt-8 bg-blue-500/10 border border-blue-500/30 rounded-xl p-6">
-        <h3 className="font-semibold text-blue-400 mb-2">
-          Próximamente: Integración completa
+      <div className="mt-8 bg-field/10 border border-field/30 rounded-xl p-6">
+        <h3 className="font-semibold text-field mb-2">
+          Conectado a Supabase
         </h3>
         <p className="text-gray-400 text-sm">
-          Este panel está preparado para conectarse con Supabase. Una vez configurado,
-          podrás agregar, editar y eliminar productos que se guardarán en la base de datos.
-          También podrás ver los pedidos y gestionar el stock en tiempo real.
+          Los datos que ves se cargan en tiempo real desde la base de datos.
+          Los cambios que hagas desde el panel se reflejarán inmediatamente en la tienda.
         </p>
       </div>
     </div>

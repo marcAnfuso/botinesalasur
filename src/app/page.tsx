@@ -1,10 +1,16 @@
 import Link from "next/link";
 import Image from "next/image";
 import ProductCard from "@/components/ProductCard";
-import { getFeaturedProducts, categories, products } from "@/lib/data";
+import { getFeaturedProducts, getProducts, categories } from "@/lib/supabase-data";
 
-export default function HomePage() {
-  const featuredProducts = getFeaturedProducts();
+// Revalidar cada 60 segundos
+export const revalidate = 60;
+
+export default async function HomePage() {
+  const [featuredProducts, products] = await Promise.all([
+    getFeaturedProducts(),
+    getProducts(),
+  ]);
 
   return (
     <>

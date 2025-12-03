@@ -4,8 +4,12 @@ import { Database } from "@/types/supabase";
 const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL!;
 const supabaseAnonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!;
 
-// Cliente para el lado del cliente (browser)
+// Cliente tipado para consultas (con inferencia de tipos)
 export const supabase = createClient<Database>(supabaseUrl, supabaseAnonKey);
+
+// Cliente sin tipos estrictos para operaciones de admin (update, insert, delete)
+// Esto evita problemas con tipos never en Supabase
+export const supabaseAdmin = createClient(supabaseUrl, supabaseAnonKey);
 
 // Cliente para el lado del servidor (solo se usa en API routes o server components)
 export const createServerClient = () => {

@@ -3,7 +3,7 @@
 import { useState } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
-import { categories, brands } from "@/lib/data";
+import { categories, brands } from "@/lib/supabase-data";
 
 interface Variant {
   size: string;
@@ -13,13 +13,14 @@ interface Variant {
 export default function NewProductPage() {
   const router = useRouter();
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [error, setError] = useState("");
   const [formData, setFormData] = useState({
     name: "",
     brand: "",
     description: "",
     price: "",
     category: "futsal",
-    imageUrl: "",
+    image_url: "",
     featured: false,
     active: true,
   });
@@ -63,25 +64,36 @@ export default function NewProductPage() {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setIsSubmitting(true);
+    setError("");
 
-    // TODO: Guardar en Supabase
-    // Por ahora solo mostramos un mensaje
-    const productData = {
-      ...formData,
-      price: parseInt(formData.price),
-      variants: variants.filter((v) => v.size.trim() !== ""),
-    };
+    try {
+      const res = await fetch("/api/admin/products", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          name: formData.name,
+          brand: formData.brand,
+          description: formData.description,
+          price: Number(formData.price),
+          category: formData.category,
+          image_url: formData.image_url || "/products/default.jpg",
+          featured: formData.featured,
+          active: formData.active,
+          variants: variants.filter((v) => v.size.trim() !== ""),
+        }),
+      });
 
-    console.log("Producto a guardar:", productData);
+      const data = await res.json();
 
-    // Simular guardado
-    await new Promise((resolve) => setTimeout(resolve, 1000));
+      if (!res.ok) {
+        throw new Error(data.error || "Error al crear producto");
+      }
 
-    alert(
-      "Producto creado (demo). Cuando conectes Supabase, se guardará en la base de datos."
-    );
-
-    router.push("/admin/productos");
+      router.push("/admin/productos");
+    } catch (err: any) {
+      setError(err.message || "Error al crear el producto");
+      setIsSubmitting(false);
+    }
   };
 
   return (
@@ -112,6 +124,13 @@ export default function NewProductPage() {
           <p className="text-gray-400 mt-1">Completá los datos del producto</p>
         </div>
       </div>
+
+      {/* Error message */}
+      {error && (
+        <div className="bg-red-500/10 border border-red-500/30 text-red-400 rounded-lg p-4 mb-6 max-w-3xl">
+          {error}
+        </div>
+      )}
 
       <form onSubmit={handleSubmit} className="max-w-3xl">
         {/* Información básica */}
@@ -214,12 +233,11 @@ export default function NewProductPage() {
               </label>
               <input
                 type="url"
-                name="imageUrl"
-                value={formData.imageUrl}
+                name="image_url"
+                value={formData.image_url}
                 onChange={handleChange}
-                required
                 className="input-field"
-                placeholder="https://ejemplo.com/imagen.jpg"
+                placeholder="https://ejemplo.com/imagen.jpg (opcional)"
               />
               <p className="text-xs text-gray-500 mt-1">
                 Podés subir la imagen a Imgur, Cloudinary o usar el link de Google Drive

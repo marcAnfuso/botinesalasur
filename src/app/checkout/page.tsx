@@ -4,7 +4,7 @@ import { useState } from "react";
 import Image from "next/image";
 import Link from "next/link";
 import { useCart } from "@/context/CartContext";
-import { formatPrice } from "@/lib/data";
+import { formatPrice } from "@/lib/supabase-data";
 
 const SHIPPING_COSTS = {
   "gba-sur": 2500,
