@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
 import Image from "next/image";
@@ -30,8 +30,10 @@ export default function EditProductPage({ params }: { params: { id: string } }) 
   const router = useRouter();
   const [isLoading, setIsLoading] = useState(true);
   const [isSaving, setIsSaving] = useState(false);
+  const [isUploading, setIsUploading] = useState(false);
   const [error, setError] = useState("");
   const [successMessage, setSuccessMessage] = useState("");
+  const fileInputRef = useRef<HTMLInputElement>(null);
 
   const [formData, setFormData] = useState({
     name: "",
@@ -215,6 +217,55 @@ export default function EditProductPage({ params }: { params: { id: string } }) 
     });
   };
 
+  // Upload de imagen
+  const handleImageUpload = async (file: File) => {
+    setIsUploading(true);
+    setError("");
+
+    try {
+      const formData = new FormData();
+      formData.append("file", file);
+
+      const res = await fetch("/api/admin/upload", {
+        method: "POST",
+        body: formData,
+      });
+
+      const data = await res.json();
+
+      if (!res.ok) {
+        throw new Error(data.error || "Error al subir imagen");
+      }
+
+      setFormData((prev) => ({ ...prev, image_url: data.url }));
+      setSuccessMessage("Imagen subida correctamente");
+      setTimeout(() => setSuccessMessage(""), 3000);
+    } catch (err: any) {
+      setError(err.message || "Error al subir imagen");
+    } finally {
+      setIsUploading(false);
+    }
+  };
+
+  const handleFileSelect = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (file) {
+      handleImageUpload(file);
+    }
+  };
+
+  const handleDrop = (e: React.DragEvent) => {
+    e.preventDefault();
+    const file = e.dataTransfer.files?.[0];
+    if (file && file.type.startsWith("image/")) {
+      handleImageUpload(file);
+    }
+  };
+
+  const handleDragOver = (e: React.DragEvent) => {
+    e.preventDefault();
+  };
+
   if (isLoading) {
     return (
       <div className="flex items-center justify-center min-h-[400px]">
@@ -375,17 +426,91 @@ export default function EditProductPage({ params }: { params: { id: string } }) 
                 </div>
               </div>
 
+              {/* Upload de imagen */}
               <div>
-                <label className="block text-sm font-medium text-gray-400 mb-1">
-                  URL de imagen
+                <label className="block text-sm font-medium text-gray-400 mb-2">
+                  Imagen del producto
                 </label>
-                <input
-                  type="url"
-                  name="image_url"
-                  value={formData.image_url}
-                  onChange={handleChange}
-                  className="input-field"
-                />
+                <div
+                  onDrop={handleDrop}
+                  onDragOver={handleDragOver}
+                  onClick={() => fileInputRef.current?.click()}
+                  className={`border-2 border-dashed rounded-lg p-6 text-center cursor-pointer transition-colors ${
+                    isUploading
+                      ? "border-primary bg-primary/10"
+                      : "border-gray-700 hover:border-gray-500"
+                  }`}
+                >
+                  <input
+                    ref={fileInputRef}
+                    type="file"
+                    accept="image/*"
+                    onChange={handleFileSelect}
+                    className="hidden"
+                  />
+                  {isUploading ? (
+                    <div className="flex flex-col items-center gap-2">
+                      <svg
+                        className="animate-spin w-8 h-8 text-primary"
+                        xmlns="http://www.w3.org/2000/svg"
+                        fill="none"
+                        viewBox="0 0 24 24"
+                      >
+                        <circle
+                          className="opacity-25"
+                          cx="12"
+                          cy="12"
+                          r="10"
+                          stroke="currentColor"
+                          strokeWidth="4"
+                        />
+                        <path
+                          className="opacity-75"
+                          fill="currentColor"
+                          d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z"
+                        />
+                      </svg>
+                      <span className="text-gray-400">Subiendo imagen...</span>
+                    </div>
+                  ) : (
+                    <div className="flex flex-col items-center gap-2">
+                      <svg
+                        xmlns="http://www.w3.org/2000/svg"
+                        fill="none"
+                        viewBox="0 0 24 24"
+                        strokeWidth={1.5}
+                        stroke="currentColor"
+                        className="w-8 h-8 text-gray-500"
+                      >
+                        <path
+                          strokeLinecap="round"
+                          strokeLinejoin="round"
+                          d="M3 16.5v2.25A2.25 2.25 0 005.25 21h13.5A2.25 2.25 0 0021 18.75V16.5m-13.5-9L12 3m0 0l4.5 4.5M12 3v13.5"
+                        />
+                      </svg>
+                      <span className="text-gray-400">
+                        Arrastrá una imagen o hacé click para seleccionar
+                      </span>
+                      <span className="text-gray-500 text-sm">
+                        JPG, PNG, WEBP o GIF (máx. 5MB)
+                      </span>
+                    </div>
+                  )}
+                </div>
+                {/* URL manual como alternativa */}
+                <div className="mt-3">
+                  <label className="block text-xs text-gray-500 mb-1">
+                    O ingresá una URL directamente:
+                  </label>
+                  <input
+                    type="url"
+                    name="image_url"
+                    value={formData.image_url}
+                    onChange={handleChange}
+                    placeholder="https://..."
+                    className="input-field text-sm"
+                  />
+                </div>
               </div>
             </div>
           </div>
