@@ -92,8 +92,8 @@ export default async function HomePage() {
             </div>
 
             {/* Imagen */}
-            <div className="relative hidden lg:block">
-              <div className="relative aspect-square max-w-lg mx-auto">
+            <div className="relative">
+              <div className="relative aspect-square max-w-xs mx-auto lg:max-w-lg">
                 {/* Glow effect */}
                 <div className="absolute inset-0 bg-gradient-to-br from-primary/20 via-transparent to-field/20 rounded-full blur-3xl" />
 
