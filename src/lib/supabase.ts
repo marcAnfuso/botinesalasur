@@ -8,8 +8,9 @@ const supabaseAnonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!;
 export const supabase = createClient<Database>(supabaseUrl, supabaseAnonKey);
 
 // Cliente sin tipos estrictos para operaciones de admin (update, insert, delete)
-// Esto evita problemas con tipos never en Supabase
-export const supabaseAdmin = createClient(supabaseUrl, supabaseAnonKey);
+// Usa service role key para bypass de RLS
+const supabaseServiceKey = process.env.SUPABASE_SERVICE_ROLE_KEY || supabaseAnonKey;
+export const supabaseAdmin = createClient(supabaseUrl, supabaseServiceKey);
 
 // Cliente para el lado del servidor (solo se usa en API routes o server components)
 export const createServerClient = () => {
