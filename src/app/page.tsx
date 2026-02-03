@@ -81,12 +81,12 @@ export default async function HomePage() {
                   <p className="text-sm text-gray-500">Seguidores</p>
                 </div>
                 <div>
-                  <p className="text-3xl font-bold text-white">GBA Sur</p>
-                  <p className="text-sm text-gray-500">Envío en moto</p>
+                  <p className="text-3xl font-bold text-white">Todo el país</p>
+                  <p className="text-sm text-gray-500">Envíos a domicilio</p>
                 </div>
                 <div>
-                  <p className="text-3xl font-bold text-white">100%</p>
-                  <p className="text-sm text-gray-500">Originales</p>
+                  <p className="text-3xl font-bold text-white">Alta</p>
+                  <p className="text-sm text-gray-500">Calidad G5</p>
                 </div>
               </div>
             </div>
