@@ -86,7 +86,7 @@ export default function ProductoClient({
         {/* Images */}
         <div className="space-y-4">
           {/* Main Image */}
-          <div className="relative aspect-square rounded-xl overflow-hidden bg-dark-card">
+          <div className="relative aspect-square rounded-none overflow-hidden bg-dark-card">
             <Image
               src={product.imageUrl}
               alt={product.name}
@@ -136,7 +136,7 @@ export default function ProductoClient({
             <span className="text-primary font-medium uppercase tracking-wider">
               {product.brand}
             </span>
-            <h1 className="text-3xl lg:text-4xl font-bold text-white mt-1">
+            <h1 className="display text-3xl lg:text-4xl text-white mt-1.5">
               {product.name}
             </h1>
           </div>
@@ -169,8 +169,8 @@ export default function ProductoClient({
                     selectedVariant?.id === variant.id
                       ? "border-primary bg-primary/10 text-white"
                       : variant.stock > 0
-                      ? "border-gray-700 text-gray-300 hover:border-gray-500"
-                      : "border-gray-800 text-gray-600 cursor-not-allowed line-through"
+                      ? "border-dark-line text-gray-300 hover:border-gray-500"
+                      : "border-dark-line text-gray-600 cursor-not-allowed line-through"
                   }`}
                 >
                   {variant.size}
@@ -183,9 +183,10 @@ export default function ProductoClient({
               ))}
             </div>
             {selectedVariant && selectedVariant.stock <= 3 && (
-              <p className="text-yellow-500 text-sm mt-2">
-                ¡Últimas {selectedVariant.stock} unidad
-                {selectedVariant.stock > 1 ? "es" : ""}!
+              <p className="text-primary text-sm mt-2">
+                {selectedVariant.stock === 1
+                  ? "¡Última unidad en este talle!"
+                  : `¡Últimas ${selectedVariant.stock} unidades en este talle!`}
               </p>
             )}
           </div>
@@ -200,7 +201,7 @@ export default function ProductoClient({
                   <button
                     onClick={() => handleQuantityChange(-1)}
                     disabled={quantity <= 1}
-                    className="w-10 h-10 rounded-lg bg-dark-card border border-gray-700 flex items-center justify-center text-white hover:bg-dark-lighter transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+                    className="w-10 h-10 rounded-lg bg-dark-card border border-dark-line flex items-center justify-center text-white hover:bg-dark-lighter transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
                   >
                     -
                   </button>
@@ -210,7 +211,7 @@ export default function ProductoClient({
                   <button
                     onClick={() => handleQuantityChange(1)}
                     disabled={quantity >= selectedVariant.stock}
-                    className="w-10 h-10 rounded-lg bg-dark-card border border-gray-700 flex items-center justify-center text-white hover:bg-dark-lighter transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+                    className="w-10 h-10 rounded-lg bg-dark-card border border-dark-line flex items-center justify-center text-white hover:bg-dark-lighter transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
                   >
                     +
                   </button>
@@ -286,7 +287,7 @@ export default function ProductoClient({
       {/* Related Products */}
       {relatedProducts.length > 0 && (
         <section className="mt-16">
-          <h2 className="text-2xl font-bold text-white mb-6">
+          <h2 className="display text-3xl text-white mb-6">
             Productos relacionados
           </h2>
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">

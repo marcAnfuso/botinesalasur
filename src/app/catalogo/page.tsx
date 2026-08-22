@@ -26,7 +26,7 @@ function CatalogoLoading() {
       </div>
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
         {[1, 2, 3, 4, 5, 6, 7, 8].map((i) => (
-          <div key={i} className="bg-dark-card rounded-xl overflow-hidden">
+          <div key={i} className="bg-dark-card rounded-none overflow-hidden">
             <div className="aspect-square bg-dark-lighter animate-shimmer" />
             <div className="p-4 space-y-3">
               <div className="h-4 w-16 bg-dark-lighter rounded animate-shimmer" />

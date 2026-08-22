@@ -101,7 +101,7 @@ export default function CatalogoClient({
     <div className="max-w-7xl mx-auto px-4 py-8">
       {/* Header */}
       <div className="mb-8">
-        <h1 className="text-3xl font-bold text-white mb-2">Catálogo</h1>
+        <h1 className="display text-4xl md:text-5xl text-white mb-2">Catálogo</h1>
         <p className="text-gray-400">
           {filteredProducts.length} producto
           {filteredProducts.length !== 1 ? "s" : ""} encontrado
@@ -257,7 +257,7 @@ export default function CatalogoClient({
 
           {/* Mobile Filters Panel */}
           {showFilters && (
-            <div className="lg:hidden bg-dark-card rounded-xl p-4 mb-6 animate-fadeIn">
+            <div className="lg:hidden bg-dark-card rounded-none p-4 mb-6 animate-fadeIn">
               <div className="grid grid-cols-2 gap-4">
                 {/* Categoría */}
                 <div>

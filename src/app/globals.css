@@ -3,8 +3,10 @@
 @tailwind utilities;
 
 :root {
-  --background: #111111;
+  --background: #0b0b0c;
   --foreground: #ffffff;
+  --line: #26262b;
+  --brand: #dc2626;
 }
 
 * {
@@ -29,26 +31,160 @@ a {
   text-decoration: none;
 }
 
-/* Scrollbar personalizada */
+/* ---------------------------------------------------------------
+   Superficies que dibuja el navegador.
+   Sin esto la página hereda gris de sistema y se nota.
+   --------------------------------------------------------------- */
+
+::selection {
+  background: var(--brand);
+  color: #fff;
+}
+
+input,
+textarea,
+select {
+  caret-color: var(--brand);
+}
+
 ::-webkit-scrollbar {
-  width: 8px;
-  height: 8px;
+  width: 10px;
+  height: 10px;
 }
 
 ::-webkit-scrollbar-track {
-  background: #1a1a1a;
+  background: #101012;
 }
 
 ::-webkit-scrollbar-thumb {
-  background: #333;
-  border-radius: 4px;
+  background: #2e2e34;
+  border: 2px solid #101012;
+  border-radius: 999px;
 }
 
 ::-webkit-scrollbar-thumb:hover {
-  background: #444;
+  background: var(--brand);
 }
 
-/* Animaciones */
+html {
+  scrollbar-color: #2e2e34 #101012;
+  scrollbar-width: thin;
+}
+
+/* Un solo anillo de foco, del color de la marca, en toda la interfaz */
+:focus-visible {
+  outline: 2px solid var(--brand);
+  outline-offset: 3px;
+  border-radius: 2px;
+}
+
+a:focus-visible,
+button:focus-visible {
+  outline-offset: 4px;
+}
+
+/* Los links de texto llevan subrayado separado de la base de letra */
+.link-underline {
+  text-decoration: underline;
+  text-decoration-thickness: 1px;
+  text-underline-offset: 0.25em;
+  text-decoration-color: color-mix(in srgb, var(--brand) 55%, transparent);
+}
+
+.link-underline:hover {
+  text-decoration-color: var(--brand);
+}
+
+/* Precios y talles: cifras de ancho fijo para que las columnas no bailen */
+.tnum {
+  font-variant-numeric: tabular-nums;
+  font-feature-settings: "tnum" 1;
+}
+
+/* ---------------------------------------------------------------
+   Voz tipográfica
+   --------------------------------------------------------------- */
+
+.display {
+  font-family: var(--font-display), var(--font-inter), sans-serif;
+  font-weight: 900;
+  font-style: italic;
+  text-transform: uppercase;
+  letter-spacing: -0.04em;
+  line-height: 0.88;
+}
+
+.display-tight {
+  font-family: var(--font-display), var(--font-inter), sans-serif;
+  font-weight: 800;
+  font-style: italic;
+  text-transform: uppercase;
+  letter-spacing: -0.02em;
+}
+
+/* Etiqueta chica en mayúsculas, para metadatos (marca, talles) */
+.label {
+  text-transform: uppercase;
+  letter-spacing: 0.14em;
+  font-size: 0.6875rem;
+  font-weight: 600;
+}
+
+/* Regla de cal: separador con el pulso del rojo a la izquierda */
+.rule-chalk {
+  height: 1px;
+  background: linear-gradient(
+    90deg,
+    var(--brand) 0,
+    var(--brand) 44px,
+    var(--line) 44px,
+    var(--line) 100%
+  );
+}
+
+/* ---------------------------------------------------------------
+   Componentes
+   --------------------------------------------------------------- */
+
+.btn-primary {
+  @apply inline-flex items-center justify-center gap-2 bg-primary text-white font-semibold py-3 px-6 rounded transition-colors duration-200 hover:bg-primary-dark disabled:opacity-50 disabled:cursor-not-allowed;
+}
+
+.btn-secondary {
+  @apply inline-flex items-center justify-center gap-2 bg-transparent text-white font-semibold py-3 px-6 rounded border border-dark-line transition-colors duration-200 hover:border-chalk/50 hover:bg-white/5;
+}
+
+.input-field {
+  @apply w-full bg-dark-card border border-dark-line rounded px-4 py-3 text-white placeholder-gray-500 transition-colors focus:outline-none focus:border-primary;
+}
+
+.select-field {
+  @apply w-full bg-dark-card border border-dark-line rounded px-4 py-3 text-white transition-colors appearance-none cursor-pointer focus:outline-none focus:border-primary;
+}
+
+.cart-badge {
+  @apply absolute -top-1.5 -right-1.5 bg-primary text-white text-[10px] font-bold rounded-full min-w-[18px] h-[18px] px-1 flex items-center justify-center tnum;
+}
+
+/* ---------------------------------------------------------------
+   Movimiento
+   --------------------------------------------------------------- */
+
+@keyframes shimmer {
+  0% {
+    background-position: -200% 0;
+  }
+  100% {
+    background-position: 200% 0;
+  }
+}
+
+.animate-shimmer {
+  background: linear-gradient(90deg, #16161a 25%, #212127 50%, #16161a 75%);
+  background-size: 200% 100%;
+  animation: shimmer 1.5s infinite;
+}
+
 @keyframes fadeIn {
   from {
     opacity: 0;
@@ -64,56 +200,13 @@ a {
   animation: fadeIn 0.3s ease-out forwards;
 }
 
-/* Efecto shimmer para loading */
-@keyframes shimmer {
-  0% {
-    background-position: -200% 0;
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.001ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.001ms !important;
+    scroll-behavior: auto !important;
   }
-  100% {
-    background-position: 200% 0;
-  }
-}
-
-.animate-shimmer {
-  background: linear-gradient(
-    90deg,
-    #222 25%,
-    #333 50%,
-    #222 75%
-  );
-  background-size: 200% 100%;
-  animation: shimmer 1.5s infinite;
-}
-
-/* Estilos para el carrito flotante */
-.cart-badge {
-  @apply absolute -top-2 -right-2 bg-primary text-white text-xs font-bold rounded-full w-5 h-5 flex items-center justify-center;
-}
-
-/* Hover effects para cards */
-.product-card {
-  @apply transition-all duration-300 ease-out;
-}
-
-.product-card:hover {
-  @apply transform -translate-y-1 shadow-xl shadow-primary/10;
-}
-
-/* Button styles */
-.btn-primary {
-  @apply bg-primary hover:bg-primary-dark text-white font-semibold py-3 px-6 rounded-lg transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed;
-}
-
-.btn-secondary {
-  @apply bg-dark-card hover:bg-dark-lighter text-white font-semibold py-3 px-6 rounded-lg border border-gray-700 transition-all duration-200;
-}
-
-/* Input styles */
-.input-field {
-  @apply w-full bg-dark-card border border-gray-700 rounded-lg px-4 py-3 text-white placeholder-gray-500 focus:outline-none focus:border-primary focus:ring-1 focus:ring-primary transition-colors;
-}
-
-/* Select styles */
-.select-field {
-  @apply w-full bg-dark-card border border-gray-700 rounded-lg px-4 py-3 text-white focus:outline-none focus:border-primary focus:ring-1 focus:ring-primary transition-colors appearance-none cursor-pointer;
 }
