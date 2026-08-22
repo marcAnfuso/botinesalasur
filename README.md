@@ -1,129 +1,146 @@
-# Botinesala Sur - Tienda Online
+# Botinesala Sur — Tienda Online
 
-Tienda online para venta de botines de fútbol desarrollada con Next.js 14, TypeScript y Tailwind CSS.
+Tienda online de botines de fútbol. Next.js 14 (App Router), TypeScript,
+Tailwind CSS, Supabase y MercadoPago. Interfaz en español, precios en pesos
+argentinos.
 
-## Características
+## Qué incluye
 
-- Catálogo de productos con filtros por categoría, marca y talle
-- Carrito de compras persistente (localStorage)
-- Checkout con formulario de envío
-- Integración lista para MercadoPago
-- Panel de administración para gestionar productos
-- Diseño responsive y moderno
-- Optimizado para SEO
+- Catálogo con filtros por categoría, marca y talle
+- Carrito persistente en localStorage
+- Checkout con pago por MercadoPago o coordinación por WhatsApp
+- Webhook de MercadoPago: confirma el pago, descuenta stock y manda los mails
+- Panel de administración protegido: productos, variantes, stock, pedidos e
+  importación masiva por CSV
+- Mails de confirmación al cliente y aviso de pedido nuevo a la tienda
 
 ## Requisitos
 
 - Node.js 18+
-- npm o yarn
-- Cuenta de Supabase (para la base de datos)
-- Cuenta de MercadoPago (para pagos)
+- Cuenta de Supabase
+- Cuenta de MercadoPago
+- Cuenta de Resend (opcional; sin ella la tienda funciona pero no manda mails)
 
-## Instalación
-
-1. **Clonar e instalar dependencias:**
+## Puesta en marcha
 
 ```bash
-cd botinesalasur
 npm install
+cp .env.example .env.local   # completar con las credenciales
+npm run dev                  # http://localhost:3000
 ```
 
-2. **Configurar variables de entorno:**
+### Base de datos
 
-Copia el archivo de ejemplo y completá los valores:
+En el SQL Editor de Supabase, correr **los dos archivos en este orden**:
 
-```bash
-cp .env.example .env.local
-```
+1. `supabase-schema.sql` — tablas `products`, `product_variants`, `orders`,
+   `order_items`
+2. `supabase-migration-mercadopago.sql` — columnas de pago en `orders`, las
+   columnas `size` y `total_price` en `order_items`, la función
+   `decrement_stock` que usa el webhook, y el estado `confirmed`
 
-Editá `.env.local` con tus credenciales de Supabase y MercadoPago.
+Sin el segundo archivo el checkout falla en cuanto alguien intenta pagar.
 
-3. **Configurar la base de datos (Supabase):**
+### Variables de entorno
 
-- Creá un proyecto en [Supabase](https://supabase.com)
-- Andá a SQL Editor y ejecutá el contenido de `supabase-schema.sql`
-- Copiá las credenciales a tu `.env.local`
+Todas están documentadas en `.env.example`. Las imprescindibles:
 
-4. **Ejecutar en desarrollo:**
+| Variable | Para qué |
+|---|---|
+| `NEXT_PUBLIC_SUPABASE_URL`, `NEXT_PUBLIC_SUPABASE_ANON_KEY` | Lecturas públicas |
+| `SUPABASE_SERVICE_ROLE_KEY` | Escrituras del panel y del webhook |
+| `MERCADOPAGO_ACCESS_TOKEN` | Cobros (`TEST-` para probar, `APP_USR-` en producción) |
+| `NEXT_PUBLIC_BASE_URL` | URL pública del sitio; de acá salen las URLs de retorno y la del webhook |
+| `ADMIN_PASSWORD` | Acceso al panel. Sin ella el panel queda cerrado |
+| `ADMIN_SESSION_SECRET` | Opcional: firma de la cookie de sesión (`openssl rand -hex 32`) |
+| `RESEND_API_KEY`, `RESEND_FROM_EMAIL`, `NOTIFICATION_EMAIL` | Envío de mails |
 
-```bash
-npm run dev
-```
+`NEXT_PUBLIC_BASE_URL` se resuelve en tiempo de build: si la cambiás, hay que
+volver a desplegar.
 
-La tienda estará disponible en `http://localhost:3000`
-
-## Estructura del proyecto
+## Estructura
 
 ```
 src/
-├── app/                    # App Router de Next.js
-│   ├── page.tsx           # Página de inicio
-│   ├── catalogo/          # Catálogo de productos
-│   ├── producto/[id]/     # Detalle de producto
-│   ├── checkout/          # Proceso de compra
-│   ├── admin/             # Panel de administración
-│   └── api/               # API Routes
-├── components/            # Componentes reutilizables
-├── context/               # Context providers (carrito)
-├── lib/                   # Utilidades y configuración
-└── types/                 # Tipos de TypeScript
+├── app/
+│   ├── page.tsx              # Home
+│   ├── catalogo/             # Listado con filtros
+│   ├── producto/[id]/        # Detalle
+│   ├── checkout/             # Compra y página de resultado del pago
+│   ├── admin/                # Panel (login, productos, pedidos, importar)
+│   └── api/
+│       ├── admin/            # CRUD del panel + login
+│       └── mercadopago/      # Preferencia, webhook y verificación de pago
+├── components/
+├── context/                  # Carrito
+├── lib/                      # Supabase, datos, sesión admin, estados de pedido
+├── middleware.ts             # Protege /admin y /api/admin
+└── types/
 ```
 
-## Panel de Administración
+## Panel de administración
 
-Accedé a `/admin` para gestionar productos.
+Está en `/admin` y pide la contraseña de `ADMIN_PASSWORD`.
 
-**Contraseña por defecto:** `botinesalasur2024` (cambiar en producción)
+La contraseña se valida **solo en el servidor**: nunca se envía al navegador.
+Al ingresar se emite una cookie httpOnly firmada (HMAC-SHA256, 12 horas) que
+el middleware verifica en cada request, tanto en las páginas del panel como en
+las rutas `/api/admin/*`.
 
-Desde el panel podés:
-- Ver todos los productos
-- Agregar nuevos productos
-- Editar productos existentes
-- Activar/desactivar productos
-- Marcar productos como destacados
+Desde el panel se puede:
 
-## Integración con MercadoPago
+- Crear, editar, activar/desactivar y destacar productos
+- Gestionar variantes y stock por talle
+- Importar productos masivamente desde CSV
+- Ver los pedidos, filtrarlos y cambiarles el estado de preparación
 
-1. Creá una aplicación en el [Panel de Desarrolladores de MercadoPago](https://www.mercadopago.com.ar/developers/panel)
-2. Obtené las credenciales de prueba (TEST)
-3. Agregá las credenciales a `.env.local`
-4. Para producción, usá las credenciales de producción
+El estado de **pago** de un pedido no se toca a mano: lo maneja el webhook de
+MercadoPago.
+
+## MercadoPago
+
+El flujo es:
+
+1. El checkout llama a `/api/mercadopago/create-preference`, que **primero
+   graba el pedido** en Supabase con una referencia `BOTS-AAAAMMDD-XXXXXX` y
+   recién después crea la preferencia de pago.
+2. El cliente paga en MercadoPago y vuelve a `/checkout/resultado`.
+3. MercadoPago notifica a `/api/mercadopago/webhook`, que actualiza el pedido,
+   descuenta el stock de cada variante y dispara los mails.
+4. Si la notificación se demora, `/api/mercadopago/verify-payment` consulta el
+   pago directamente contra la API de MercadoPago.
+
+Para que el webhook funcione hay que cargar su URL pública en el panel de
+desarrolladores de MercadoPago:
+
+```
+https://TU-DOMINIO/api/mercadopago/webhook
+```
+
+Apuntala al dominio definitivo, no a uno que redirija: las notificaciones son
+POST y un redirect en el medio puede hacer que se pierdan. En desarrollo se
+puede exponer el puerto local con un túnel (por ejemplo `ngrok http 3000`).
 
 ## Envíos
 
-El sistema tiene dos zonas de envío configuradas:
-- **GBA Sur** (Llavallol, Lanús, Lomas, etc.): Envío en moto, $2.500
-- **Interior / Otro**: Envío por correo, $5.500
+Dos zonas, definidas en `src/app/checkout/page.tsx`:
 
-Los precios se pueden modificar en `src/app/checkout/page.tsx`
+- **GBA Sur** (Llavallol, Lanús, Lomas y alrededores): $2.500
+- **Todo el país**: $5.500
 
 ## Despliegue
 
-### Vercel (Recomendado)
+El proyecto está pensado para Vercel: se conecta el repositorio, se cargan las
+variables de entorno y cada push despliega. Para otras plataformas,
+`npm run build && npm start`.
 
-1. Conectá tu repositorio con [Vercel](https://vercel.com)
-2. Configurá las variables de entorno en el dashboard
-3. Deploy automático con cada push
+## Pendientes
 
-### Otras plataformas
-
-```bash
-npm run build
-npm start
-```
-
-## Próximos pasos
-
-- [ ] Conectar completamente con Supabase para CRUD de productos
-- [ ] Implementar autenticación con Supabase Auth para el admin
-- [ ] Agregar página de órdenes en el admin
-- [ ] Implementar notificaciones por email
-- [ ] Agregar más métodos de pago
-
-## Soporte
-
-Para consultas sobre el desarrollo, contactar al desarrollador.
+- [ ] Reemplazar la contraseña única del panel por Supabase Auth con usuarios
+- [ ] Historial de cambios de estado de los pedidos
+- [ ] Configurar ESLint (`npm run lint` todavía pide el setup inicial)
+- [ ] Más medios de pago
 
 ---
 
-Desarrollado para **Botinesala Sur** - Llavallol, Buenos Aires
+Desarrollado para **Botinesala Sur** — Llavallol, Buenos Aires
