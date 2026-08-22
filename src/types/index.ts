@@ -64,3 +64,42 @@ export type Category = {
   slug: string;
   description: string;
 };
+
+// ===== Pedidos (panel admin) =====
+
+export type OrderStatus =
+  | "pending"
+  | "confirmed"
+  | "processing"
+  | "shipped"
+  | "delivered"
+  | "cancelled";
+
+export type PaymentStatus = "pending" | "paid" | "failed" | "refunded";
+
+export interface AdminOrderItem {
+  id: string;
+  productId: string;
+  variantId: string;
+  productName: string;
+  productBrand: string;
+  size: string;
+  quantity: number;
+  unitPrice: number;
+  totalPrice: number;
+}
+
+export interface AdminOrder {
+  id: string;
+  externalReference: string | null;
+  customer: CustomerInfo;
+  items: AdminOrderItem[];
+  subtotal: number;
+  shippingCost: number;
+  total: number;
+  status: OrderStatus;
+  paymentStatus: PaymentStatus;
+  mpPaymentId: string | null;
+  paidAt: string | null;
+  createdAt: string;
+}

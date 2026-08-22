@@ -132,6 +132,16 @@ export default function AdminLayout({ children }: { children: ReactNode }) {
                 >
                   Productos
                 </Link>
+                <Link
+                  href="/admin/pedidos"
+                  className={`text-sm transition-colors ${
+                    pathname?.startsWith("/admin/pedidos")
+                      ? "text-primary"
+                      : "text-gray-400 hover:text-white"
+                  }`}
+                >
+                  Pedidos
+                </Link>
               </nav>
             </div>
 

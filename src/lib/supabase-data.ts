@@ -1,5 +1,11 @@
 import { supabase, supabaseAdmin } from "./supabase";
-import { Product, ProductVariant, Category } from "@/types";
+import {
+  Product,
+  ProductVariant,
+  Category,
+  AdminOrder,
+  OrderStatus,
+} from "@/types";
 
 // Categorías (estáticas por ahora)
 export const categories: Category[] = [
@@ -271,4 +277,97 @@ export async function getAllProductsAdmin(): Promise<Product[]> {
   }, {});
 
   return products.map((p: any) => transformProduct(p, variantsByProduct[p.id] || []));
+}
+
+// ===== Pedidos (panel admin) =====
+
+// Mapea una fila de orders (snake_case) al tipo AdminOrder de la app.
+// Tolera bases sin la migración de MercadoPago aplicada: en ese caso
+// external_reference / payment_status / paid_at vienen undefined.
+function transformOrder(row: any): AdminOrder {
+  const items = (row.order_items || []).map((item: any) => ({
+    id: item.id,
+    productId: item.product_id,
+    variantId: item.variant_id,
+    productName: item.product_name,
+    productBrand: item.product_brand || "",
+    size: item.size || item.variant_size || "",
+    quantity: item.quantity,
+    unitPrice: item.unit_price,
+    totalPrice: item.total_price ?? item.unit_price * item.quantity,
+  }));
+
+  return {
+    id: row.id,
+    externalReference: row.external_reference ?? null,
+    customer: {
+      name: row.customer_name,
+      email: row.customer_email,
+      phone: row.customer_phone,
+      address: row.shipping_address,
+      city: row.shipping_city,
+      province: row.shipping_province,
+      postalCode: row.shipping_postal_code,
+      shippingZone: row.shipping_zone,
+      notes: row.notes || undefined,
+    },
+    items,
+    subtotal: row.subtotal,
+    shippingCost: row.shipping_cost,
+    total: row.total,
+    status: row.status,
+    paymentStatus: row.payment_status ?? "pending",
+    mpPaymentId: row.mp_payment_id ?? null,
+    paidAt: row.paid_at ?? null,
+    createdAt: row.created_at,
+  };
+}
+
+// Listado de pedidos, más nuevos primero
+export async function getOrders(): Promise<AdminOrder[]> {
+  const { data, error } = await supabaseAdmin
+    .from("orders")
+    .select("*, order_items(*)")
+    .order("created_at", { ascending: false });
+
+  if (error || !data) {
+    console.error("Error fetching orders:", error);
+    return [];
+  }
+
+  return data.map(transformOrder);
+}
+
+// Un pedido con sus items
+export async function getOrderById(id: string): Promise<AdminOrder | null> {
+  const { data, error } = await supabaseAdmin
+    .from("orders")
+    .select("*, order_items(*)")
+    .eq("id", id)
+    .single();
+
+  if (error || !data) {
+    console.error("Error fetching order:", error);
+    return null;
+  }
+
+  return transformOrder(data);
+}
+
+// Cambiar el estado de preparación/envío de un pedido.
+// No toca payment_status: eso lo maneja el webhook de MercadoPago.
+export async function updateOrderStatus(
+  id: string,
+  status: OrderStatus
+): Promise<boolean> {
+  const { error } = await supabaseAdmin
+    .from("orders")
+    .update({ status, updated_at: new Date().toISOString() })
+    .eq("id", id);
+
+  if (error) {
+    console.error("Error updating order status:", error);
+    return false;
+  }
+  return true;
 }
