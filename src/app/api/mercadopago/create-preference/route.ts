@@ -96,12 +96,16 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    // Create order items
+    // Create order items.
+    // product_brand and variant_size are NOT NULL in the schema; size and
+    // total_price are the columns added by the MercadoPago migration.
     const orderItems = items.map((item) => ({
       order_id: order.id,
       product_id: item.product.id,
       variant_id: item.variant.id,
-      product_name: `${item.product.brand} ${item.product.name}`,
+      product_name: item.product.name,
+      product_brand: item.product.brand,
+      variant_size: item.variant.size,
       size: item.variant.size,
       quantity: item.quantity,
       unit_price: item.product.price,
@@ -113,7 +117,15 @@ export async function POST(request: NextRequest) {
       .insert(orderItems);
 
     if (itemsError) {
+      // Without items the order is useless: the webhook cannot decrement
+      // stock nor list the products in the emails. Roll the order back
+      // instead of sending the customer to pay for an empty order.
       console.error("Error creating order items:", itemsError);
+      await supabaseAdmin.from("orders").delete().eq("id", order.id);
+      return NextResponse.json(
+        { error: "Error al crear la orden" },
+        { status: 500 }
+      );
     }
 
     // Build MercadoPago preference

@@ -219,6 +219,7 @@ interface OrderWithItems {
   total: number;
   order_items: {
     product_name: string;
+    product_brand?: string;
     size?: string;
     variant_size?: string;
     quantity: number;
@@ -240,7 +241,9 @@ async function sendPaymentNotifications(order: OrderWithItems, paymentId: string
       shippingProvince: order.shipping_province,
       shippingPostalCode: order.shipping_postal_code,
       items: order.order_items.map((item) => ({
-        productName: item.product_name,
+        productName: [item.product_brand, item.product_name]
+          .filter(Boolean)
+          .join(" "),
         size: item.size || item.variant_size || "",
         quantity: item.quantity,
         unitPrice: item.unit_price,
