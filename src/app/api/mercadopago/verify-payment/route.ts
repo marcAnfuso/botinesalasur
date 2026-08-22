@@ -1,0 +1,127 @@
+import { NextRequest, NextResponse } from "next/server";
+import { supabaseAdmin } from "@/lib/supabase";
+
+export const dynamic = "force-dynamic";
+
+const MP_ACCESS_TOKEN = process.env.MERCADOPAGO_ACCESS_TOKEN;
+
+export async function GET(request: NextRequest) {
+  try {
+    const { searchParams } = new URL(request.url);
+    const externalReference = searchParams.get("ref");
+    const paymentId = searchParams.get("payment_id");
+
+    if (!externalReference && !paymentId) {
+      return NextResponse.json(
+        { error: "Se requiere ref o payment_id" },
+        { status: 400 }
+      );
+    }
+
+    // First check in our database
+    let order = null;
+
+    if (externalReference) {
+      const { data } = await supabaseAdmin
+        .from("orders")
+        .select("*, order_items(*)")
+        .eq("external_reference", externalReference)
+        .single();
+      order = data;
+    }
+
+    if (order && order.payment_status === "paid") {
+      return NextResponse.json({
+        verified: true,
+        payment: {
+          order_id: order.id,
+          external_reference: order.external_reference,
+          payment_id: order.mp_payment_id,
+          amount: order.total,
+          status: order.payment_status,
+          paid_at: order.paid_at,
+          customer_name: order.customer_name,
+          customer_email: order.customer_email,
+        },
+      });
+    }
+
+    // If not found locally or not paid, try MercadoPago API
+    if (paymentId) {
+      const mpPayment = await verifyWithMercadoPago(paymentId);
+
+      if (mpPayment && mpPayment.status === "approved") {
+        // Update our database
+        if (order) {
+          await supabaseAdmin
+            .from("orders")
+            .update({
+              mp_payment_id: paymentId,
+              payment_status: "paid",
+              status: "confirmed",
+              paid_at: mpPayment.date_approved || new Date().toISOString(),
+            })
+            .eq("id", order.id);
+        }
+
+        return NextResponse.json({
+          verified: true,
+          source: "mercadopago_api",
+          payment: {
+            payment_id: mpPayment.id,
+            external_reference: mpPayment.external_reference || "",
+            amount: mpPayment.transaction_amount,
+            status: mpPayment.status,
+            paid_at: mpPayment.date_approved,
+          },
+        });
+      }
+    }
+
+    // Return order info even if not paid
+    if (order) {
+      return NextResponse.json({
+        verified: false,
+        order: {
+          id: order.id,
+          external_reference: order.external_reference,
+          status: order.status,
+          payment_status: order.payment_status,
+          total: order.total,
+        },
+        message: "Pago pendiente de confirmación",
+      });
+    }
+
+    return NextResponse.json({
+      verified: false,
+      message: "Orden no encontrada",
+    });
+  } catch (error) {
+    console.error("Verify payment error:", error);
+    return NextResponse.json(
+      { error: "Error interno del servidor" },
+      { status: 500 }
+    );
+  }
+}
+
+async function verifyWithMercadoPago(paymentId: string) {
+  try {
+    const response = await fetch(
+      `https://api.mercadopago.com/v1/payments/${paymentId}`,
+      {
+        headers: {
+          Authorization: `Bearer ${MP_ACCESS_TOKEN}`,
+        },
+      }
+    );
+
+    if (response.ok) {
+      return await response.json();
+    }
+    return null;
+  } catch {
+    return null;
+  }
+}
