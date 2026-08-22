@@ -1,101 +1,40 @@
 "use client";
 
-import { useState, useEffect, ReactNode } from "react";
+import { ReactNode } from "react";
 import Link from "next/link";
-import { usePathname } from "next/navigation";
+import { usePathname, useRouter } from "next/navigation";
 
-// Simulación de autenticación - esto se reemplazará con Supabase Auth
-const ADMIN_PASSWORD = "botinesalasur2024"; // Cambiar esto en producción
-
+// La autenticación la resuelve el middleware contra una cookie httpOnly
+// firmada en el servidor. Este layout ya no conoce la contraseña.
 export default function AdminLayout({ children }: { children: ReactNode }) {
-  const [isAuthenticated, setIsAuthenticated] = useState(false);
-  const [password, setPassword] = useState("");
-  const [error, setError] = useState("");
-  const [isLoading, setIsLoading] = useState(true);
   const pathname = usePathname();
+  const router = useRouter();
 
-  useEffect(() => {
-    // Verificar si ya está autenticado
-    const auth = localStorage.getItem("admin-auth");
-    if (auth === "true") {
-      setIsAuthenticated(true);
-    }
-    setIsLoading(false);
-  }, []);
-
-  const handleLogin = (e: React.FormEvent) => {
-    e.preventDefault();
-    if (password === ADMIN_PASSWORD) {
-      localStorage.setItem("admin-auth", "true");
-      setIsAuthenticated(true);
-      setError("");
-    } else {
-      setError("Contraseña incorrecta");
-    }
-  };
-
-  const handleLogout = () => {
-    localStorage.removeItem("admin-auth");
-    setIsAuthenticated(false);
-  };
-
-  if (isLoading) {
-    return (
-      <div className="min-h-screen bg-dark flex items-center justify-center">
-        <div className="animate-spin w-8 h-8 border-2 border-primary border-t-transparent rounded-full" />
-      </div>
-    );
+  // El login se muestra sin la navegación del panel
+  if (pathname === "/admin/login") {
+    return <>{children}</>;
   }
 
-  if (!isAuthenticated) {
-    return (
-      <div className="min-h-screen bg-dark flex items-center justify-center p-4">
-        <div className="w-full max-w-md">
-          <div className="text-center mb-8">
-            <div className="w-16 h-16 rounded-full border-2 border-primary flex items-center justify-center mx-auto mb-4">
-              <span className="text-primary font-bold text-xl">BAS</span>
-            </div>
-            <h1 className="text-2xl font-bold text-white">Panel Admin</h1>
-            <p className="text-gray-400 mt-2">Botinesala Sur</p>
-          </div>
+  const handleLogout = async () => {
+    try {
+      await fetch("/api/admin/login", { method: "DELETE" });
+    } catch {
+      // Aunque falle la llamada, mandamos al login
+    }
+    router.push("/admin/login");
+    router.refresh();
+  };
 
-          <form onSubmit={handleLogin} className="bg-dark-card rounded-xl p-6">
-            <div className="mb-4">
-              <label
-                htmlFor="password"
-                className="block text-sm font-medium text-gray-400 mb-2"
-              >
-                Contraseña
-              </label>
-              <input
-                type="password"
-                id="password"
-                value={password}
-                onChange={(e) => setPassword(e.target.value)}
-                className="input-field"
-                placeholder="Ingresá la contraseña"
-                autoFocus
-              />
-            </div>
-
-            {error && (
-              <p className="text-red-500 text-sm mb-4">{error}</p>
-            )}
-
-            <button type="submit" className="btn-primary w-full">
-              Ingresar
-            </button>
-          </form>
-
-          <p className="text-center text-gray-500 text-sm mt-4">
-            <Link href="/" className="hover:text-white transition-colors">
-              Volver a la tienda
-            </Link>
-          </p>
-        </div>
-      </div>
-    );
-  }
+  const navLink = (href: string, label: string, active: boolean) => (
+    <Link
+      href={href}
+      className={`text-sm transition-colors ${
+        active ? "text-primary" : "text-gray-400 hover:text-white"
+      }`}
+    >
+      {label}
+    </Link>
+  );
 
   return (
     <div className="min-h-screen bg-dark">
@@ -112,36 +51,17 @@ export default function AdminLayout({ children }: { children: ReactNode }) {
               </Link>
 
               <nav className="hidden md:flex items-center gap-6">
-                <Link
-                  href="/admin"
-                  className={`text-sm transition-colors ${
-                    pathname === "/admin"
-                      ? "text-primary"
-                      : "text-gray-400 hover:text-white"
-                  }`}
-                >
-                  Dashboard
-                </Link>
-                <Link
-                  href="/admin/productos"
-                  className={`text-sm transition-colors ${
-                    pathname?.startsWith("/admin/productos")
-                      ? "text-primary"
-                      : "text-gray-400 hover:text-white"
-                  }`}
-                >
-                  Productos
-                </Link>
-                <Link
-                  href="/admin/pedidos"
-                  className={`text-sm transition-colors ${
-                    pathname?.startsWith("/admin/pedidos")
-                      ? "text-primary"
-                      : "text-gray-400 hover:text-white"
-                  }`}
-                >
-                  Pedidos
-                </Link>
+                {navLink("/admin", "Dashboard", pathname === "/admin")}
+                {navLink(
+                  "/admin/productos",
+                  "Productos",
+                  Boolean(pathname?.startsWith("/admin/productos"))
+                )}
+                {navLink(
+                  "/admin/pedidos",
+                  "Pedidos",
+                  Boolean(pathname?.startsWith("/admin/pedidos"))
+                )}
               </nav>
             </div>
 
