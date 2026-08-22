@@ -13,8 +13,8 @@ import {
   formatOrderDate,
 } from "@/lib/order-status";
 
-// Revalidar cada 30 segundos para admin
-export const revalidate = 30;
+// El dashboard lista los últimos pedidos: tiene que estar siempre fresco
+export const revalidate = 0;
 
 export default async function AdminDashboard() {
   const [products, orders] = await Promise.all([
