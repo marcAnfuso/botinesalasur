@@ -2,6 +2,7 @@
 
 import { useState, Suspense } from "react";
 import Link from "next/link";
+import Image from "next/image";
 import { useRouter, useSearchParams } from "next/navigation";
 
 function LoginForm() {
@@ -81,9 +82,14 @@ export default function AdminLoginPage() {
     <div className="min-h-screen bg-dark flex items-center justify-center p-4">
       <div className="w-full max-w-md">
         <div className="text-center mb-8">
-          <div className="w-16 h-16 rounded-full border-2 border-primary flex items-center justify-center mx-auto mb-4">
-            <span className="text-primary font-bold text-xl">BAS</span>
-          </div>
+          <Image
+            src="/images/logo-botinesalasur-circular.png"
+            alt="Botinesala Sur"
+            width={64}
+            height={64}
+            priority
+            className="w-16 h-16 rounded-full mx-auto mb-4"
+          />
           <h1 className="text-2xl font-bold text-white">Panel Admin</h1>
           <p className="text-gray-400 mt-2">Botinesala Sur</p>
         </div>

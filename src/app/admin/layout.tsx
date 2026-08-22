@@ -2,6 +2,7 @@
 
 import { ReactNode } from "react";
 import Link from "next/link";
+import Image from "next/image";
 import { usePathname, useRouter } from "next/navigation";
 
 // La autenticación la resuelve el middleware contra una cookie httpOnly
@@ -44,9 +45,13 @@ export default function AdminLayout({ children }: { children: ReactNode }) {
           <div className="flex items-center justify-between h-16">
             <div className="flex items-center gap-8">
               <Link href="/admin" className="flex items-center gap-2">
-                <div className="w-8 h-8 rounded-full border-2 border-primary flex items-center justify-center">
-                  <span className="text-primary font-bold text-xs">BAS</span>
-                </div>
+                <Image
+                  src="/images/logo-botinesalasur-circular.png"
+                  alt="Botinesala Sur"
+                  width={32}
+                  height={32}
+                  className="w-8 h-8 rounded-full"
+                />
                 <span className="font-semibold text-white">Admin</span>
               </Link>
 
