@@ -29,7 +29,8 @@ function transformProduct(
     description: dbProduct.description,
     price: dbProduct.price,
     category: dbProduct.category,
-    imageUrl: dbProduct.image_url,
+    // Un producto sin foto no puede romper el render: <Image src=""> lanza.
+    imageUrl: dbProduct.image_url || "/images/sin-foto.png",
     images: dbProduct.images || undefined,
     featured: dbProduct.featured,
     active: dbProduct.active,
