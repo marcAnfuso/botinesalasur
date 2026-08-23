@@ -30,6 +30,7 @@ interface CheckoutData {
     province: string;
     postalCode: string;
     shippingZone: string;
+    shippingZoneLabel?: string;
     notes: string;
   };
   shippingCost: number;
@@ -143,7 +144,7 @@ export async function POST(request: NextRequest) {
     if (shippingCost > 0) {
       mpItems.push({
         id: "shipping",
-        title: `Envío - ${customer.shippingZone === "gba-sur" ? "GBA Sur" : "Todo el país"}`,
+        title: `Envío - ${customer.shippingZoneLabel || customer.shippingZone}`,
         description: "Costo de envío",
         picture_url: "",
         currency_id: "ARS",

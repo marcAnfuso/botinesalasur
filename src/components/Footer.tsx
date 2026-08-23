@@ -1,5 +1,7 @@
 import Link from "next/link";
 import Image from "next/image";
+import { getShippingZones } from "@/lib/shipping";
+import { formatPrice } from "@/lib/supabase-data";
 
 const WHATSAPP = "https://wa.me/message/CJPQFIY4XTSJC1";
 const INSTAGRAM = "https://instagram.com/botinesalasur";
@@ -12,7 +14,8 @@ const CATEGORIAS = [
   { label: "Catálogo completo", href: "/catalogo" },
 ];
 
-export default function Footer() {
+export default async function Footer() {
+  const zonas = await getShippingZones();
   return (
     <footer className="border-t border-dark-line bg-dark">
       <div className="max-w-7xl mx-auto px-4 py-14">
@@ -125,14 +128,17 @@ export default function Footer() {
 
             <h2 className="label text-gray-500 mt-8 mb-3">Envíos</h2>
             <dl className="space-y-1.5 text-sm">
-              <div className="flex justify-between gap-4 text-gray-400">
-                <dt>GBA Sur, en moto</dt>
-                <dd className="tnum text-gray-300">$2.500</dd>
-              </div>
-              <div className="flex justify-between gap-4 text-gray-400">
-                <dt>Resto del país</dt>
-                <dd className="tnum text-gray-300">$5.500</dd>
-              </div>
+              {zonas.map((z) => (
+                <div
+                  key={z.slug}
+                  className="flex justify-between gap-4 text-gray-400"
+                >
+                  <dt>{z.label}</dt>
+                  <dd className="tnum text-gray-300">
+                    {z.cost === 0 ? "Sin cargo" : formatPrice(z.cost)}
+                  </dd>
+                </div>
+              ))}
             </dl>
           </div>
         </div>

@@ -67,6 +67,11 @@ export default function AdminLayout({ children }: { children: ReactNode }) {
                   "Pedidos",
                   Boolean(pathname?.startsWith("/admin/pedidos"))
                 )}
+                {navLink(
+                  "/admin/envios",
+                  "Envíos",
+                  Boolean(pathname?.startsWith("/admin/envios"))
+                )}
               </nav>
             </div>
 

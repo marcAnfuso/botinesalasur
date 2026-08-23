@@ -3,6 +3,8 @@ import { Inter, Archivo } from "next/font/google";
 import "./globals.css";
 import { CartProvider } from "@/context/CartContext";
 import SiteChrome from "@/components/SiteChrome";
+import Header from "@/components/Header";
+import Footer from "@/components/Footer";
 
 const inter = Inter({
   subsets: ["latin"],
@@ -81,7 +83,9 @@ export default function RootLayout({
           }}
         />
         <CartProvider>
-          <SiteChrome>{children}</SiteChrome>
+          <SiteChrome header={<Header />} footer={<Footer />}>
+            {children}
+          </SiteChrome>
         </CartProvider>
       </body>
     </html>

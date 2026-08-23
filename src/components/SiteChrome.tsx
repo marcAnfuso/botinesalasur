@@ -2,23 +2,30 @@
 
 import { ReactNode } from "react";
 import { usePathname } from "next/navigation";
-import Header from "./Header";
-import Footer from "./Footer";
 
 // El panel trae su propia navegación: mostrarle además el header y el footer
-// de la tienda dejaba dos barras superpuestas y el pie de la tienda al final
-// de cada pantalla de trabajo.
-export default function SiteChrome({ children }: { children: ReactNode }) {
+// de la tienda dejaba dos barras superpuestas.
+// El header y el pie llegan ya renderizados desde el layout, que es un server
+// component: el pie consulta los costos de envío y no puede ser hijo directo
+// de un componente cliente.
+export default function SiteChrome({
+  header,
+  footer,
+  children,
+}: {
+  header: ReactNode;
+  footer: ReactNode;
+  children: ReactNode;
+}) {
   const pathname = usePathname();
-  const esPanel = pathname?.startsWith("/admin");
 
-  if (esPanel) return <>{children}</>;
+  if (pathname?.startsWith("/admin")) return <>{children}</>;
 
   return (
     <>
-      <Header />
+      {header}
       <main className="min-h-screen">{children}</main>
-      <Footer />
+      {footer}
     </>
   );
 }
