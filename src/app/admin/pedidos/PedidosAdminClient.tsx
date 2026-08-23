@@ -11,15 +11,24 @@ import {
   PAYMENT_STATUS_CLASSES,
   ORDER_STATUS_FLOW,
   formatOrderDate,
+  CHANNEL_LABELS,
+  CHANNEL_CLASSES,
 } from "@/lib/order-status";
 
-type Filter = "todos" | "por-preparar" | "pagados" | "sin-pagar" | OrderStatus;
+type Filter =
+  | "todos"
+  | "por-preparar"
+  | "pagados"
+  | "sin-pagar"
+  | "whatsapp"
+  | OrderStatus;
 
 const FILTERS: { key: Filter; label: string }[] = [
   { key: "todos", label: "Todos" },
   { key: "por-preparar", label: "Por preparar" },
   { key: "pagados", label: "Pagados" },
   { key: "sin-pagar", label: "Sin pagar" },
+  { key: "whatsapp", label: "Por WhatsApp" },
   { key: "shipped", label: "Enviados" },
   { key: "delivered", label: "Entregados" },
   { key: "cancelled", label: "Cancelados" },
@@ -68,6 +77,9 @@ export default function PedidosAdminClient({
         break;
       case "sin-pagar":
         result = result.filter((o) => o.paymentStatus !== "paid");
+        break;
+      case "whatsapp":
+        result = result.filter((o) => o.channel === "whatsapp");
         break;
       default:
         result = result.filter((o) => o.status === filter);
@@ -226,6 +238,15 @@ export default function PedidosAdminClient({
                     >
                       {ORDER_STATUS_LABELS[order.status]}
                     </span>
+                    {order.channel === "whatsapp" && (
+                      <span
+                        className={`px-2 py-0.5 rounded text-xs font-medium ${
+                          CHANNEL_CLASSES[order.channel]
+                        }`}
+                      >
+                        {CHANNEL_LABELS[order.channel]}
+                      </span>
+                    )}
                   </div>
                   <p className="text-sm text-gray-300 truncate">
                     {order.customer.name} · {order.customer.email}

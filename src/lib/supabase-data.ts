@@ -4,6 +4,7 @@ import {
   ProductVariant,
   Category,
   AdminOrder,
+  OrderChannel,
   OrderStatus,
 } from "@/types";
 
@@ -318,6 +319,8 @@ function transformOrder(row: any): AdminOrder {
     total: row.total,
     status: row.status,
     paymentStatus: row.payment_status ?? "pending",
+    // Los pedidos anteriores a la columna son de MercadoPago.
+    channel: row.channel ?? "mercadopago",
     mpPaymentId: row.mp_payment_id ?? null,
     paidAt: row.paid_at ?? null,
     createdAt: row.created_at,

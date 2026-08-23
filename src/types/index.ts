@@ -75,6 +75,8 @@ export type OrderStatus =
   | "delivered"
   | "cancelled";
 
+export type OrderChannel = "mercadopago" | "whatsapp";
+
 export type PaymentStatus = "pending" | "paid" | "failed" | "refunded";
 
 export interface AdminOrderItem {
@@ -99,6 +101,7 @@ export interface AdminOrder {
   total: number;
   status: OrderStatus;
   paymentStatus: PaymentStatus;
+  channel: OrderChannel;
   mpPaymentId: string | null;
   paidAt: string | null;
   createdAt: string;

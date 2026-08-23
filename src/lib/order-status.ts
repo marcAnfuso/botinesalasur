@@ -1,4 +1,4 @@
-import { OrderStatus, PaymentStatus } from "@/types";
+import { OrderStatus, PaymentStatus, OrderChannel } from "@/types";
 
 // Etiquetas y colores de los estados, compartidos entre el listado y el detalle.
 
@@ -53,3 +53,15 @@ export function formatOrderDate(iso: string): string {
     minute: "2-digit",
   });
 }
+
+export const CHANNEL_LABELS: Record<OrderChannel, string> = {
+  mercadopago: "MercadoPago",
+  whatsapp: "WhatsApp",
+};
+
+// El canal se marca sólo cuando es WhatsApp: MercadoPago es el caso corriente
+// y no necesita ocupar espacio en cada fila.
+export const CHANNEL_CLASSES: Record<OrderChannel, string> = {
+  mercadopago: "bg-gray-700/50 text-gray-300",
+  whatsapp: "bg-field/15 text-field",
+};

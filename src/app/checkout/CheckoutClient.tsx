@@ -90,6 +90,33 @@ export default function CheckoutClient({ zonas }: { zonas: ShippingZone[] }) {
   };
 
   const handleWhatsApp = async () => {
+    // El pedido se registra ANTES de abrir el chat: si no, la venta existe
+    // sólo en WhatsApp y el panel muestra una realidad incompleta.
+    let referencia = "";
+    try {
+      const res = await fetch("/api/orders/whatsapp", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          items: items.map((item) => ({
+            product: item.product,
+            variant: item.variant,
+            quantity: item.quantity,
+          })),
+          customer: formData,
+          shippingCost,
+          total,
+        }),
+      });
+      const data = await res.json();
+      if (res.ok) referencia = data.externalReference;
+      else console.error("No se pudo registrar el pedido:", data.error);
+    } catch (error) {
+      // Un fallo al registrar no puede costarle la venta al negocio:
+      // se sigue al chat igual y queda el aviso en los logs.
+      console.error("Error registrando el pedido de WhatsApp:", error);
+    }
+
     const itemsText = items
       .map(
         (item) =>

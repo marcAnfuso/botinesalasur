@@ -34,5 +34,21 @@ CREATE POLICY "Service role can update shipping zones" ON shipping_zones
   FOR UPDATE USING (true);
 
 -- =====================================================
+-- Canal del pedido: por dónde entró la venta
+-- =====================================================
+
+-- Los pedidos coordinados por WhatsApp ahora también se registran. Sin esta
+-- columna no habría forma de distinguirlos de los que pasaron por MercadoPago.
+ALTER TABLE orders
+  ADD COLUMN IF NOT EXISTS channel VARCHAR(20) NOT NULL DEFAULT 'mercadopago';
+
+ALTER TABLE orders DROP CONSTRAINT IF EXISTS orders_channel_check;
+ALTER TABLE orders
+  ADD CONSTRAINT orders_channel_check
+  CHECK (channel IN ('mercadopago', 'whatsapp'));
+
+CREATE INDEX IF NOT EXISTS idx_orders_channel ON orders(channel);
+
+-- =====================================================
 -- FIN
 -- =====================================================

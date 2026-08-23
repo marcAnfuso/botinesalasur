@@ -7,6 +7,7 @@ import {
   PAYMENT_STATUS_LABELS,
   PAYMENT_STATUS_CLASSES,
   formatOrderDate,
+  CHANNEL_LABELS,
 } from "@/lib/order-status";
 
 export const revalidate = 0;
@@ -190,7 +191,17 @@ export default async function PedidoDetallePage({
 
           <div className="bg-dark-card rounded-xl border border-gray-800 p-6">
             <h2 className="font-semibold text-white mb-4">Pago</h2>
+            {order.channel === "whatsapp" && (
+              <p className="mb-4 text-sm text-gray-400">
+                Se coordina por chat. Cuando cobres, marcá el pedido como
+                confirmado desde el listado.
+              </p>
+            )}
             <dl className="space-y-3 text-sm">
+              <div>
+                <dt className="text-gray-500">Canal</dt>
+                <dd className="text-white">{CHANNEL_LABELS[order.channel]}</dd>
+              </div>
               <div>
                 <dt className="text-gray-500">Estado</dt>
                 <dd className="text-white">
