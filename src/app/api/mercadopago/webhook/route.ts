@@ -1,6 +1,10 @@
 import { NextRequest, NextResponse } from "next/server";
 import { supabaseAdmin } from "@/lib/supabase";
-import { sendOrderConfirmationEmail, sendNewOrderNotification } from "@/lib/email";
+import {
+  sendOrderConfirmationEmail,
+  sendNewOrderNotification,
+  sendPendingPaymentEmail,
+} from "@/lib/email";
 
 const MP_ACCESS_TOKEN = process.env.MERCADOPAGO_ACCESS_TOKEN;
 
@@ -171,6 +175,43 @@ async function processPayment(payment: {
     await updateStock(order.id);
     await sendPaymentNotifications(order, paymentId);
   }
+
+  // Con efectivo el pago puede tardar días en acreditar. Sin este aviso el
+  // cliente se queda sin ningún comprobante de que su pedido existe.
+  // La guarda de arriba (mp_payment_id ya registrado) evita repetirlo si
+  // MercadoPago vuelve a notificar el mismo pago.
+  if (status === "pending" || status === "in_process") {
+    const resultado = await sendPendingPaymentEmail(datosDeMail(order, paymentId));
+    console.log("Pending payment email:", resultado);
+  }
+}
+
+// Arma el payload de mail a partir del pedido guardado.
+function datosDeMail(order: OrderWithItems, paymentId: string) {
+  return {
+    orderId: order.id,
+    externalReference: order.external_reference,
+    customerName: order.customer_name,
+    customerEmail: order.customer_email,
+    customerPhone: order.customer_phone,
+    shippingAddress: order.shipping_address,
+    shippingCity: order.shipping_city,
+    shippingProvince: order.shipping_province,
+    shippingPostalCode: order.shipping_postal_code,
+    items: (order.order_items || []).map((item) => ({
+      productName: [item.product_brand, item.product_name]
+        .filter(Boolean)
+        .join(" "),
+      size: item.size || item.variant_size || "",
+      quantity: item.quantity,
+      unitPrice: item.unit_price,
+      totalPrice: item.total_price || item.unit_price * item.quantity,
+    })),
+    subtotal: order.subtotal,
+    shippingCost: order.shipping_cost,
+    total: order.total,
+    paymentId,
+  };
 }
 
 async function updateStock(orderId: string) {
@@ -230,39 +271,15 @@ interface OrderWithItems {
 
 async function sendPaymentNotifications(order: OrderWithItems, paymentId: string) {
   try {
-    const emailData = {
-      orderId: order.id,
-      externalReference: order.external_reference,
-      customerName: order.customer_name,
-      customerEmail: order.customer_email,
-      customerPhone: order.customer_phone,
-      shippingAddress: order.shipping_address,
-      shippingCity: order.shipping_city,
-      shippingProvince: order.shipping_province,
-      shippingPostalCode: order.shipping_postal_code,
-      items: order.order_items.map((item) => ({
-        productName: [item.product_brand, item.product_name]
-          .filter(Boolean)
-          .join(" "),
-        size: item.size || item.variant_size || "",
-        quantity: item.quantity,
-        unitPrice: item.unit_price,
-        totalPrice: item.total_price || item.unit_price * item.quantity,
-      })),
-      subtotal: order.subtotal,
-      shippingCost: order.shipping_cost,
-      total: order.total,
-      paymentId,
-    };
+    const emailData = datosDeMail(order, paymentId);
 
-    // Send confirmation to customer
     const customerResult = await sendOrderConfirmationEmail(emailData);
     console.log("Customer email result:", customerResult);
 
-    // Send notification to admin
     const adminResult = await sendNewOrderNotification(emailData);
     console.log("Admin notification result:", adminResult);
   } catch (error) {
     console.error("Error sending notifications:", error);
   }
 }
+

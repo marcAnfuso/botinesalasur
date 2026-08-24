@@ -241,3 +241,111 @@ TOTAL: $${data.total.toLocaleString("es-AR")}
     return { success: false, error };
   }
 }
+
+// Aviso de pedido recibido cuando el pago todavía no acreditó.
+// Con efectivo en Rapipago o Pago Fácil pueden pasar días entre la compra y
+// la acreditación: sin este mail el cliente se queda sin ningún comprobante
+// de que su pedido existe.
+export async function sendPendingPaymentEmail(data: OrderEmailData) {
+  if (!process.env.RESEND_API_KEY) {
+    console.log("RESEND_API_KEY not configured, skipping pending email");
+    return { success: false, error: "Email not configured" };
+  }
+
+  const fromEmail = process.env.RESEND_FROM_EMAIL || "onboarding@resend.dev";
+  const nombre = data.customerName.split(" ")[0];
+  const itemsHtml = data.items
+    .map(
+      (item) => `
+        <tr>
+          <td style="padding: 8px 0; border-bottom: 1px solid #eee;">
+            ${item.productName}${item.size ? ` — Talle ${item.size}` : ""}
+            <span style="color: #666;">x${item.quantity}</span>
+          </td>
+          <td style="padding: 8px 0; border-bottom: 1px solid #eee; text-align: right;">
+            $${item.totalPrice.toLocaleString("es-AR")}
+          </td>
+        </tr>`
+    )
+    .join("");
+
+  const emailHtml = `
+    <div style="font-family: -apple-system, system-ui, sans-serif; max-width: 600px; margin: 0 auto;">
+      <div style="text-align: center; padding: 24px 0;">
+        <h1 style="color: #DC2626; margin: 0;">Botinesala Sur</h1>
+        <p style="color: #666;">Recibimos tu pedido</p>
+      </div>
+
+      <div style="background: #f8f8f8; padding: 24px; border-radius: 8px;">
+        <h2 style="margin-top: 0; color: #B45309;">Tu pedido está reservado, ${nombre}</h2>
+        <p>
+          Anotamos tu pedido <strong>#${data.externalReference}</strong>, pero
+          todavía no nos figura el pago acreditado.
+        </p>
+        <p>
+          Si elegiste pagar en efectivo por Rapipago o Pago Fácil, tenés que
+          completar el pago con el cupón que te dio MercadoPago. La
+          acreditación puede tardar hasta 3 días hábiles.
+        </p>
+        <p style="margin-bottom: 0;">
+          <strong>Te avisamos por mail apenas se acredite</strong> y ahí
+          preparamos el envío.
+        </p>
+      </div>
+
+      <h3 style="margin-top: 24px;">Lo que reservaste</h3>
+      <table style="width: 100%; border-collapse: collapse;">
+        ${itemsHtml}
+        <tr>
+          <td style="padding: 12px 0; font-weight: bold;">Total</td>
+          <td style="padding: 12px 0; text-align: right; font-weight: bold;">
+            $${data.total.toLocaleString("es-AR")}
+          </td>
+        </tr>
+      </table>
+
+      <div style="text-align: center; margin-top: 24px; padding-top: 16px; border-top: 1px solid #eee; color: #666;">
+        <p style="margin: 0 0 10px 0;">¿Alguna duda con el pago?</p>
+        <a href="https://wa.me/message/CJPQFIY4XTSJC1" style="color: #DC2626;">
+          Escribinos por WhatsApp
+        </a>
+      </div>
+    </div>
+  `;
+
+  const emailText = `
+Botinesala Sur — Recibimos tu pedido
+
+Tu pedido está reservado, ${nombre}.
+
+Anotamos tu pedido #${data.externalReference}, pero todavía no nos figura el pago acreditado.
+
+Si elegiste pagar en efectivo por Rapipago o Pago Fácil, completá el pago con el cupón que te dio MercadoPago. La acreditación puede tardar hasta 3 días hábiles.
+
+Te avisamos por mail apenas se acredite.
+
+Total: $${data.total.toLocaleString("es-AR")}
+
+¿Dudas? Escribinos: https://wa.me/message/CJPQFIY4XTSJC1
+  `;
+
+  try {
+    const resendClient = getResend();
+    if (!resendClient) {
+      return { success: false, error: "Email not configured" };
+    }
+
+    const result = await resendClient.emails.send({
+      from: `Botinesala Sur <${fromEmail}>`,
+      to: data.customerEmail,
+      subject: `Recibimos tu pedido #${data.externalReference} — falta el pago`,
+      html: emailHtml,
+      text: emailText,
+    });
+
+    return { success: true, data: result };
+  } catch (error) {
+    console.error("Error sending pending payment email:", error);
+    return { success: false, error };
+  }
+}

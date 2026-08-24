@@ -1,6 +1,7 @@
 "use client";
 
 import { Suspense, useEffect, useState } from "react";
+import { useCart } from "@/context/CartContext";
 import { useSearchParams } from "next/navigation";
 import Link from "next/link";
 
@@ -43,6 +44,7 @@ function CheckoutResultContent() {
 
   const [loading, setLoading] = useState(true);
   const [result, setResult] = useState<PaymentResult | null>(null);
+  const { clearCart } = useCart();
 
   useEffect(() => {
     async function verifyPayment() {
@@ -59,6 +61,10 @@ function CheckoutResultContent() {
         const response = await fetch(`/api/mercadopago/verify-payment?${params}`);
         const data = await response.json();
         setResult(data);
+
+        // Recién acá se vacía: el pago ya salió, y si hubiera fallado el
+        // cliente conserva su carrito para reintentar.
+        if (data?.verified) clearCart();
       } catch (error) {
         console.error("Error verifying payment:", error);
       } finally {
@@ -67,14 +73,17 @@ function CheckoutResultContent() {
     }
 
     verifyPayment();
+    // clearCart es estable entre renders del provider
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [externalRef, paymentId]);
 
   if (loading) {
     return <LoadingSpinner />;
   }
 
-  // Success state
-  if (status === "success" || result?.verified) {
+  // El éxito exige verificación real: el parámetro de la URL lo escribe
+  // MercadoPago al redirigir, pero también puede escribirlo cualquiera.
+  if (result?.verified) {
     return (
       <div className="max-w-2xl mx-auto px-4 py-16">
         <div className="bg-dark-card rounded-none p-8 text-center">
@@ -138,6 +147,63 @@ function CheckoutResultContent() {
   }
 
   // Pending state
+  // MercadoPago volvió con éxito pero la confirmación todavía no llegó:
+  // suele ser el webhook demorándose unos segundos.
+  if (status === "success") {
+    return (
+      <div className="max-w-2xl mx-auto px-4 py-16">
+        <div className="bg-dark-card rounded-none p-8 text-center">
+          <div className="w-20 h-20 bg-yellow-500/20 rounded-full flex items-center justify-center mx-auto mb-6">
+            <svg
+              className="w-10 h-10 text-yellow-500"
+              fill="none"
+              viewBox="0 0 24 24"
+              strokeWidth={1.5}
+              stroke="currentColor"
+            >
+              <path
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                d="M12 6v6h4.5m4.5 0a9 9 0 1 1-18 0 9 9 0 0 1 18 0Z"
+              />
+            </svg>
+          </div>
+
+          <h1 className="display text-4xl text-white mb-2">
+            Estamos confirmando tu pago
+          </h1>
+          <p className="text-gray-400 mb-8">
+            MercadoPago nos avisó que lo completaste. En cuanto se confirme te
+            mandamos el mail con los detalles. Suele tardar unos segundos.
+          </p>
+
+          {externalRef && (
+            <p className="text-sm text-gray-500 mb-8">
+              Tu pedido: <span className="text-white">{externalRef}</span>
+            </p>
+          )}
+
+          <div className="flex flex-col sm:flex-row gap-3 justify-center">
+            <button
+              onClick={() => window.location.reload()}
+              className="btn-primary"
+            >
+              Actualizar
+            </button>
+            <a
+              href="https://wa.me/message/CJPQFIY4XTSJC1"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="btn-secondary"
+            >
+              Consultar por WhatsApp
+            </a>
+          </div>
+        </div>
+      </div>
+    );
+  }
+
   if (status === "pending") {
     return (
       <div className="max-w-2xl mx-auto px-4 py-16">

@@ -78,10 +78,10 @@ export default function CheckoutClient({ zonas }: { zonas: ShippingZone[] }) {
         return;
       }
 
-      // Clear cart before redirecting
-      clearCart();
-
-      // Redirect to MercadoPago
+      // El carrito NO se vacía acá: si abandona el pago o lo rechazan,
+      // volver con el carrito vacío lo obliga a rearmar todo justo cuando
+      // ya estaba dudando. Se vacía en /checkout/resultado, cuando el pago
+      // está confirmado.
       window.location.href = data.init_point;
     } catch (error) {
       console.error("Error:", error);
