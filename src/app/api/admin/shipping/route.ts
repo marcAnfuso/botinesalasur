@@ -1,4 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
+import { revalidatePath } from "next/cache";
 import { getShippingZones, updateShippingZone } from "@/lib/shipping";
 
 // Techo defensivo: un cero de más en el panel no debería cobrarse.
@@ -68,6 +69,11 @@ export async function PATCH(request: NextRequest) {
         { status: 500 }
       );
     }
+
+    // El pie de la tienda vive en el layout, que se cachea junto a cada
+    // página: sin esto, el sitio seguiría anunciando el costo anterior
+    // hasta que venciera el ISR.
+    revalidatePath("/", "layout");
 
     return NextResponse.json({ success: true, zonas: await getShippingZones() });
   } catch (error) {
