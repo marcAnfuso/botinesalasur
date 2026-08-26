@@ -41,7 +41,7 @@ export default function BulkPriceBar({
   const [abierto, setAbierto] = useState(false);
   const [mode, setMode] = useState<BulkPriceMode>("percent");
   const [valor, setValor] = useState("");
-  const [redondear, setRedondear] = useState(true);
+  const [redondear, setRedondear] = useState(false);
   const [aplicando, setAplicando] = useState(false);
   const toast = useToast();
 
@@ -193,7 +193,7 @@ export default function BulkPriceBar({
                     onChange={(e) => setRedondear(e.target.checked)}
                     className="w-4 h-4 accent-primary cursor-pointer"
                   />
-                  Redondear a los $100
+                  Redondear a la centena (89.999 → 90.000)
                 </label>
               </div>
             </div>

@@ -44,14 +44,21 @@ export const ORDER_STATUS_FLOW: OrderStatus[] = [
   "cancelled",
 ];
 
+// Zona horaria fija y reloj de 24 h: así el servidor y el navegador escriben
+// exactamente lo mismo y React no ve diferencias al hidratar.
 export function formatOrderDate(iso: string): string {
-  return new Date(iso).toLocaleString("es-AR", {
+  const d = new Date(iso);
+  const p = new Intl.DateTimeFormat("es-AR", {
+    timeZone: "America/Argentina/Buenos_Aires",
     day: "2-digit",
     month: "2-digit",
     year: "numeric",
     hour: "2-digit",
     minute: "2-digit",
-  });
+    hour12: false,
+  }).formatToParts(d);
+  const g = (t: string) => p.find((x) => x.type === t)?.value ?? "";
+  return `${g("day")}/${g("month")}/${g("year")} ${g("hour")}:${g("minute")}`;
 }
 
 export const CHANNEL_LABELS: Record<OrderChannel, string> = {

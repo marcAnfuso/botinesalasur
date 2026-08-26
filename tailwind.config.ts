@@ -47,9 +47,14 @@ const config: Config = {
           from: { opacity: "0", transform: "translateY(14px)" },
           to: { opacity: "1", transform: "translateY(0)" },
         },
+        "slide-in": {
+          from: { transform: "translateX(24px)", opacity: "0" },
+          to: { transform: "translateX(0)", opacity: "1" },
+        },
       },
       animation: {
         "rise-in": "rise-in 0.7s cubic-bezier(0.16, 1, 0.3, 1) both",
+        "slide-in": "slide-in 0.22s cubic-bezier(0.16, 1, 0.3, 1) both",
       },
     },
   },

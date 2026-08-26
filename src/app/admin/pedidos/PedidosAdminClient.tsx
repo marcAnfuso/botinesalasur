@@ -1,7 +1,8 @@
 "use client";
 
-import { useMemo, useState } from "react";
+import { useCallback, useMemo, useRef, useState } from "react";
 import Link from "next/link";
+import { useRouter, useSearchParams } from "next/navigation";
 import { AdminOrder, OrderStatus } from "@/types";
 import { formatPrice } from "@/lib/supabase-data";
 import {
@@ -15,6 +16,7 @@ import {
   CHANNEL_CLASSES,
 } from "@/lib/order-status";
 import { useToast } from "@/components/Toast";
+import PedidoDrawer from "./PedidoDrawer";
 
 type Filter =
   | "todos"
@@ -43,7 +45,34 @@ export default function PedidosAdminClient({
   const [orders, setOrders] = useState(initialOrders);
   const [filter, setFilter] = useState<Filter>("todos");
   const [search, setSearch] = useState("");
+  const router = useRouter();
   const [updatingId, setUpdatingId] = useState<string | null>(null);
+
+  // El pedido abierto vive en la URL (?ver=id): el link del mail cae acá con
+  // el panel ya desplegado, y "atrás" del navegador lo cierra.
+  const searchParams = useSearchParams();
+  const verId = searchParams.get("ver");
+  const abrimosNosotros = useRef(false);
+
+  const abrir = useCallback(
+    (id: string) => {
+      abrimosNosotros.current = true;
+      router.push(`/admin/pedidos?ver=${id}`, { scroll: false });
+    },
+    [router]
+  );
+  const cerrar = useCallback(() => {
+    if (abrimosNosotros.current) {
+      abrimosNosotros.current = false;
+      router.back();
+    } else {
+      router.replace("/admin/pedidos", { scroll: false });
+    }
+  }, [router]);
+  const irA = useCallback(
+    (id: string) => router.replace(`/admin/pedidos?ver=${id}`, { scroll: false }),
+    [router]
+  );
   const toast = useToast();
 
   const stats = useMemo(() => {
@@ -214,12 +243,13 @@ export default function PedidosAdminClient({
                 {/* Datos del pedido */}
                 <div className="flex-1 min-w-0">
                   <div className="flex flex-wrap items-center gap-2 mb-1">
-                    <Link
-                      href={`/admin/pedidos/${order.id}`}
-                      className="font-semibold text-white hover:text-primary transition-colors"
+                    <button
+                      type="button"
+                      onClick={() => abrir(order.id)}
+                      className="font-semibold text-white hover:text-primary transition-colors text-left"
                     >
                       {order.externalReference || order.id.slice(0, 8)}
-                    </Link>
+                    </button>
                     <span
                       className={`px-2 py-0.5 rounded text-xs font-medium ${
                         PAYMENT_STATUS_CLASSES[order.paymentStatus]
@@ -281,18 +311,33 @@ export default function PedidosAdminClient({
                       </option>
                     ))}
                   </select>
-                  <Link
-                    href={`/admin/pedidos/${order.id}`}
-                    className="px-3 py-2 rounded-lg border border-gray-700 text-sm text-gray-300 hover:text-white hover:border-gray-600 transition-colors"
-                  >
-                    Ver
-                  </Link>
+                  <button type="button" onClick={() => abrir(order.id)} className="px-3 py-2 rounded-lg border border-gray-700 text-sm text-gray-300 hover:text-white hover:border-gray-600 transition-colors">Ver</button>
                 </div>
               </div>
             </div>
           ))}
         </div>
       )}
+
+      {(() => {
+        if (!verId) return null;
+        const abierto = orders.find((o) => o.id === verId);
+        if (!abierto) return null;
+        // Anterior/siguiente recorren la lista tal como está filtrada
+        const lista = filtered;
+        const i = lista.findIndex((o) => o.id === verId);
+        return (
+          <PedidoDrawer
+            order={abierto}
+            posicion={{ indice: Math.max(0, i), total: lista.length || 1 }}
+            actualizando={updatingId === abierto.id}
+            onClose={cerrar}
+            onAnterior={i > 0 ? () => irA(lista[i - 1].id) : null}
+            onSiguiente={i >= 0 && i < lista.length - 1 ? () => irA(lista[i + 1].id) : null}
+            onCambiarEstado={(status) => changeStatus(abierto.id, status)}
+          />
+        );
+      })()}
     </div>
   );
 }

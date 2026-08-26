@@ -103,7 +103,7 @@ export function htmlNuevoPedido(d: NuevoPedidoMail): string {
   const direccion = `${d.shippingAddress}, ${d.shippingCity}, ${d.shippingProvince}`;
   const mapa = `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(direccion)}`;
   const logo = `${d.baseUrl}/images/logo-botinesalasur.png`;
-  const panel = `${d.baseUrl}/admin/pedidos/${d.orderId}`;
+  const panel = `${d.baseUrl}/admin/pedidos?ver=${d.orderId}`;
   const cuando = fechaLarga(d.paidAt || d.createdAt);
 
   const filas = d.items
@@ -293,6 +293,6 @@ TOTAL COBRADO: ${pesos(d.total)}
 
 Pago aprobado${d.paymentMethod ? ` · ${MEDIOS[d.paymentMethod] ?? "MercadoPago"}` : ""}${d.paymentId ? ` · ID ${d.paymentId}` : ""}
 
-Ver pedido en el panel: ${d.baseUrl}/admin/pedidos/${d.orderId}
+Ver pedido en el panel: ${d.baseUrl}/admin/pedidos?ver=${d.orderId}
 `;
 }

@@ -1,3 +1,4 @@
+import { Suspense } from "react";
 import { getOrders } from "@/lib/supabase-data";
 import PedidosAdminClient from "./PedidosAdminClient";
 
@@ -7,5 +8,9 @@ export const revalidate = 0;
 export default async function PedidosAdminPage() {
   const orders = await getOrders();
 
-  return <PedidosAdminClient initialOrders={orders} />;
+  return (
+    <Suspense fallback={null}>
+      <PedidosAdminClient initialOrders={orders} />
+    </Suspense>
+  );
 }
