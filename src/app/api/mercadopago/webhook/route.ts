@@ -5,8 +5,10 @@ import {
   sendNewOrderNotification,
   sendPendingPaymentEmail,
 } from "@/lib/email";
+import { verificarFirmaMercadoPago } from "@/lib/mercadopago-signature";
 
 const MP_ACCESS_TOKEN = process.env.MERCADOPAGO_ACCESS_TOKEN;
+const MP_WEBHOOK_SECRET = process.env.MERCADOPAGO_WEBHOOK_SECRET;
 
 // GET handler for webhook verification
 export async function GET() {
@@ -20,6 +22,29 @@ export async function POST(request: NextRequest) {
       method: request.method,
       url: request.url,
     });
+
+    // Con la clave secreta cargada, sólo se aceptan avisos firmados por
+    // MercadoPago. Sin la clave se sigue procesando (el pago igual se
+    // reconsulta contra la API), pero queda avisado en los logs.
+    if (MP_WEBHOOK_SECRET) {
+      const firma = verificarFirmaMercadoPago({
+        secret: MP_WEBHOOK_SECRET,
+        xSignature: request.headers.get("x-signature"),
+        xRequestId: request.headers.get("x-request-id"),
+        dataId: request.nextUrl.searchParams.get("data.id"),
+      });
+      if (!firma.valida) {
+        console.warn("Webhook rechazado:", firma.motivo);
+        return NextResponse.json(
+          { error: "Firma inválida" },
+          { status: 401 }
+        );
+      }
+    } else {
+      console.warn(
+        "MERCADOPAGO_WEBHOOK_SECRET no está configurada: se aceptan avisos sin verificar la firma"
+      );
+    }
 
     const body = await request.json();
     console.log("Webhook payload:", JSON.stringify(body, null, 2));
