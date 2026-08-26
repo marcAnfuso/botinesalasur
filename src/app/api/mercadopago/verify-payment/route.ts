@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { supabaseAdmin } from "@/lib/supabase";
 import { logEvent } from "@/lib/events-server";
+import { getShippingZones } from "@/lib/shipping";
 
 export const dynamic = "force-dynamic";
 
@@ -32,6 +33,8 @@ export async function GET(request: NextRequest) {
     }
 
     if (order && order.payment_status === "paid") {
+      const zonas = await getShippingZones();
+      const zona = zonas.find((z) => z.slug === order.shipping_zone);
       return NextResponse.json({
         verified: true,
         payment: {
@@ -43,6 +46,15 @@ export async function GET(request: NextRequest) {
           paid_at: order.paid_at,
           customer_name: order.customer_name,
           customer_email: order.customer_email,
+          // Para la pantalla de resultado: cómo pagó y a dónde va
+          payment_type: order.mp_payment_data?.payment_type_id ?? null,
+          shipping_zone_label: zona?.label ?? null,
+          items: (order.order_items || []).map((i: any) => ({
+            name: [i.product_brand, i.product_name].filter(Boolean).join(" "),
+            code: i.product_code ?? null,
+            size: i.size || i.variant_size || "",
+            quantity: i.quantity,
+          })),
         },
       });
     }

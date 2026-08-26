@@ -5,6 +5,7 @@ import Link from "next/link";
 import { formatPrice } from "@/lib/supabase-data";
 import { formatOrderDate } from "@/lib/order-status";
 import { getSessionId } from "@/lib/events";
+import { formatCodigo } from "@/lib/codigo";
 import { OrderStatus, PaymentStatus, OrderChannel } from "@/types";
 
 const WHATSAPP = "https://wa.me/message/CJPQFIY4XTSJC1";
@@ -18,7 +19,7 @@ interface Pedido {
   paidAt: string | null;
   customerName: string;
   shipping: { address: string; city: string; province: string; postalCode: string };
-  items: { name: string; size: string; quantity: number; unitPrice: number; totalPrice: number }[];
+  items: { name: string; code?: number | null; size: string; quantity: number; unitPrice: number; totalPrice: number }[];
   subtotal: number;
   shippingCost: number;
   total: number;
@@ -190,6 +191,7 @@ export default function MiPedidoClient({ refInicial }: { refInicial: string }) {
                     <div className="min-w-0">
                       <p className="text-white">{it.name}</p>
                       <p className="text-sm text-gray-400">
+                        {it.code && <span className="tnum mr-2">{formatCodigo(it.code)}</span>}
                         Talle {it.size} · {it.quantity} × {formatPrice(it.unitPrice)}
                       </p>
                     </div>

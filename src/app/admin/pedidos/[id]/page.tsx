@@ -2,6 +2,7 @@ import Link from "next/link";
 import { notFound } from "next/navigation";
 import { getOrderById, formatPrice } from "@/lib/supabase-data";
 import { getEventsForOrder } from "@/lib/events-server";
+import { formatCodigo } from "@/lib/codigo";
 import { EVENT_LABELS, EVENTOS_DE_ERROR } from "@/lib/events";
 import {
   ORDER_STATUS_LABELS,
@@ -98,6 +99,11 @@ export default async function PedidoDetallePage({
                           .join(" ")}
                       </p>
                       <p className="text-sm text-gray-400">
+                        {item.productCode && (
+                          <span className="tnum text-primary mr-2">
+                            {formatCodigo(item.productCode)}
+                          </span>
+                        )}
                         Talle {item.size} · {item.quantity} ×{" "}
                         {formatPrice(item.unitPrice)}
                       </p>

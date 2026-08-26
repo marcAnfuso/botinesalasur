@@ -75,6 +75,7 @@ export async function POST(request: NextRequest) {
         },
         items: order.items.map((i) => ({
           name: [i.productBrand, i.productName].filter(Boolean).join(" "),
+          code: i.productCode,
           size: i.size,
           quantity: i.quantity,
           unitPrice: i.unitPrice,

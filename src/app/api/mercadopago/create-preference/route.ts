@@ -8,6 +8,7 @@ const BASE_URL = process.env.NEXT_PUBLIC_BASE_URL || "https://botinesalasur.verc
 interface CartItem {
   product: {
     id: string;
+    codigo?: number | null;
     name: string;
     brand: string;
     price: number;
@@ -106,6 +107,7 @@ export async function POST(request: NextRequest) {
     const orderItems = items.map((item) => ({
       order_id: order.id,
       product_id: item.product.id,
+      product_code: item.product.codigo ?? null,
       variant_id: item.variant.id,
       product_name: item.product.name,
       product_brand: item.product.brand,

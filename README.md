@@ -42,6 +42,8 @@ En el SQL Editor de Supabase, correr **los dos archivos en este orden**:
    el panel y la columna `channel` de `orders`
 4. `supabase-migration-eventos.sql` — tabla `events` con el registro de
    actividad de compra (se ve en `/admin/actividad`)
+5. `supabase-migration-codigos.sql` — código corto por producto (`#0042`),
+   guardado también en cada ítem de pedido
 
 Sin el segundo archivo el checkout falla en cuanto alguien intenta pagar.
 

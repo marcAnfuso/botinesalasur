@@ -7,6 +7,7 @@ import { useCart } from "@/context/CartContext";
 import { formatPrice } from "@/lib/supabase-data";
 import { ShippingZone, costosPorZona } from "@/lib/shipping";
 import { track, getSessionId } from "@/lib/events";
+import { formatCodigo } from "@/lib/codigo";
 
 type PaymentMethod = "mercadopago" | "whatsapp";
 
@@ -144,7 +145,7 @@ export default function CheckoutClient({ zonas }: { zonas: ShippingZone[] }) {
     const itemsText = items
       .map(
         (item) =>
-          `- ${item.product.brand} ${item.product.name} (Talle ${item.variant.size}) x${item.quantity} = ${formatPrice(item.product.price * item.quantity)}`
+          `- ${item.product.brand} ${item.product.name}${item.product.codigo ? ` ${formatCodigo(item.product.codigo)}` : ""} (Talle ${item.variant.size}) x${item.quantity} = ${formatPrice(item.product.price * item.quantity)}`
       )
       .join("\n");
 

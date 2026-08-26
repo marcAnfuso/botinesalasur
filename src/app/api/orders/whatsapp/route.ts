@@ -3,7 +3,7 @@ import { supabaseAdmin } from "@/lib/supabase";
 import { logEvent } from "@/lib/events-server";
 
 interface CartItem {
-  product: { id: string; name: string; brand: string; price: number };
+  product: { id: string; codigo?: number | null; name: string; brand: string; price: number };
   variant: { id: string; size: string };
   quantity: number;
 }
@@ -99,6 +99,7 @@ export async function POST(request: NextRequest) {
     const orderItems = items.map((item) => ({
       order_id: orderId,
       product_id: item.product.id,
+      product_code: item.product.codigo ?? null,
       variant_id: item.variant.id,
       product_name: item.product.name,
       product_brand: item.product.brand,

@@ -10,6 +10,7 @@ import ProductCard from "@/components/ProductCard";
 import ImagenConZoom from "@/components/ImagenConZoom";
 import { ShippingZone } from "@/lib/shipping";
 import { track } from "@/lib/events";
+import { formatCodigo } from "@/lib/codigo";
 import { useToast } from "@/components/Toast";
 
 interface ProductoClientProps {
@@ -142,6 +143,11 @@ export default function ProductoClient({
             <span className="text-primary font-medium uppercase tracking-wider">
               {product.brand}
             </span>
+            {product.codigo && (
+              <span className="ml-3 text-xs tnum text-gray-500" title="Código del producto">
+                Cód. {formatCodigo(product.codigo)}
+              </span>
+            )}
             <h1 className="display text-3xl lg:text-4xl text-white mt-1.5">
               {product.name}
             </h1>

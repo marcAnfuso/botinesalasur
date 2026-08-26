@@ -25,6 +25,7 @@ function transformProduct(
 ): Product {
   return {
     id: dbProduct.id,
+    codigo: dbProduct.codigo ?? null,
     name: dbProduct.name,
     brand: dbProduct.brand,
     description: dbProduct.description,
@@ -290,6 +291,7 @@ function transformOrder(row: any): AdminOrder {
   const items = (row.order_items || []).map((item: any) => ({
     id: item.id,
     productId: item.product_id,
+    productCode: item.product_code ?? null,
     variantId: item.variant_id,
     productName: item.product_name,
     productBrand: item.product_brand || "",

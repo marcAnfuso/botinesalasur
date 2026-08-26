@@ -8,6 +8,7 @@ import { Product, Category } from "@/types";
 import { formatPrice } from "@/lib/supabase-data";
 import { BulkPriceMode, calcularPrecio } from "@/lib/bulk-price";
 import BulkPriceBar from "./BulkPriceBar";
+import { formatCodigo } from "@/lib/codigo";
 
 interface ProductosAdminClientProps {
   products: Product[];
@@ -36,7 +37,9 @@ export default function ProductosAdminClient({
         const q = searchTerm.toLowerCase();
         const matchesSearch =
           product.name.toLowerCase().includes(q) ||
-          product.brand.toLowerCase().includes(q);
+          product.brand.toLowerCase().includes(q) ||
+          formatCodigo(product.codigo).includes(q.replace(/^#?/, "#")) ||
+          String(product.codigo ?? "") === q.replace(/^#0*/, "");
         const matchesCategory =
           !selectedCategory || product.category === selectedCategory;
         const matchesStatus =
@@ -127,7 +130,7 @@ export default function ProductosAdminClient({
       <div className="bg-dark-card rounded-lg p-4 mb-4 flex flex-col sm:flex-row gap-3">
         <input
           type="search"
-          placeholder="Buscar por nombre o marca..."
+          placeholder="Buscar por nombre, marca o código (#0042)..."
           value={searchTerm}
           onChange={(e) => setSearchTerm(e.target.value)}
           className="input-field flex-1"
@@ -238,6 +241,11 @@ export default function ProductosAdminClient({
                     <div className="min-w-0 flex-1">
                       <p className="text-xs text-primary uppercase tracking-wide">
                         {product.brand}
+                        {product.codigo && (
+                          <span className="ml-2 tnum text-gray-400 normal-case tracking-normal">
+                            {formatCodigo(product.codigo)}
+                          </span>
+                        )}
                       </p>
                       <p className="font-medium text-white leading-tight line-clamp-2">
                         {product.name}
@@ -353,6 +361,11 @@ export default function ProductosAdminClient({
                           <div className="min-w-0">
                             <p className="text-xs text-primary uppercase tracking-wide">
                               {product.brand}
+                              {product.codigo && (
+                                <span className="ml-2 tnum text-gray-400 normal-case tracking-normal">
+                                  {formatCodigo(product.codigo)}
+                                </span>
+                              )}
                             </p>
                             <p className="font-medium text-white line-clamp-1">
                               {product.name}

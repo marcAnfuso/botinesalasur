@@ -235,6 +235,7 @@ function datosDeMail(order: OrderWithItems, paymentId: string) {
       productName: [item.product_brand, item.product_name]
         .filter(Boolean)
         .join(" "),
+      productCode: item.product_code ?? null,
       size: item.size || item.variant_size || "",
       quantity: item.quantity,
       unitPrice: item.unit_price,
@@ -292,6 +293,7 @@ interface OrderWithItems {
   shipping_cost: number;
   total: number;
   order_items: {
+    product_code?: number | null;
     product_name: string;
     product_brand?: string;
     size?: string;

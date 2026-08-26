@@ -1,4 +1,5 @@
 import { Resend } from "resend";
+import { formatCodigo } from "./codigo";
 
 const BASE_URL = process.env.NEXT_PUBLIC_BASE_URL || "https://botinesalasur.com.ar";
 
@@ -27,6 +28,7 @@ interface OrderEmailData {
   shippingPostalCode: string;
   items: {
     productName: string;
+    productCode?: number | null;
     size: string;
     quantity: number;
     unitPrice: number;
@@ -51,7 +53,7 @@ export async function sendOrderConfirmationEmail(data: OrderEmailData) {
       (item) => `
       <tr>
         <td style="padding: 10px; border-bottom: 1px solid #eee;">
-          ${item.productName}<br/>
+          ${item.productName}${item.productCode ? ` <span style="color:#999">(${formatCodigo(item.productCode)})</span>` : ""}<br/>
           <small style="color: #666;">Talle: ${item.size}</small>
         </td>
         <td style="padding: 10px; border-bottom: 1px solid #eee; text-align: center;">
@@ -143,7 +145,7 @@ export async function sendOrderConfirmationEmail(data: OrderEmailData) {
 Tu pedido #${data.externalReference} ha sido confirmado exitosamente.
 
 DETALLE DEL PEDIDO:
-${data.items.map((item) => `- ${item.productName} (Talle ${item.size}) x${item.quantity} = $${item.totalPrice.toLocaleString("es-AR")}`).join("\n")}
+${data.items.map((item) => `- ${item.productName}${item.productCode ? ` ${formatCodigo(item.productCode)}` : ""} (Talle ${item.size}) x${item.quantity} = $${item.totalPrice.toLocaleString("es-AR")}`).join("\n")}
 
 Subtotal: $${data.subtotal.toLocaleString("es-AR")}
 Envío: $${data.shippingCost.toLocaleString("es-AR")}
@@ -202,7 +204,7 @@ export async function sendNewOrderNotification(data: OrderEmailData) {
   const fromEmail = process.env.RESEND_FROM_EMAIL || "onboarding@resend.dev";
 
   const itemsText = data.items
-    .map((item) => `• ${item.productName} (Talle ${item.size}) x${item.quantity} = $${item.totalPrice.toLocaleString("es-AR")}`)
+    .map((item) => `• ${item.productName}${item.productCode ? ` ${formatCodigo(item.productCode)}` : ""} (Talle ${item.size}) x${item.quantity} = $${item.totalPrice.toLocaleString("es-AR")}`)
     .join("\n");
 
   const emailText = `
@@ -268,7 +270,7 @@ export async function sendPendingPaymentEmail(data: OrderEmailData) {
       (item) => `
         <tr>
           <td style="padding: 8px 0; border-bottom: 1px solid #eee;">
-            ${item.productName}${item.size ? ` — Talle ${item.size}` : ""}
+            ${item.productName}${item.productCode ? ` (${formatCodigo(item.productCode)})` : ""}${item.size ? ` — Talle ${item.size}` : ""}
             <span style="color: #666;">x${item.quantity}</span>
           </td>
           <td style="padding: 8px 0; border-bottom: 1px solid #eee; text-align: right;">

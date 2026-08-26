@@ -6,6 +6,7 @@ export interface ProductVariant {
 
 export interface Product {
   id: string;
+  codigo?: number | null;
   name: string;
   brand: string;
   description: string;
@@ -81,6 +82,7 @@ export type PaymentStatus = "pending" | "paid" | "failed" | "refunded";
 
 export interface AdminOrderItem {
   id: string;
+  productCode: number | null;
   productId: string;
   variantId: string;
   productName: string;
