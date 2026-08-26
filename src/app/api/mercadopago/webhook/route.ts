@@ -7,6 +7,7 @@ import {
 } from "@/lib/email";
 import { verificarFirmaMercadoPago } from "@/lib/mercadopago-signature";
 import { logEvent } from "@/lib/events-server";
+import { getShippingZones } from "@/lib/shipping";
 
 const MP_ACCESS_TOKEN = process.env.MERCADOPAGO_ACCESS_TOKEN;
 const MP_WEBHOOK_SECRET = process.env.MERCADOPAGO_WEBHOOK_SECRET;
@@ -130,7 +131,7 @@ async function processPayment(payment: {
   // Find order by external reference
   const { data: order, error: findError } = await supabaseAdmin
     .from("orders")
-    .select("*, order_items(*)")
+    .select("*, order_items(*, products(image_url))")
     .eq("external_reference", externalReference)
     .single();
 
@@ -206,7 +207,10 @@ async function processPayment(payment: {
   // If payment approved, update stock and send notifications
   if (status === "approved") {
     await updateStock(order.id);
-    await sendPaymentNotifications(order, paymentId);
+    await sendPaymentNotifications(order, paymentId, {
+      paymentMethod: payment.payment_type_id ?? null,
+      paidAt: payment.date_approved ?? null,
+    });
   }
 
   // Con efectivo el pago puede tardar días en acreditar. Sin este aviso el
@@ -220,8 +224,17 @@ async function processPayment(payment: {
 }
 
 // Arma el payload de mail a partir del pedido guardado.
-function datosDeMail(order: OrderWithItems, paymentId: string) {
+function datosDeMail(
+  order: OrderWithItems,
+  paymentId: string,
+  extra: { paymentMethod?: string | null; paidAt?: string | null; shippingZoneLabel?: string | null } = {}
+) {
   return {
+    notes: order.notes ?? null,
+    createdAt: order.created_at ?? null,
+    shippingZoneLabel: extra.shippingZoneLabel ?? null,
+    paymentMethod: extra.paymentMethod ?? null,
+    paidAt: extra.paidAt ?? null,
     orderId: order.id,
     externalReference: order.external_reference,
     customerName: order.customer_name,
@@ -236,6 +249,7 @@ function datosDeMail(order: OrderWithItems, paymentId: string) {
         .filter(Boolean)
         .join(" "),
       productCode: item.product_code ?? null,
+      imageUrl: item.products?.image_url ?? null,
       size: item.size || item.variant_size || "",
       quantity: item.quantity,
       unitPrice: item.unit_price,
@@ -292,8 +306,12 @@ interface OrderWithItems {
   subtotal: number;
   shipping_cost: number;
   total: number;
+  shipping_zone?: string;
+  notes?: string | null;
+  created_at?: string;
   order_items: {
     product_code?: number | null;
+    products?: { image_url?: string | null } | null;
     product_name: string;
     product_brand?: string;
     size?: string;
@@ -304,9 +322,15 @@ interface OrderWithItems {
   }[];
 }
 
-async function sendPaymentNotifications(order: OrderWithItems, paymentId: string) {
+async function sendPaymentNotifications(
+  order: OrderWithItems,
+  paymentId: string,
+  pago: { paymentMethod?: string | null; paidAt?: string | null } = {}
+) {
   try {
-    const emailData = datosDeMail(order, paymentId);
+    const zonas = await getShippingZones();
+    const zona = zonas.find((z) => z.slug === order.shipping_zone);
+    const emailData = datosDeMail(order, paymentId, { ...pago, shippingZoneLabel: zona?.label ?? null });
 
     const customerResult = await sendOrderConfirmationEmail(emailData);
     console.log("Customer email result:", customerResult);

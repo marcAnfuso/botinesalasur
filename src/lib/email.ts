@@ -1,5 +1,6 @@
 import { Resend } from "resend";
 import { formatCodigo } from "./codigo";
+import { htmlNuevoPedido, textoNuevoPedido } from "./email-templates";
 
 const BASE_URL = process.env.NEXT_PUBLIC_BASE_URL || "https://botinesalasur.com.ar";
 
@@ -29,6 +30,7 @@ interface OrderEmailData {
   items: {
     productName: string;
     productCode?: number | null;
+    imageUrl?: string | null;
     size: string;
     quantity: number;
     unitPrice: number;
@@ -38,6 +40,12 @@ interface OrderEmailData {
   shippingCost: number;
   total: number;
   paymentId?: string;
+  // Sólo los usa el aviso a la tienda
+  notes?: string | null;
+  shippingZoneLabel?: string | null;
+  paymentMethod?: string | null;
+  paidAt?: string | null;
+  createdAt?: string | null;
 }
 
 export async function sendOrderConfirmationEmail(data: OrderEmailData) {
@@ -202,34 +210,8 @@ export async function sendNewOrderNotification(data: OrderEmailData) {
   }
 
   const fromEmail = process.env.RESEND_FROM_EMAIL || "onboarding@resend.dev";
-
-  const itemsText = data.items
-    .map((item) => `• ${item.productName}${item.productCode ? ` ${formatCodigo(item.productCode)}` : ""} (Talle ${item.size}) x${item.quantity} = $${item.totalPrice.toLocaleString("es-AR")}`)
-    .join("\n");
-
-  const emailText = `
-NUEVO PEDIDO CONFIRMADO
-
-Orden: #${data.externalReference}
-ID Pago MP: ${data.paymentId || "N/A"}
-
-CLIENTE:
-Nombre: ${data.customerName}
-Email: ${data.customerEmail}
-Teléfono: ${data.customerPhone}
-
-DIRECCIÓN DE ENVÍO:
-${data.shippingAddress}
-${data.shippingCity}, ${data.shippingProvince}
-CP: ${data.shippingPostalCode}
-
-PRODUCTOS:
-${itemsText}
-
-Subtotal: $${data.subtotal.toLocaleString("es-AR")}
-Envío: $${data.shippingCost.toLocaleString("es-AR")}
-TOTAL: $${data.total.toLocaleString("es-AR")}
-`;
+  const datos = { ...data, baseUrl: BASE_URL };
+  const unidades = data.items.reduce((n, i) => n + i.quantity, 0);
 
   try {
     const resendClient = getResend();
@@ -241,8 +223,10 @@ TOTAL: $${data.total.toLocaleString("es-AR")}
     const result = await resendClient.emails.send({
       from: `Botinesala Sur <${fromEmail}>`,
       to: notificationEmail,
-      subject: `Nuevo pedido #${data.externalReference} - $${data.total.toLocaleString("es-AR")}`,
-      text: emailText,
+      // El asunto ya cuenta lo importante: cuánto, quién y cuántos pares.
+      subject: `Nueva venta · $${Math.round(data.total).toLocaleString("es-AR")} · ${data.customerName} (${unidades} ${unidades === 1 ? "par" : "pares"})`,
+      html: htmlNuevoPedido(datos),
+      text: textoNuevoPedido(datos),
     });
 
     console.log("Admin notification sent:", result);
