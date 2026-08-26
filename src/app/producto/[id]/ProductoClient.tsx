@@ -7,15 +7,21 @@ import { Product, ProductVariant } from "@/types";
 import { useCart } from "@/context/CartContext";
 import { formatPrice, categories } from "@/lib/supabase-data";
 import ProductCard from "@/components/ProductCard";
+import ImagenConZoom from "@/components/ImagenConZoom";
+import { ShippingZone } from "@/lib/shipping";
 
 interface ProductoClientProps {
   product: Product;
   relatedProducts: Product[];
+  zonas: ShippingZone[];
 }
+
+const WHATSAPP = "https://wa.me/message/CJPQFIY4XTSJC1";
 
 export default function ProductoClient({
   product,
   relatedProducts,
+  zonas,
 }: ProductoClientProps) {
   const [selectedVariant, setSelectedVariant] = useState<ProductVariant | null>(
     () => {
@@ -86,28 +92,22 @@ export default function ProductoClient({
         {/* Images */}
         <div className="space-y-4">
           {/* Main Image */}
-          <div className="relative aspect-square rounded-none overflow-hidden bg-dark-card">
-            <Image
-              src={product.imageUrl}
-              alt={product.name}
-              fill
-              className="object-cover"
-              sizes="(max-width: 1024px) 100vw, 50vw"
-              priority
-            />
+          <ImagenConZoom
+            src={product.imageUrl}
+            alt={`${product.brand} ${product.name}`}
+            priority
+          >
             {product.featured && (
-              <span className="absolute top-4 left-4 bg-primary text-white text-sm font-semibold px-3 py-1 rounded">
+              <span className="absolute top-0 left-0 bg-primary text-white label px-3 py-1.5">
                 Destacado
               </span>
             )}
             {!hasStock && (
-              <div className="absolute inset-0 bg-black/60 flex items-center justify-center">
-                <span className="bg-gray-900 text-white text-lg font-semibold px-6 py-3 rounded">
-                  Sin stock
-                </span>
-              </div>
+              <span className="absolute top-0 right-0 bg-dark/90 text-gray-300 label px-3 py-1.5 border-l border-b border-dark-line">
+                Sin stock
+              </span>
             )}
-          </div>
+          </ImagenConZoom>
 
           {/* Thumbnails (if multiple images) */}
           {product.images && product.images.length > 1 && (
@@ -283,6 +283,102 @@ export default function ProductoClient({
           </a>
         </div>
       </div>
+
+      {/* Cómo llega y cómo se paga. Sólo hechos ya confirmados: los costos
+          salen de la tabla de envíos y el resto es lo que la tienda ofrece. */}
+      <section className="mt-12 border border-dark-line bg-dark-card">
+        <div className="grid md:grid-cols-3 md:divide-x divide-y md:divide-y-0 divide-dark-line">
+          <div className="p-5">
+            <h2 className="flex items-center gap-2 font-semibold text-white">
+              <svg
+                className="w-5 h-5 text-primary shrink-0"
+                fill="none"
+                viewBox="0 0 24 24"
+                strokeWidth={1.5}
+                stroke="currentColor"
+                aria-hidden
+              >
+                <path
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  d="M8.25 18.75a1.5 1.5 0 0 1-3 0m3 0a1.5 1.5 0 0 0-3 0m3 0h6m-9 0H3.375a1.125 1.125 0 0 1-1.125-1.125V14.25m17.25 4.5a1.5 1.5 0 0 1-3 0m3 0a1.5 1.5 0 0 0-3 0m3 0h1.125c.621 0 1.129-.504 1.09-1.124a17.902 17.902 0 0 0-3.213-9.193 2.056 2.056 0 0 0-1.58-.86H14.25M16.5 18.75h-2.25m0-11.177v-.958c0-.568-.422-1.048-.987-1.106a48.554 48.554 0 0 0-10.026 0 1.106 1.106 0 0 0-.987 1.106v7.635m12-6.677v6.677m0 4.5v-4.5m0 0h-12"
+                />
+              </svg>
+              Envíos
+            </h2>
+            <dl className="mt-3 space-y-1.5 text-sm">
+              {zonas.map((z) => (
+                <div key={z.slug} className="flex justify-between gap-3">
+                  <dt className="text-gray-400">{z.label}</dt>
+                  <dd className="tnum text-white shrink-0">
+                    {z.cost === 0 ? "Sin cargo" : formatPrice(z.cost)}
+                  </dd>
+                </div>
+              ))}
+            </dl>
+            <p className="mt-3 text-xs text-gray-500">
+              La entrega se coordina con vos por WhatsApp.
+            </p>
+          </div>
+
+          <div className="p-5">
+            <h2 className="flex items-center gap-2 font-semibold text-white">
+              <svg
+                className="w-5 h-5 text-primary shrink-0"
+                fill="none"
+                viewBox="0 0 24 24"
+                strokeWidth={1.5}
+                stroke="currentColor"
+                aria-hidden
+              >
+                <path
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  d="M2.25 8.25h19.5M2.25 9h19.5m-16.5 5.25h6m-6 2.25h3m-3.75 3h15a2.25 2.25 0 0 0 2.25-2.25V6.75A2.25 2.25 0 0 0 19.5 4.5h-15a2.25 2.25 0 0 0-2.25 2.25v10.5A2.25 2.25 0 0 0 4.5 19.5Z"
+                />
+              </svg>
+              Cómo pagar
+            </h2>
+            <ul className="mt-3 space-y-1.5 text-sm text-gray-400">
+              <li>Tarjeta de crédito o débito por MercadoPago</li>
+              <li>Efectivo en Rapipago o Pago Fácil</li>
+              <li>Transferencia o efectivo, coordinando por WhatsApp</li>
+            </ul>
+          </div>
+
+          <div className="p-5">
+            <h2 className="flex items-center gap-2 font-semibold text-white">
+              <svg
+                className="w-5 h-5 text-primary shrink-0"
+                fill="none"
+                viewBox="0 0 24 24"
+                strokeWidth={1.5}
+                stroke="currentColor"
+                aria-hidden
+              >
+                <path
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  d="M13.5 21v-7.5a.75.75 0 0 1 .75-.75h3a.75.75 0 0 1 .75.75V21m-4.5 0H2.36m11.14 0H18m0 0h3.64m-1.39 0V9.349M3.75 21V9.349m0 0a3.001 3.001 0 0 0 3.75-.615A2.993 2.993 0 0 0 9.75 9.75c.896 0 1.7-.393 2.25-1.016a2.993 2.993 0 0 0 2.25 1.016c.896 0 1.7-.393 2.25-1.016a3.001 3.001 0 0 0 3.75.615m-16.5 0a3.004 3.004 0 0 1-.621-4.72l1.189-1.19A1.5 1.5 0 0 1 5.378 3h13.243a1.5 1.5 0 0 1 1.06.44l1.19 1.189a3 3 0 0 1-.621 4.72"
+                />
+              </svg>
+              Probátelo antes
+            </h2>
+            <p className="mt-3 text-sm text-gray-400">
+              Tenemos showroom en Llavallol: podés venir, probarte el par y
+              llevártelo en el momento.
+            </p>
+            <a
+              href={WHATSAPP}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="mt-3 inline-block text-sm text-primary hover:text-primary-light transition-colors"
+            >
+              Preguntanos por el talle →
+            </a>
+          </div>
+        </div>
+      </section>
 
       {/* Related Products */}
       {relatedProducts.length > 0 && (

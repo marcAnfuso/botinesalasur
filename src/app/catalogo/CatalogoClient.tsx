@@ -1,9 +1,18 @@
 "use client";
 
-import { useState, useMemo, useEffect } from "react";
+import { useState, useMemo, useEffect, useRef } from "react";
 import { useSearchParams } from "next/navigation";
 import ProductCard from "@/components/ProductCard";
 import { Product, Category } from "@/types";
+
+// "futsal" tiene que encontrar "fútsal": nadie escribe las tildes al buscar.
+function normalizar(texto: string): string {
+  return texto
+    .trim()
+    .toLowerCase()
+    .normalize("NFD")
+    .replace(/[\u0300-\u036f]/g, "");
+}
 
 interface CatalogoClientProps {
   products: Product[];
@@ -19,6 +28,9 @@ export default function CatalogoClient({
   const searchParams = useSearchParams();
   const initialCategory = searchParams.get("categoria") || "";
 
+  const [query, setQuery] = useState(searchParams.get("q") || "");
+  const inputBusqueda = useRef<HTMLInputElement>(null);
+
   const [selectedCategory, setSelectedCategory] = useState(initialCategory);
   const [selectedBrand, setSelectedBrand] = useState("");
   const [selectedSize, setSelectedSize] = useState("");
@@ -29,6 +41,12 @@ export default function CatalogoClient({
   useEffect(() => {
     const categoria = searchParams.get("categoria") || "";
     setSelectedCategory(categoria);
+    const q = searchParams.get("q");
+    if (q !== null) setQuery(q);
+    // La lupa del header manda acá pidiendo el foco en el buscador.
+    if (searchParams.get("buscar") === "1") {
+      inputBusqueda.current?.focus();
+    }
   }, [searchParams]);
 
   // Obtener todos los talles disponibles
@@ -50,6 +68,20 @@ export default function CatalogoClient({
   // Filtrar productos
   const filteredProducts = useMemo(() => {
     let filtered = products.filter((p) => p.active);
+
+    const q = normalizar(query);
+    if (q) {
+      // Cada palabra tiene que aparecer en algún lado: así "nike futsal"
+      // encuentra lo mismo escrito en cualquier orden, y sin tildes, que es
+      // como se escribe al buscar.
+      const palabras = q.split(/\s+/);
+      filtered = filtered.filter((p) => {
+        const heno = normalizar(
+          `${p.brand} ${p.name} ${p.description ?? ""}`
+        );
+        return palabras.every((w) => heno.includes(w));
+      });
+    }
 
     if (selectedCategory) {
       filtered = filtered.filter((p) => p.category === selectedCategory);
@@ -85,9 +117,10 @@ export default function CatalogoClient({
     }
 
     return filtered;
-  }, [products, selectedCategory, selectedBrand, selectedSize, sortBy]);
+  }, [products, query, selectedCategory, selectedBrand, selectedSize, sortBy]);
 
   const clearFilters = () => {
+    setQuery("");
     setSelectedCategory("");
     setSelectedBrand("");
     setSelectedSize("");
@@ -95,18 +128,60 @@ export default function CatalogoClient({
   };
 
   const hasActiveFilters =
-    selectedCategory || selectedBrand || selectedSize || sortBy !== "featured";
+    query.trim() !== "" ||
+    selectedCategory ||
+    selectedBrand ||
+    selectedSize ||
+    sortBy !== "featured";
 
   return (
     <div className="max-w-7xl mx-auto px-4 py-8">
       {/* Header */}
       <div className="mb-8">
-        <h1 className="display text-4xl md:text-5xl text-white mb-2">Catálogo</h1>
-        <p className="text-gray-400">
-          {filteredProducts.length} producto
-          {filteredProducts.length !== 1 ? "s" : ""} encontrado
-          {filteredProducts.length !== 1 ? "s" : ""}
-        </p>
+        <h1 className="display text-4xl md:text-5xl text-white mb-4">Catálogo</h1>
+
+        <div className="flex flex-col sm:flex-row sm:items-center gap-3">
+          <div className="relative sm:max-w-sm w-full">
+            <span
+              aria-hidden
+              className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-500"
+            >
+              <svg
+                className="w-4 h-4"
+                fill="none"
+                viewBox="0 0 24 24"
+                strokeWidth={1.8}
+                stroke="currentColor"
+              >
+                <path
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  d="m21 21-5.197-5.197m0 0A7.5 7.5 0 1 0 5.196 5.196a7.5 7.5 0 0 0 10.607 10.607Z"
+                />
+              </svg>
+            </span>
+            <input
+              ref={inputBusqueda}
+              type="search"
+              value={query}
+              onChange={(e) => setQuery(e.target.value)}
+              placeholder="Buscar por modelo o marca"
+              aria-label="Buscar productos"
+              className="input-field pl-9"
+            />
+          </div>
+
+          <p className="text-gray-400 text-sm sm:whitespace-nowrap">
+            {filteredProducts.length}{" "}
+            {filteredProducts.length === 1 ? "producto" : "productos"}
+            {query.trim() && (
+              <>
+                {" "}
+                para <span className="text-white">“{query.trim()}”</span>
+              </>
+            )}
+          </p>
+        </div>
       </div>
 
       <div className="flex flex-col lg:flex-row gap-8">

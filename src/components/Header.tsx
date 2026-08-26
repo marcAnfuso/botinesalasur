@@ -38,7 +38,7 @@ export default function Header() {
 
             <div className="flex items-center gap-1">
               <Link
-                href="/catalogo"
+                href="/catalogo?buscar=1"
                 className="p-2 text-gray-400 hover:text-white transition-colors"
                 aria-label="Buscar en el catálogo"
               >
