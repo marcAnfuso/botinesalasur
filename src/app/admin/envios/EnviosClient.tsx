@@ -4,6 +4,7 @@ import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { ShippingZone } from "@/lib/shipping";
 import { formatPrice } from "@/lib/supabase-data";
+import { useToast } from "@/components/Toast";
 
 export default function EnviosClient({
   zonasIniciales,
@@ -14,7 +15,7 @@ export default function EnviosClient({
   const [zonas, setZonas] = useState(zonasIniciales);
   const [guardando, setGuardando] = useState(false);
   const [error, setError] = useState("");
-  const [exito, setExito] = useState("");
+  const toast = useToast();
 
   const cambiado =
     JSON.stringify(zonas) !== JSON.stringify(zonasIniciales);
@@ -38,8 +39,6 @@ export default function EnviosClient({
 
   const guardar = async () => {
     setGuardando(true);
-    setError("");
-    setExito("");
     try {
       const res = await fetch("/api/admin/shipping", {
         method: "PATCH",
@@ -55,11 +54,10 @@ export default function EnviosClient({
       });
       const data = await res.json().catch(() => ({}));
       if (!res.ok) throw new Error(data.error || "No se pudo guardar");
-      setExito("Costos actualizados. Ya se ven en la tienda.");
+      toast.success("Costos actualizados. Ya se ven en la tienda.");
       router.refresh();
-      setTimeout(() => setExito(""), 5000);
     } catch (e) {
-      setError(e instanceof Error ? e.message : "No se pudo guardar");
+      toast.error(e instanceof Error ? e.message : "No se pudo guardar");
     } finally {
       setGuardando(false);
     }
@@ -146,17 +144,6 @@ export default function EnviosClient({
           </div>
         ))}
       </div>
-
-      {error && (
-        <p className="mt-4 text-sm text-red-400 max-w-2xl" role="alert">
-          {error}
-        </p>
-      )}
-      {exito && (
-        <p className="mt-4 text-sm text-field max-w-2xl" role="status">
-          {exito}
-        </p>
-      )}
 
       <div className="mt-6 flex items-center gap-3">
         <button

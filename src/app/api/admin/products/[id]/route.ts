@@ -1,4 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
+import { revalidarTienda } from "@/lib/revalidar";
 import { supabaseAdmin } from "@/lib/supabase";
 
 // GET - Obtener un producto por ID
@@ -20,6 +21,8 @@ export async function GET(
     .from("product_variants")
     .select("*")
     .eq("product_id", params.id);
+
+  revalidarTienda();
 
   return NextResponse.json({ ...product, variants: variants || [] });
 }
@@ -54,6 +57,8 @@ export async function PUT(
       return NextResponse.json({ error: error.message }, { status: 500 });
     }
 
+    revalidarTienda();
+
     return NextResponse.json({ success: true, product });
   } catch (error) {
     console.error("Error updating product:", error);
@@ -76,6 +81,8 @@ export async function DELETE(
     if (error) {
       return NextResponse.json({ error: error.message }, { status: 500 });
     }
+
+    revalidarTienda();
 
     return NextResponse.json({ success: true, message: "Producto desactivado" });
   } catch (error) {

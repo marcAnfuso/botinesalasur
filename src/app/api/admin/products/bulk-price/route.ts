@@ -1,4 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
+import { revalidarTienda } from "@/lib/revalidar";
 import { supabaseAdmin } from "@/lib/supabase";
 import {
   BulkPriceMode,
@@ -96,6 +97,8 @@ export async function PATCH(request: NextRequest) {
         actualizados++;
       }
     }
+
+    revalidarTienda();
 
     return NextResponse.json({
       success: fallidos.length === 0,

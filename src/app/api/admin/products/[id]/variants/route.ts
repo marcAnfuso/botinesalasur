@@ -1,4 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
+import { revalidarTienda } from "@/lib/revalidar";
 import { supabaseAdmin } from "@/lib/supabase";
 
 // GET - Obtener variantes de un producto
@@ -15,6 +16,8 @@ export async function GET(
   if (error) {
     return NextResponse.json({ error: error.message }, { status: 500 });
   }
+
+  revalidarTienda();
 
   return NextResponse.json(variants);
 }
@@ -64,6 +67,8 @@ export async function POST(
       return NextResponse.json({ error: error.message }, { status: 500 });
     }
 
+    revalidarTienda();
+
     return NextResponse.json({ success: true, variant }, { status: 201 });
   } catch (error) {
     console.error("Error creating variant:", error);
@@ -102,8 +107,11 @@ export async function PUT(
 
     const hasErrors = results.some((r) => !r.success);
     if (hasErrors) {
+      revalidarTienda();
       return NextResponse.json({ success: false, results }, { status: 207 });
     }
+
+    revalidarTienda();
 
     return NextResponse.json({ success: true, message: "Stock actualizado" });
   } catch (error) {

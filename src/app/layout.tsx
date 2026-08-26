@@ -5,6 +5,7 @@ import { CartProvider } from "@/context/CartContext";
 import SiteChrome from "@/components/SiteChrome";
 import Header from "@/components/Header";
 import Footer from "@/components/Footer";
+import { ToastProvider } from "@/components/Toast";
 
 const inter = Inter({
   subsets: ["latin"],
@@ -84,9 +85,11 @@ export default function RootLayout({
           }}
         />
         <CartProvider>
-          <SiteChrome header={<Header />} footer={<Footer />}>
-            {children}
-          </SiteChrome>
+          <ToastProvider>
+            <SiteChrome header={<Header />} footer={<Footer />}>
+              {children}
+            </SiteChrome>
+          </ToastProvider>
         </CartProvider>
       </body>
     </html>

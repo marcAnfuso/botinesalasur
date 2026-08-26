@@ -1,4 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
+import { revalidarTienda } from "@/lib/revalidar";
 import { supabaseAdmin } from "@/lib/supabase";
 
 // GET - Obtener todos los productos (para admin)
@@ -21,6 +22,8 @@ export async function GET() {
     ...product,
     variants: (variants || []).filter((v: any) => v.product_id === product.id),
   }));
+
+  revalidarTienda();
 
   return NextResponse.json(productsWithVariants);
 }
@@ -79,6 +82,8 @@ export async function POST(request: NextRequest) {
         }
       }
     }
+
+    revalidarTienda();
 
     return NextResponse.json({ success: true, product }, { status: 201 });
   } catch (error) {

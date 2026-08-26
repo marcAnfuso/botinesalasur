@@ -3,6 +3,7 @@
 import { useState } from "react";
 import { formatPrice } from "@/lib/supabase-data";
 import { BulkPriceMode } from "@/lib/bulk-price";
+import { useToast } from "@/components/Toast";
 
 interface Vista {
   nombre: string;
@@ -42,8 +43,7 @@ export default function BulkPriceBar({
   const [valor, setValor] = useState("");
   const [redondear, setRedondear] = useState(true);
   const [aplicando, setAplicando] = useState(false);
-  const [error, setError] = useState("");
-  const [exito, setExito] = useState("");
+  const toast = useToast();
 
   if (seleccionados === 0) return null;
 
@@ -57,24 +57,21 @@ export default function BulkPriceBar({
   const cerrar = () => {
     setAbierto(false);
     setValor("");
-    setError("");
   };
 
   const aplicar = async () => {
     if (!valido || aplicando) return;
     setAplicando(true);
-    setError("");
     try {
       const r = await onAplicar(mode, numero, redondear);
-      setExito(
+      const texto =
         r.fallidos > 0
           ? `${r.actualizados} actualizados, ${r.fallidos} con error`
-          : `${r.actualizados} ${r.actualizados === 1 ? "precio actualizado" : "precios actualizados"}`
-      );
+          : `${r.actualizados} ${r.actualizados === 1 ? "precio actualizado" : "precios actualizados"}`;
+      if (r.fallidos > 0) toast.error(texto); else toast.success(texto);
       cerrar();
-      setTimeout(() => setExito(""), 4000);
     } catch (e) {
-      setError(e instanceof Error ? e.message : "No se pudieron actualizar");
+      toast.error(e instanceof Error ? e.message : "No se pudieron actualizar");
     } finally {
       setAplicando(false);
     }
@@ -200,12 +197,6 @@ export default function BulkPriceBar({
                 </label>
               </div>
             </div>
-
-            {error && (
-              <p className="mt-3 text-sm text-red-400" role="alert">
-                {error}
-              </p>
-            )}
           </div>
         )}
 
@@ -215,12 +206,6 @@ export default function BulkPriceBar({
             <span className="font-semibold tnum">{seleccionados}</span>{" "}
             {seleccionados === 1 ? "seleccionado" : "seleccionados"}
           </p>
-
-          {exito && (
-            <p className="text-sm text-field" role="status">
-              {exito}
-            </p>
-          )}
 
           <div className="flex items-center gap-2 ml-auto">
             <button

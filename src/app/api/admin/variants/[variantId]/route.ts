@@ -1,4 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
+import { revalidarTienda } from "@/lib/revalidar";
 import { supabaseAdmin } from "@/lib/supabase";
 
 // PUT - Actualizar una variante específica (stock)
@@ -25,6 +26,8 @@ export async function PUT(
       return NextResponse.json({ error: error.message }, { status: 500 });
     }
 
+    revalidarTienda();
+
     return NextResponse.json({ success: true, variant });
   } catch (error) {
     console.error("Error updating variant:", error);
@@ -46,6 +49,8 @@ export async function DELETE(
     if (error) {
       return NextResponse.json({ error: error.message }, { status: 500 });
     }
+
+    revalidarTienda();
 
     return NextResponse.json({ success: true, message: "Variante eliminada" });
   } catch (error) {

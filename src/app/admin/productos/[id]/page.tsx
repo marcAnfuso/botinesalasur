@@ -6,6 +6,7 @@ import Link from "next/link";
 import Image from "next/image";
 import { categories, brands, formatPrice } from "@/lib/supabase-data";
 import { prepararImagen } from "@/lib/preparar-imagen";
+import { useToast } from "@/components/Toast";
 
 interface Variant {
   id: string;
@@ -33,7 +34,7 @@ export default function EditProductPage({ params }: { params: { id: string } }) 
   const [isSaving, setIsSaving] = useState(false);
   const [isUploading, setIsUploading] = useState(false);
   const [error, setError] = useState("");
-  const [successMessage, setSuccessMessage] = useState("");
+  const toast = useToast();
   const fileInputRef = useRef<HTMLInputElement>(null);
 
   const [formData, setFormData] = useState({
@@ -113,7 +114,7 @@ export default function EditProductPage({ params }: { params: { id: string } }) 
         });
         if (!res.ok) throw new Error("Error al eliminar");
       } catch (err) {
-        setError("Error al eliminar la variante");
+        toast.error("Error al eliminar la variante");
         return;
       }
     }
@@ -125,7 +126,6 @@ export default function EditProductPage({ params }: { params: { id: string } }) 
     e.preventDefault();
     setIsSaving(true);
     setError("");
-    setSuccessMessage("");
 
     try {
       // 1. Actualizar producto
@@ -169,7 +169,7 @@ export default function EditProductPage({ params }: { params: { id: string } }) 
         });
       }
 
-      setSuccessMessage("Producto actualizado correctamente");
+      toast.success("Producto actualizado correctamente");
 
       // Recargar variantes para obtener IDs correctos
       const res = await fetch(`/api/admin/products/${params.id}`);
@@ -178,7 +178,7 @@ export default function EditProductPage({ params }: { params: { id: string } }) 
       setOriginalVariants(product.variants || []);
 
     } catch (err: any) {
-      setError(err.message || "Error al guardar cambios");
+      toast.error(err.message || "Error al guardar cambios");
     } finally {
       setIsSaving(false);
     }
@@ -201,11 +201,10 @@ export default function EditProductPage({ params }: { params: { id: string } }) 
 
       if (!res.ok) throw new Error("Error al actualizar stock");
 
-      setSuccessMessage("Stock actualizado");
+      toast.success("Stock actualizado");
       setOriginalVariants([...variants]);
-      setTimeout(() => setSuccessMessage(""), 3000);
     } catch (err) {
-      setError("Error al actualizar stock");
+      toast.error("Error al actualizar stock");
     } finally {
       setIsSaving(false);
     }
@@ -244,14 +243,13 @@ export default function EditProductPage({ params }: { params: { id: string } }) 
 
       setFormData((prev) => ({ ...prev, image_url: data.url }));
       const kb = Math.round(preparada.file.size / 1024);
-      setSuccessMessage(
+      toast.success(
         preparada.ancho
           ? `Foto subida (${preparada.ancho}×${preparada.alto}, ${kb} KB)`
           : "Imagen subida correctamente"
       );
-      setTimeout(() => setSuccessMessage(""), 3000);
     } catch (err: any) {
-      setError(err.message || "Error al subir imagen");
+      toast.error(err.message || "Error al subir imagen");
     } finally {
       setIsUploading(false);
     }
@@ -338,11 +336,6 @@ export default function EditProductPage({ params }: { params: { id: string } }) 
       {error && (
         <div className="bg-red-500/10 border border-red-500/30 text-red-400 rounded-lg p-4 mb-6">
           {error}
-        </div>
-      )}
-      {successMessage && (
-        <div className="bg-field/10 border border-field/30 text-field rounded-lg p-4 mb-6">
-          {successMessage}
         </div>
       )}
 

@@ -5,6 +5,7 @@ import { useRouter } from "next/navigation";
 import Link from "next/link";
 import { categories, brands } from "@/lib/supabase-data";
 import { prepararImagen } from "@/lib/preparar-imagen";
+import { useToast } from "@/components/Toast";
 
 interface Variant {
   size: string;
@@ -15,6 +16,7 @@ export default function NewProductPage() {
   const router = useRouter();
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [error, setError] = useState("");
+  const toast = useToast();
   const [isUploading, setIsUploading] = useState(false);
   const [uploadMessage, setUploadMessage] = useState("");
   const [formData, setFormData] = useState({
@@ -54,7 +56,7 @@ export default function NewProductPage() {
         preparada.ancho ? `Foto subida (${preparada.ancho}×${preparada.alto}, ${kb} KB)` : "Foto subida"
       );
     } catch (err: any) {
-      setError(err.message || "No se pudo subir la foto");
+      toast.error(err.message || "No se pudo subir la foto");
     } finally {
       setIsUploading(false);
     }
@@ -128,9 +130,10 @@ export default function NewProductPage() {
         throw new Error(data.error || "Error al crear producto");
       }
 
+      toast.success("Producto creado");
       router.push("/admin/productos");
     } catch (err: any) {
-      setError(err.message || "Error al crear el producto");
+      toast.error(err.message || "Error al crear el producto");
       setIsSubmitting(false);
     }
   };

@@ -14,6 +14,7 @@ import {
   CHANNEL_LABELS,
   CHANNEL_CLASSES,
 } from "@/lib/order-status";
+import { useToast } from "@/components/Toast";
 
 type Filter =
   | "todos"
@@ -43,7 +44,7 @@ export default function PedidosAdminClient({
   const [filter, setFilter] = useState<Filter>("todos");
   const [search, setSearch] = useState("");
   const [updatingId, setUpdatingId] = useState<string | null>(null);
-  const [error, setError] = useState("");
+  const toast = useToast();
 
   const stats = useMemo(() => {
     const paid = orders.filter((o) => o.paymentStatus === "paid");
@@ -104,7 +105,6 @@ export default function PedidosAdminClient({
   const changeStatus = async (id: string, status: OrderStatus) => {
     const previous = orders;
     setUpdatingId(id);
-    setError("");
 
     // Optimista: revertimos si el server rechaza
     setOrders((prev) =>
@@ -121,11 +121,13 @@ export default function PedidosAdminClient({
       if (!res.ok) {
         const data = await res.json().catch(() => ({}));
         setOrders(previous);
-        setError(data.error || "No se pudo actualizar el pedido");
+        toast.error(data.error || "No se pudo actualizar el pedido");
+      } else {
+        toast.success(`Pedido marcado como ${ORDER_STATUS_LABELS[status].toLowerCase()}`);
       }
     } catch {
       setOrders(previous);
-      setError("Error de conexión al actualizar el pedido");
+      toast.error("Error de conexión al actualizar el pedido");
     } finally {
       setUpdatingId(null);
     }
@@ -161,12 +163,6 @@ export default function PedidosAdminClient({
           <p className="text-gray-400 text-sm mt-1">Cobrado</p>
         </div>
       </div>
-
-      {error && (
-        <div className="mb-4 bg-red-500/10 border border-red-500/30 rounded-lg p-4 text-red-400 text-sm">
-          {error}
-        </div>
-      )}
 
       {/* Filtros */}
       <div className="flex flex-col md:flex-row md:items-center gap-4 mb-6">

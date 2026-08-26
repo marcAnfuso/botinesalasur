@@ -10,6 +10,7 @@ import ProductCard from "@/components/ProductCard";
 import ImagenConZoom from "@/components/ImagenConZoom";
 import { ShippingZone } from "@/lib/shipping";
 import { track } from "@/lib/events";
+import { useToast } from "@/components/Toast";
 
 interface ProductoClientProps {
   product: Product;
@@ -32,9 +33,9 @@ export default function ProductoClient({
     }
   );
   const [quantity, setQuantity] = useState(1);
-  const [showAddedMessage, setShowAddedMessage] = useState(false);
 
   const { addItem } = useCart();
+  const toast = useToast();
 
   useEffect(() => {
     track("product_view", { productId: product.id, name: product.name, brand: product.brand });
@@ -48,8 +49,7 @@ export default function ProductoClient({
     if (!selectedVariant || selectedVariant.stock < 1) return;
 
     addItem(product, selectedVariant, quantity);
-    setShowAddedMessage(true);
-    setTimeout(() => setShowAddedMessage(false), 2000);
+    toast.success(`Agregado al carrito · talle ${selectedVariant.size}`);
   };
 
   const handleQuantityChange = (delta: number) => {
@@ -245,13 +245,6 @@ export default function ProductoClient({
                 </svg>
                 Agregar al carrito
               </button>
-
-              {/* Added Message */}
-              {showAddedMessage && (
-                <div className="bg-field/20 text-field rounded-lg p-3 text-center animate-fadeIn">
-                  ¡Producto agregado al carrito!
-                </div>
-              )}
             </div>
           )}
 
