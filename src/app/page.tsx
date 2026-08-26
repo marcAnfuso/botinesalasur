@@ -48,19 +48,20 @@ export default async function HomePage() {
       <section className="relative overflow-hidden border-b border-dark-line">
         <div className="absolute inset-0 bg-pitch" aria-hidden />
 
-        {/* La foto sangra por el borde derecho y se funde con el negro */}
-        <div className="absolute inset-y-0 right-0 w-full md:w-[58%] lg:w-[52%]">
+        {/* En escritorio la foto ocupa la columna derecha y se funde con el
+            negro. En teléfono no: ahí el texto la taparía justo donde está el
+            botín, así que baja a un bloque propio debajo del contenido. */}
+        <div className="hidden md:block absolute inset-y-0 right-0 md:w-[58%] lg:w-[52%]">
           <Image
-            src="/images/hero-botin.jpg"
-            alt="Botín apoyado sobre una pelota en el showroom"
+            src="/images/hero-banner-foto.jpg"
+            alt="Un botín blanco sostenido en la mano, con las estanterías del showroom detrás"
             fill
             priority
-            sizes="(max-width: 768px) 100vw, 55vw"
-            className="object-cover object-[70%_center]"
+            sizes="55vw"
+            className="object-cover object-[50%_42%]"
           />
-          {/* En móvil la foto queda debajo del texto: pesa más el contraste */}
           <div
-            className="absolute inset-0 bg-gradient-to-r from-dark via-dark/95 to-dark/70 md:via-dark/55 md:to-transparent"
+            className="absolute inset-0 bg-gradient-to-r from-dark via-dark/55 to-transparent"
             aria-hidden
           />
           <div
@@ -70,7 +71,7 @@ export default async function HomePage() {
         </div>
 
         <div className="relative max-w-7xl mx-auto px-4">
-          <div className="max-w-xl lg:max-w-2xl py-20 md:py-24 lg:py-28">
+          <div className="max-w-xl lg:max-w-2xl pt-10 pb-8 md:py-24 lg:py-28">
             <h1 className="display text-[clamp(2.5rem,5.6vw,4.25rem)] text-white animate-rise-in">
               Botines para
               <br />
@@ -85,8 +86,8 @@ export default async function HomePage() {
               style={{ animationDelay: "90ms" }}
             >
               Encontrá tu par en tu talle, con precios que se pueden comparar.
-              Te lo mandamos a cualquier punto del país o lo retirás en el
-              showroom de Llavallol.
+              Te lo mandamos a todo el país o lo retirás en el showroom de
+              Llavallol.
             </p>
 
             <ul
@@ -153,6 +154,27 @@ export default async function HomePage() {
               </a>
             </div>
           </div>
+        </div>
+
+        {/* Teléfono: la foto entera, sin nada encima */}
+        <div className="md:hidden relative h-[46vh] min-h-[300px] max-h-[420px]">
+          <Image
+            src="/images/hero-banner-foto.jpg"
+            alt="Un botín blanco sostenido en la mano, con las estanterías del showroom detrás"
+            fill
+            priority
+            sizes="100vw"
+            className="object-cover object-[52%_46%]"
+          />
+          {/* Sólo lo justo para fundir con el negro de arriba y de abajo */}
+          <div
+            className="absolute inset-x-0 top-0 h-20 bg-gradient-to-b from-dark to-transparent"
+            aria-hidden
+          />
+          <div
+            className="absolute inset-x-0 bottom-0 h-16 bg-gradient-to-t from-dark to-transparent"
+            aria-hidden
+          />
         </div>
       </section>
 

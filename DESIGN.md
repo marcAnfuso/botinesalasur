@@ -84,11 +84,18 @@ de foco único de 2px con offset, y subrayado de links con offset de `0.25em`.
   circular; las esquinas quedan transparentes para apoyarse sobre el negro.
 - `src/app/icon.png` (96×96) y `src/app/apple-icon.png` (180×180) — derivados del
   mismo archivo.
-- `public/images/hero-botin.jpg` — recorte de un banner generado con ChatGPT
-  (22-ago-2026). Se recortó desde x=880 del original **para excluir el logo y el
-  titular que venían quemados en la imagen**: ese logo era una recreación de la
-  IA, no el logo real, y usarlo habría puesto dos versiones distintas de la marca
-  en la misma pantalla.
+- `public/images/hero-banner-foto.jpg` — recorte (desde x=900) de un banner
+  generado con ChatGPT el 25-ago-2026, que compone una foto real del showroom
+  con tratamiento gráfico. Se recorta **para dejar afuera el logo y el titular
+  quemados en la imagen**: un texto quemado cae a 8px en un teléfono, no lo
+  indexa el buscador y no se puede editar sin regenerar la imagen. El titular
+  vive en HTML.
+  Conocido: el recorte tiene 772px de ancho, la mitad de los ~1496 que pide la
+  columna del hero en pantallas retina. Es una decisión tomada a conciencia; se
+  resuelve pidiendo el banner sin texto y en mayor resolución.
+
+  La foto original del showroom (botín rojo, 3024×4032) está en las descargas de
+  Marc y sirve de reemplazo con nitidez de sobra si hiciera falta.
 
 ## Restricciones heredadas
 
