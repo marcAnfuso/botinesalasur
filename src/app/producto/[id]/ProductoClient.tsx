@@ -312,18 +312,19 @@ export default function ProductoClient({
               </svg>
               Envíos
             </h2>
-            <dl className="mt-3 space-y-1.5 text-sm">
+            <ul className="mt-3 space-y-1.5 text-sm text-gray-400">
               {zonas.map((z) => (
-                <div key={z.slug} className="flex justify-between gap-3">
-                  <dt className="text-gray-400">{z.label}</dt>
-                  <dd className="tnum text-white shrink-0">
-                    {z.cost === 0 ? "Sin cargo" : formatPrice(z.cost)}
-                  </dd>
-                </div>
+                <li key={z.slug}>
+                  <span className="text-white">{z.label}</span>
+                  {z.description && (
+                    <span className="block text-xs text-gray-500">{z.description}</span>
+                  )}
+                </li>
               ))}
-            </dl>
+            </ul>
             <p className="mt-3 text-xs text-gray-500">
-              La entrega se coordina con vos por WhatsApp.
+              El costo del envío lo ves al finalizar la compra. La entrega se
+              coordina con vos por WhatsApp.
             </p>
           </div>
 

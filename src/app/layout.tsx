@@ -72,9 +72,10 @@ export default function RootLayout({
   estampado de camiseta. Reglas de 1px en vez de cards blandas; foto a sangre.
   STORY: el jugador reconoce su cancha, ve talle y precio sin preguntar, y
   compra online o sigue por WhatsApp.
-  FIRST VIEWPORT: titular a tres líneas a la izquierda con "fútsal, sintético y
-  fútbol 11" en rojo, tres pruebas en línea y dos acciones; a la derecha el
-  botín sobre la pelota, sangrando al borde derecho.
+  FIRST VIEWPORT: titular a dos líneas a la izquierda, "Tu próxima jugada /
+  empieza acá" con la segunda en rojo; debajo las tres canchas enlazadas, el
+  párrafo y dos acciones; a la derecha la foto del showroom, sangrando al
+  borde derecho (en teléfono, debajo del texto).
   FORM: rediseño con dirección fijada por el mockup del cliente.
   FINISH: unreviewed and undocumented is unfinished; this build ends with the
   finish review, the verdict, DESIGN.md, and every shipping raster carrying its

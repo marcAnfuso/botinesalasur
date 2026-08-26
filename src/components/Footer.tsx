@@ -1,7 +1,6 @@
 import Link from "next/link";
 import Image from "next/image";
 import { getShippingZones } from "@/lib/shipping";
-import { formatPrice } from "@/lib/supabase-data";
 
 const WHATSAPP = "https://wa.me/message/CJPQFIY4XTSJC1";
 const INSTAGRAM = "https://instagram.com/botinesalasur";
@@ -135,19 +134,19 @@ export default async function Footer() {
             </ul>
 
             <h2 className="label text-gray-500 mt-8 mb-3">Envíos</h2>
-            <dl className="space-y-1.5 text-sm">
+            <ul className="space-y-1.5 text-sm text-gray-400">
               {zonas.map((z) => (
-                <div
-                  key={z.slug}
-                  className="flex justify-between gap-4 text-gray-400"
-                >
-                  <dt>{z.label}</dt>
-                  <dd className="tnum text-gray-300">
-                    {z.cost === 0 ? "Sin cargo" : formatPrice(z.cost)}
-                  </dd>
-                </div>
+                <li key={z.slug}>
+                  {z.label}
+                  {z.description && (
+                    <span className="block text-xs text-gray-500">{z.description}</span>
+                  )}
+                </li>
               ))}
-            </dl>
+              <li className="text-xs text-gray-500 pt-1">
+                El costo lo ves al finalizar la compra.
+              </li>
+            </ul>
           </div>
         </div>
 

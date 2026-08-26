@@ -72,65 +72,45 @@ export default async function HomePage() {
 
         <div className="relative max-w-7xl mx-auto px-4">
           <div className="max-w-xl lg:max-w-2xl pt-10 pb-8 md:py-24 lg:py-28">
-            <h1 className="display text-[clamp(2.5rem,5.6vw,4.25rem)] text-white animate-rise-in">
-              Botines para
+            <h1 className="display text-[clamp(2.6rem,5.8vw,4.4rem)] text-white animate-rise-in">
+              Tu próxima jugada
               <br />
-              <span className="text-primary">
-                fútsal, sintético
-                <br />y fútbol 11
-              </span>
+              <span className="text-primary">empieza acá</span>
             </h1>
+
+            {/* Las tres canchas, enlazadas: es la puerta de entrada al catálogo */}
+            <p
+              className="mt-5 flex flex-wrap items-center gap-x-3 gap-y-1 label text-gray-300 !text-xs md:!text-sm animate-rise-in"
+              style={{ animationDelay: "60ms" }}
+            >
+              {CANCHAS.map((c, i) => (
+                <span key={c.slug} className="flex items-center gap-3">
+                  {i > 0 && (
+                    <span aria-hidden className="text-primary">
+                      ·
+                    </span>
+                  )}
+                  <Link
+                    href={`/catalogo?categoria=${c.slug}`}
+                    className="hover:text-white transition-colors"
+                  >
+                    {c.nombre}
+                  </Link>
+                </span>
+              ))}
+            </p>
 
             <p
               className="mt-6 max-w-md text-base md:text-lg text-gray-300 leading-relaxed animate-rise-in"
-              style={{ animationDelay: "90ms" }}
+              style={{ animationDelay: "120ms" }}
             >
-              Encontrá tu par en tu talle, con precios que se pueden comparar.
-              Te lo mandamos a todo el país o lo retirás en el showroom de
-              Llavallol.
+              Encontrá el par que buscás, en tu talle y al mejor precio. Enviamos
+              a todo el país o podés retirarlo en nuestro showroom de Llavallol.
             </p>
 
-            <ul
-              className="mt-8 flex flex-wrap items-center gap-x-7 gap-y-3 animate-rise-in"
-              style={{ animationDelay: "150ms" }}
-            >
-              {[
-                {
-                  texto: "Showroom en Llavallol",
-                  d: "M2.25 21h19.5m-18-18v18m10.5-18v18m6-13.5V21M6.75 6.75h.75m-.75 3h.75m-.75 3h.75m3-6h.75m-.75 3h.75m-.75 3h.75M6.75 21v-3.375c0-.621.504-1.125 1.125-1.125h2.25c.621 0 1.125.504 1.125 1.125V21M3 3h12m-.75 4.5H21m-3.75 3.75h.008v.008h-.008v-.008Zm0 3h.008v.008h-.008v-.008Zm0 3h.008v.008h-.008v-.008Z",
-                },
-                {
-                  texto: "Envíos a todo el país",
-                  d: "M8.25 18.75a1.5 1.5 0 0 1-3 0m3 0a1.5 1.5 0 0 0-3 0m3 0h6m-9 0H3.375a1.125 1.125 0 0 1-1.125-1.125V14.25m17.25 4.5a1.5 1.5 0 0 1-3 0m3 0a1.5 1.5 0 0 0-3 0m3 0h1.125c.621 0 1.129-.504 1.09-1.124a17.902 17.902 0 0 0-3.213-9.193 2.056 2.056 0 0 0-1.58-.86H14.25M16.5 18.75h-2.25m0-11.177v-.958c0-.568-.422-1.048-.987-1.106a48.554 48.554 0 0 0-10.026 0 1.106 1.106 0 0 0-.987 1.106v7.635m12-6.677v6.677m0 4.5v-4.5m0 0h-12",
-                },
-                {
-                  texto: "Atención por WhatsApp",
-                  d: "M8.625 12a.375.375 0 1 1-.75 0 .375.375 0 0 1 .75 0Zm0 0H8.25m4.125 0a.375.375 0 1 1-.75 0 .375.375 0 0 1 .75 0Zm0 0H12m4.125 0a.375.375 0 1 1-.75 0 .375.375 0 0 1 .75 0Zm0 0h-.375m-13.5 3.01c0 1.6 1.123 2.994 2.707 3.227 1.087.16 2.185.283 3.293.369V21l4.076-4.076a1.526 1.526 0 0 1 1.037-.443 48.282 48.282 0 0 0 5.68-.494c1.584-.233 2.707-1.626 2.707-3.228V6.741c0-1.602-1.123-2.995-2.707-3.228A48.394 48.394 0 0 0 12 3c-2.392 0-4.744.175-7.043.513C3.373 3.746 2.25 5.14 2.25 6.741v6.269Z",
-                },
-              ].map((item) => (
-                <li key={item.texto} className="flex items-center gap-2.5">
-                  <svg
-                    className="w-5 h-5 text-primary shrink-0"
-                    fill="none"
-                    viewBox="0 0 24 24"
-                    strokeWidth={1.5}
-                    stroke="currentColor"
-                    aria-hidden
-                  >
-                    <path
-                      strokeLinecap="round"
-                      strokeLinejoin="round"
-                      d={item.d}
-                    />
-                  </svg>
-                  <span className="text-sm text-gray-300">{item.texto}</span>
-                </li>
-              ))}
-            </ul>
-
             <div
-              className="mt-10 flex flex-wrap gap-3 animate-rise-in"
-              style={{ animationDelay: "210ms" }}
+              className="mt-9 flex flex-wrap gap-3 animate-rise-in"
+              style={{ animationDelay: "180ms" }}
             >
               <Link href="/catalogo" className="btn-primary">
                 Ver catálogo
@@ -290,7 +270,7 @@ export default async function HomePage() {
               },
               {
                 titulo: "Envíos a todo el país",
-                texto: "Por moto en GBA Sur y por correo al resto.",
+                texto: "Motomensajería / Correo",
                 d: "M8.25 18.75a1.5 1.5 0 0 1-3 0m3 0a1.5 1.5 0 0 0-3 0m3 0h6m-9 0H3.375a1.125 1.125 0 0 1-1.125-1.125V14.25m17.25 4.5a1.5 1.5 0 0 1-3 0m3 0a1.5 1.5 0 0 0-3 0m3 0h1.125c.621 0 1.129-.504 1.09-1.124a17.902 17.902 0 0 0-3.213-9.193 2.056 2.056 0 0 0-1.58-.86H14.25M16.5 18.75h-2.25m0-11.177v-.958c0-.568-.422-1.048-.987-1.106a48.554 48.554 0 0 0-10.026 0 1.106 1.106 0 0 0-.987 1.106v7.635m12-6.677v6.677m0 4.5v-4.5m0 0h-12",
               },
               {

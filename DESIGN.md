@@ -55,8 +55,12 @@ CTA principal, categoría activa). Nunca se usa como fondo de superficies grande
   grises al 45%, no con un velo encima.
 - **Reglas:** `.rule-chalk` es el separador de sección — 44px de rojo y el resto
   en gris de línea. Reemplaza al borde neutro.
-- **Sin kicker ni eyebrow** sobre los títulos. El titular carga solo; las pruebas
-  (showroom, envíos, WhatsApp) van debajo como lista con íconos.
+- **Sin kicker ni eyebrow** sobre los títulos. El titular carga solo; debajo va
+  la línea de canchas enlazadas y el párrafo. Las pruebas con íconos viven en la
+  banda de beneficios, no en el hero.
+- **Los precios de envío no se muestran fuera del checkout** (pedido de la
+  tienda): footer y página de producto listan las zonas y aclaran que el costo
+  se ve al finalizar la compra.
 
 ## Motion
 
