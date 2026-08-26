@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { supabaseAdmin } from "@/lib/supabase";
+import { logEvent } from "@/lib/events-server";
 
 export const dynamic = "force-dynamic";
 
@@ -51,6 +52,10 @@ export async function GET(request: NextRequest) {
       const mpPayment = await verifyWithMercadoPago(paymentId);
 
       if (mpPayment && mpPayment.status === "approved") {
+        await logEvent("payment_verified", {
+          ref: order?.external_reference ?? externalReference ?? null,
+          details: { paymentId, origen: "verify-payment", teniaOrden: Boolean(order) },
+        });
         // Update our database
         if (order) {
           await supabaseAdmin

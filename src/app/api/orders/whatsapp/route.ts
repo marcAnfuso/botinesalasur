@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { supabaseAdmin } from "@/lib/supabase";
+import { logEvent } from "@/lib/events-server";
 
 interface CartItem {
   product: { id: string; name: string; brand: string; price: number };
@@ -22,6 +23,7 @@ interface WhatsAppOrder {
   };
   shippingCost: number;
   total: number;
+  sessionId?: string;
 }
 
 function generarReferencia(): string {
@@ -34,7 +36,7 @@ function generarReferencia(): string {
 export async function POST(request: NextRequest) {
   try {
     const data: WhatsAppOrder = await request.json();
-    const { items, customer, shippingCost, total } = data;
+    const { items, customer, shippingCost, total, sessionId } = data;
 
     if (!items || items.length === 0) {
       return NextResponse.json(
@@ -85,6 +87,7 @@ export async function POST(request: NextRequest) {
 
     if (creada.error || !creada.data) {
       console.error("Error creating WhatsApp order:", creada.error);
+      await logEvent("whatsapp_order_failed", { sessionId, details: { paso: "orden", error: creada.error?.message } });
       return NextResponse.json(
         { error: "No se pudo registrar el pedido" },
         { status: 500 }
@@ -113,12 +116,19 @@ export async function POST(request: NextRequest) {
     if (errorItems) {
       // Sin items el pedido no sirve para nada: se revierte.
       console.error("Error creating WhatsApp order items:", errorItems);
+      await logEvent("whatsapp_order_failed", { ref: externalReference, sessionId, details: { paso: "items", error: errorItems.message } });
       await supabaseAdmin.from("orders").delete().eq("id", orderId);
       return NextResponse.json(
         { error: "No se pudo registrar el pedido" },
         { status: 500 }
       );
     }
+
+    await logEvent("whatsapp_order_created", {
+      ref: externalReference,
+      sessionId,
+      details: { total, items: items.length },
+    });
 
     return NextResponse.json({
       success: true,

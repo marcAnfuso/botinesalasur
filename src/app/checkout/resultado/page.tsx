@@ -2,6 +2,7 @@
 
 import { Suspense, useEffect, useState } from "react";
 import { useCart } from "@/context/CartContext";
+import { track } from "@/lib/events";
 import { useSearchParams } from "next/navigation";
 import Link from "next/link";
 
@@ -49,6 +50,7 @@ function CheckoutResultContent() {
   useEffect(() => {
     async function verifyPayment() {
       if (!externalRef && !paymentId) {
+        track("result_view", { status, verified: false, sinReferencia: true });
         setLoading(false);
         return;
       }
@@ -61,6 +63,8 @@ function CheckoutResultContent() {
         const response = await fetch(`/api/mercadopago/verify-payment?${params}`);
         const data = await response.json();
         setResult(data);
+
+        track("result_view", { status, verified: Boolean(data?.verified) }, externalRef);
 
         // Recién acá se vacía: el pago ya salió, y si hubiera fallado el
         // cliente conserva su carrito para reintentar.
@@ -129,6 +133,14 @@ function CheckoutResultContent() {
           )}
 
           <div className="space-y-4">
+            {externalRef && (
+              <Link
+                href={`/mi-pedido?ref=${externalRef}`}
+                className="btn-primary"
+              >
+                Ver mi pedido
+              </Link>
+            )}
             <Link href="/catalogo" className="btn-primary w-full block text-center">
               Seguir comprando
             </Link>
@@ -227,6 +239,14 @@ function CheckoutResultContent() {
           </p>
 
           <div className="space-y-4">
+            {externalRef && (
+              <Link
+                href={`/mi-pedido?ref=${externalRef}`}
+                className="btn-primary"
+              >
+                Ver mi pedido
+              </Link>
+            )}
             <Link href="/catalogo" className="btn-primary w-full block text-center">
               Seguir comprando
             </Link>

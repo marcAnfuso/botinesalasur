@@ -6,6 +6,7 @@ import {
   sendPendingPaymentEmail,
 } from "@/lib/email";
 import { verificarFirmaMercadoPago } from "@/lib/mercadopago-signature";
+import { logEvent } from "@/lib/events-server";
 
 const MP_ACCESS_TOKEN = process.env.MERCADOPAGO_ACCESS_TOKEN;
 const MP_WEBHOOK_SECRET = process.env.MERCADOPAGO_WEBHOOK_SECRET;
@@ -35,6 +36,7 @@ export async function POST(request: NextRequest) {
       });
       if (!firma.valida) {
         console.warn("Webhook rechazado:", firma.motivo);
+        await logEvent("webhook_rejected", { details: { motivo: firma.motivo } });
         return NextResponse.json(
           { error: "Firma inválida" },
           { status: 401 }
@@ -54,6 +56,7 @@ export async function POST(request: NextRequest) {
     const resourceId = body.data?.id || body.id;
 
     console.log("Processing notification:", { topic, resourceId });
+    await logEvent("webhook_received", { details: { topic, resourceId } });
 
     // Only process payment notifications
     if ((topic === "payment" || topic === "merchant_order") && resourceId) {
@@ -133,6 +136,7 @@ async function processPayment(payment: {
 
   if (findError || !order) {
     console.error("Order not found:", { externalReference, error: findError });
+    await logEvent("webhook_order_not_found", { ref: externalReference || null, details: { paymentId, status } });
     return;
   }
 
@@ -193,6 +197,10 @@ async function processPayment(payment: {
     orderId: order.id,
     paymentStatus,
     orderStatus,
+  });
+  await logEvent("webhook_payment", {
+    ref: externalReference,
+    details: { paymentId, mpStatus: status, detail: payment.status_detail ?? null, paymentStatus, orderStatus, amount },
   });
 
   // If payment approved, update stock and send notifications

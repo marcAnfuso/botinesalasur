@@ -38,6 +38,10 @@ En el SQL Editor de Supabase, correr **los dos archivos en este orden**:
 2. `supabase-migration-mercadopago.sql` — columnas de pago en `orders`, las
    columnas `size` y `total_price` en `order_items`, la función
    `decrement_stock` que usa el webhook, y el estado `confirmed`
+3. `supabase-migration-envios.sql` — tabla de costos de envío editable desde
+   el panel y la columna `channel` de `orders`
+4. `supabase-migration-eventos.sql` — tabla `events` con el registro de
+   actividad de compra (se ve en `/admin/actividad`)
 
 Sin el segundo archivo el checkout falla en cuanto alguien intenta pagar.
 

@@ -1,6 +1,7 @@
 "use client";
 
 import { createContext, useContext, useEffect, useState, ReactNode } from "react";
+import { track } from "@/lib/events";
 import { Product, ProductVariant, CartItem, CartState } from "@/types";
 
 const CartContext = createContext<CartState | undefined>(undefined);
@@ -32,6 +33,7 @@ export function CartProvider({ children }: { children: ReactNode }) {
   }, [items, isHydrated]);
 
   const addItem = (product: Product, variant: ProductVariant, quantity: number = 1) => {
+    track("cart_add", { productId: product.id, name: product.name, brand: product.brand, size: variant.size, quantity });
     setItems((currentItems) => {
       const existingIndex = currentItems.findIndex(
         (item) => item.product.id === product.id && item.variant.id === variant.id
@@ -50,6 +52,7 @@ export function CartProvider({ children }: { children: ReactNode }) {
   };
 
   const removeItem = (productId: string, variantId: string) => {
+    track("cart_remove", { productId, variantId });
     setItems((currentItems) =>
       currentItems.filter(
         (item) => !(item.product.id === productId && item.variant.id === variantId)
@@ -58,6 +61,7 @@ export function CartProvider({ children }: { children: ReactNode }) {
   };
 
   const updateQuantity = (productId: string, variantId: string, quantity: number) => {
+    track("cart_update", { productId, variantId, quantity });
     if (quantity < 1) {
       removeItem(productId, variantId);
       return;
@@ -74,6 +78,7 @@ export function CartProvider({ children }: { children: ReactNode }) {
   };
 
   const clearCart = () => {
+    track("cart_clear");
     setItems([]);
   };
 

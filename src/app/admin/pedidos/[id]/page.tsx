@@ -1,6 +1,8 @@
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import { getOrderById, formatPrice } from "@/lib/supabase-data";
+import { getEventsForOrder } from "@/lib/events-server";
+import { EVENT_LABELS, EVENTOS_DE_ERROR } from "@/lib/events";
 import {
   ORDER_STATUS_LABELS,
   ORDER_STATUS_CLASSES,
@@ -24,6 +26,9 @@ export default async function PedidoDetallePage({
   }
 
   const { customer } = order;
+  const actividad = order.externalReference
+    ? await getEventsForOrder(order.externalReference)
+    : [];
   const zoneLabel =
     customer.shippingZone === "gba-sur" ? "GBA Sur" : "Todo el país";
 
@@ -224,6 +229,59 @@ export default async function PedidoDetallePage({
           </div>
         </div>
       </div>
+
+      {/* Qué pasó con este pedido, paso a paso: sirve para responder
+          "me cobraron y no me llegó nada" mirando dónde se cortó. */}
+      <section className="mt-6 bg-dark-card rounded-xl border border-dark-line overflow-hidden">
+        <div className="p-6 border-b border-dark-line flex items-center justify-between gap-4">
+          <h2 className="font-semibold text-white">Actividad</h2>
+          {order.externalReference && (
+            <Link
+              href={`/admin/actividad?q=${encodeURIComponent(order.externalReference)}`}
+              className="text-sm text-gray-400 hover:text-primary transition-colors"
+            >
+              Ver en Actividad →
+            </Link>
+          )}
+        </div>
+        {actividad.length === 0 ? (
+          <p className="p-6 text-sm text-gray-400">
+            No hay actividad registrada para este pedido. Los pedidos anteriores
+            al registro no la tienen; si es reciente, falta correr
+            supabase-migration-eventos.sql.
+          </p>
+        ) : (
+          <ol className="divide-y divide-dark-line">
+            {actividad.map((ev) => {
+              const esError = EVENTOS_DE_ERROR.includes(ev.event);
+              const detalle = ev.details
+                ? Object.entries(ev.details)
+                    .filter(([, v]) => v !== null && v !== "" && v !== undefined)
+                    .map(([k, v]) => `${k}: ${typeof v === "object" ? JSON.stringify(v) : String(v)}`)
+                    .join(" · ")
+                : "";
+              return (
+                <li key={ev.id} className="px-6 py-3 grid gap-1 sm:grid-cols-[150px_1fr] sm:gap-4">
+                  <span className="text-xs text-gray-500 tnum">
+                    {formatOrderDate(ev.createdAt)}
+                  </span>
+                  <div className="min-w-0">
+                    <span className={`text-sm font-medium ${esError ? "text-red-400" : "text-white"}`}>
+                      {EVENT_LABELS[ev.event] ?? ev.event}
+                    </span>
+                    <span className="ml-2 text-[10px] uppercase tracking-wide text-gray-600">
+                      {ev.source === "server" ? "servidor" : "navegador"}
+                    </span>
+                    {detalle && (
+                      <p className="mt-0.5 text-xs text-gray-400 break-words">{detalle}</p>
+                    )}
+                  </div>
+                </li>
+              );
+            })}
+          </ol>
+        )}
+      </section>
     </div>
   );
 }

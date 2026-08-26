@@ -1,11 +1,12 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import Image from "next/image";
 import Link from "next/link";
 import { useCart } from "@/context/CartContext";
 import { formatPrice } from "@/lib/supabase-data";
 import { ShippingZone, costosPorZona } from "@/lib/shipping";
+import { track, getSessionId } from "@/lib/events";
 
 type PaymentMethod = "mercadopago" | "whatsapp";
 
@@ -32,6 +33,13 @@ export default function CheckoutClient({ zonas }: { zonas: ShippingZone[] }) {
   const zonaElegida = zonas.find((z) => z.slug === formData.shippingZone);
   const total = subtotal + shippingCost;
 
+  useEffect(() => {
+    if (items.length > 0) {
+      track("checkout_view", { items: items.length, subtotal });
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
+
   const handleChange = (
     e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement>
   ) => {
@@ -42,6 +50,12 @@ export default function CheckoutClient({ zonas }: { zonas: ShippingZone[] }) {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setIsSubmitting(true);
+    track("checkout_submit", {
+      method: paymentMethod,
+      items: items.length,
+      total,
+      zona: formData.shippingZone,
+    });
 
     if (paymentMethod === "mercadopago") {
       await handleMercadoPago();
@@ -68,15 +82,19 @@ export default function CheckoutClient({ zonas }: { zonas: ShippingZone[] }) {
           customer: { ...formData, shippingZoneLabel: zonaElegida?.label },
           shippingCost,
           total,
+          sessionId: getSessionId(),
         }),
       });
 
       const data = await response.json();
 
       if (!response.ok) {
+        track("checkout_error", { method: "mercadopago", status: response.status, error: data.error });
         alert(data.error || "Error al procesar el pago");
         return;
       }
+
+      track("checkout_redirect", { preferenceId: data.preference_id }, data.external_reference);
 
       // El carrito NO se vacía acá: si abandona el pago o lo rechazan,
       // volver con el carrito vacío lo obliga a rearmar todo justo cuando
@@ -85,6 +103,7 @@ export default function CheckoutClient({ zonas }: { zonas: ShippingZone[] }) {
       window.location.href = data.init_point;
     } catch (error) {
       console.error("Error:", error);
+      track("checkout_error", { method: "mercadopago", error: String(error) });
       alert("Error al conectar con MercadoPago. Por favor intenta de nuevo.");
     }
   };
@@ -106,15 +125,20 @@ export default function CheckoutClient({ zonas }: { zonas: ShippingZone[] }) {
           customer: formData,
           shippingCost,
           total,
+          sessionId: getSessionId(),
         }),
       });
       const data = await res.json();
       if (res.ok) referencia = data.externalReference;
-      else console.error("No se pudo registrar el pedido:", data.error);
+      else {
+        console.error("No se pudo registrar el pedido:", data.error);
+        track("checkout_error", { method: "whatsapp", status: res.status, error: data.error });
+      }
     } catch (error) {
       // Un fallo al registrar no puede costarle la venta al negocio:
       // se sigue al chat igual y queda el aviso en los logs.
       console.error("Error registrando el pedido de WhatsApp:", error);
+      track("checkout_error", { method: "whatsapp", error: String(error) });
     }
 
     const itemsText = items
@@ -143,10 +167,11 @@ ${itemsText}
 *Envío:* ${formatPrice(shippingCost)}
 *TOTAL:* ${formatPrice(total)}
 
-${formData.notes ? `*Notas:* ${formData.notes}` : ""}`;
+${formData.notes ? `*Notas:* ${formData.notes}` : ""}${referencia ? `\n\nSeguí tu pedido: ${window.location.origin}/mi-pedido?ref=${referencia}` : ""}`;
 
     const whatsappUrl = `https://wa.me/message/CJPQFIY4XTSJC1?text=${encodeURIComponent(message)}`;
 
+    track("whatsapp_open", {}, referencia || null);
     clearCart();
     window.open(whatsappUrl, "_blank");
   };

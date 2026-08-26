@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { supabaseAdmin } from "@/lib/supabase";
+import { logEvent } from "@/lib/events-server";
 
 const MP_ACCESS_TOKEN = process.env.MERCADOPAGO_ACCESS_TOKEN;
 const BASE_URL = process.env.NEXT_PUBLIC_BASE_URL || "https://botinesalasur.vercel.app";
@@ -35,6 +36,7 @@ interface CheckoutData {
   };
   shippingCost: number;
   total: number;
+  sessionId?: string;
 }
 
 function generateExternalReference(): string {
@@ -54,7 +56,7 @@ export async function POST(request: NextRequest) {
     }
 
     const data: CheckoutData = await request.json();
-    const { items, customer, shippingCost, total } = data;
+    const { items, customer, shippingCost, total, sessionId } = data;
 
     if (!items || items.length === 0) {
       return NextResponse.json(
@@ -91,6 +93,7 @@ export async function POST(request: NextRequest) {
 
     if (orderError) {
       console.error("Error creating order:", orderError);
+      await logEvent("preference_failed", { sessionId, details: { paso: "orden", error: orderError.message } });
       return NextResponse.json(
         { error: "Error al crear la orden" },
         { status: 500 }
@@ -122,6 +125,7 @@ export async function POST(request: NextRequest) {
       // stock nor list the products in the emails. Roll the order back
       // instead of sending the customer to pay for an empty order.
       console.error("Error creating order items:", itemsError);
+      await logEvent("preference_failed", { ref: externalReference, sessionId, details: { paso: "items", error: itemsError.message } });
       await supabaseAdmin.from("orders").delete().eq("id", order.id);
       return NextResponse.json(
         { error: "Error al crear la orden" },
@@ -195,6 +199,11 @@ export async function POST(request: NextRequest) {
     const mpData = await mpResponse.json();
 
     if (!mpResponse.ok) {
+      await logEvent("preference_failed", {
+        ref: externalReference,
+        sessionId,
+        details: { paso: "mercadopago", status: mpResponse.status, error: mpData?.message ?? mpData?.error ?? null },
+      });
       console.error("MercadoPago API error:", mpData);
       return NextResponse.json(
         { error: "Error al crear preferencia de pago", details: mpData.message },
@@ -213,6 +222,17 @@ export async function POST(request: NextRequest) {
       external_reference: externalReference,
       init_point: mpData.init_point,
     });
+
+    await logEvent("preference_created", {
+
+      ref: externalReference,
+
+      sessionId,
+
+      details: { total, items: items.length, preferenceId: mpData.id },
+
+    });
+
 
     return NextResponse.json({
       success: true,

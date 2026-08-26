@@ -124,6 +124,14 @@ export default async function Footer() {
                   @botinesalasur
                 </a>
               </li>
+              <li>
+                <Link
+                  href="/mi-pedido"
+                  className="text-gray-400 hover:text-primary transition-colors"
+                >
+                  Seguir mi pedido
+                </Link>
+              </li>
             </ul>
 
             <h2 className="label text-gray-500 mt-8 mb-3">Envíos</h2>

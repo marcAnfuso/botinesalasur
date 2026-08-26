@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import Image from "next/image";
 import Link from "next/link";
 import { Product, ProductVariant } from "@/types";
@@ -9,6 +9,7 @@ import { formatPrice, categories } from "@/lib/supabase-data";
 import ProductCard from "@/components/ProductCard";
 import ImagenConZoom from "@/components/ImagenConZoom";
 import { ShippingZone } from "@/lib/shipping";
+import { track } from "@/lib/events";
 
 interface ProductoClientProps {
   product: Product;
@@ -34,6 +35,11 @@ export default function ProductoClient({
   const [showAddedMessage, setShowAddedMessage] = useState(false);
 
   const { addItem } = useCart();
+
+  useEffect(() => {
+    track("product_view", { productId: product.id, name: product.name, brand: product.brand });
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [product.id]);
 
   const hasStock = product.variants.some((v) => v.stock > 0);
   const category = categories.find((c) => c.slug === product.category);

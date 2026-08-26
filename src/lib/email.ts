@@ -1,5 +1,7 @@
 import { Resend } from "resend";
 
+const BASE_URL = process.env.NEXT_PUBLIC_BASE_URL || "https://botinesalasur.com.ar";
+
 // Lazy initialization to avoid build-time errors
 let resend: Resend | null = null;
 
@@ -117,6 +119,10 @@ export async function sendOrderConfirmationEmail(data: OrderEmailData) {
       </p>
 
       <div style="text-align: center; margin-top: 30px; padding: 20px; background: #f8f8f8; border-radius: 8px;">
+        <p style="margin: 0 0 16px 0;">
+          <a href="${BASE_URL}/mi-pedido?ref=${data.externalReference}" style="color: #DC2626;">Seguí tu pedido en la web</a>
+          <span style="color: #999;"> — con la referencia y este mail</span>
+        </p>
         <p style="margin: 0 0 10px 0;">¿Tenés alguna consulta?</p>
         <a href="https://wa.me/message/CJPQFIY4XTSJC1" style="display: inline-block; background: #25D366; color: white; padding: 12px 24px; border-radius: 6px; text-decoration: none;">
           Contactanos por WhatsApp
@@ -147,6 +153,8 @@ DIRECCIÓN DE ENVÍO:
 ${data.shippingAddress}
 ${data.shippingCity}, ${data.shippingProvince}
 CP: ${data.shippingPostalCode}
+
+Seguí tu pedido: ${BASE_URL}/mi-pedido?ref=${data.externalReference}
 
 ¿Tenés alguna consulta? Contactanos por WhatsApp:
 https://wa.me/message/CJPQFIY4XTSJC1
@@ -305,6 +313,9 @@ export async function sendPendingPaymentEmail(data: OrderEmailData) {
       </table>
 
       <div style="text-align: center; margin-top: 24px; padding-top: 16px; border-top: 1px solid #eee; color: #666;">
+        <p style="margin: 0 0 16px 0;">
+          <a href="${BASE_URL}/mi-pedido?ref=${data.externalReference}" style="color: #DC2626;">Ver el estado de tu pedido</a>
+        </p>
         <p style="margin: 0 0 10px 0;">¿Alguna duda con el pago?</p>
         <a href="https://wa.me/message/CJPQFIY4XTSJC1" style="color: #DC2626;">
           Escribinos por WhatsApp
@@ -323,6 +334,7 @@ Anotamos tu pedido #${data.externalReference}, pero todavía no nos figura el pa
 Si elegiste pagar en efectivo por Rapipago o Pago Fácil, completá el pago con el cupón que te dio MercadoPago. La acreditación puede tardar hasta 3 días hábiles.
 
 Te avisamos por mail apenas se acredite.
+Estado del pedido: ${BASE_URL}/mi-pedido?ref=${data.externalReference}
 
 Total: $${data.total.toLocaleString("es-AR")}
 

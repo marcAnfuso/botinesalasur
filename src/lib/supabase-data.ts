@@ -375,3 +375,22 @@ export async function updateOrderStatus(
   }
   return true;
 }
+
+// Consulta pública de un pedido: referencia y mail tienen que coincidir.
+// El mail se compara sin distinguir mayúsculas; % y _ se escapan porque
+// ilike los tomaría como comodines.
+export async function getOrderForCustomer(
+  ref: string,
+  email: string
+): Promise<AdminOrder | null> {
+  const mail = email.trim().replace(/[%_\\]/g, (c) => "\\" + c);
+  const { data, error } = await supabaseAdmin
+    .from("orders")
+    .select("*, order_items(*)")
+    .eq("external_reference", ref.trim().toUpperCase())
+    .ilike("customer_email", mail)
+    .maybeSingle();
+
+  if (error || !data) return null;
+  return transformOrder(data);
+}
