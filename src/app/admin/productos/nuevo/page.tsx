@@ -4,6 +4,7 @@ import { useState } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
 import { categories, brands } from "@/lib/supabase-data";
+import { prepararImagen } from "@/lib/preparar-imagen";
 
 interface Variant {
   size: string;
@@ -14,6 +15,8 @@ export default function NewProductPage() {
   const router = useRouter();
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [error, setError] = useState("");
+  const [isUploading, setIsUploading] = useState(false);
+  const [uploadMessage, setUploadMessage] = useState("");
   const [formData, setFormData] = useState({
     name: "",
     brand: "",
@@ -32,6 +35,42 @@ export default function NewProductPage() {
     { size: "43", stock: 0 },
     { size: "44", stock: 0 },
   ]);
+
+  const handleImageUpload = async (file: File) => {
+    setIsUploading(true);
+    setError("");
+    setUploadMessage("");
+    try {
+      // Las fotos de celular se achican acá antes de viajar.
+      const preparada = await prepararImagen(file);
+      const body = new FormData();
+      body.append("file", preparada.file);
+      const res = await fetch("/api/admin/upload", { method: "POST", body });
+      const data = await res.json();
+      if (!res.ok) throw new Error(data.error || "No se pudo subir la foto");
+      setFormData((prev) => ({ ...prev, image_url: data.url }));
+      const kb = Math.round(preparada.file.size / 1024);
+      setUploadMessage(
+        preparada.ancho ? `Foto subida (${preparada.ancho}×${preparada.alto}, ${kb} KB)` : "Foto subida"
+      );
+    } catch (err: any) {
+      setError(err.message || "No se pudo subir la foto");
+    } finally {
+      setIsUploading(false);
+    }
+  };
+
+  const handleFileSelect = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (file) handleImageUpload(file);
+    e.target.value = "";
+  };
+
+  const handleDrop = (e: React.DragEvent) => {
+    e.preventDefault();
+    const file = e.dataTransfer.files?.[0];
+    if (file) handleImageUpload(file);
+  };
 
   const handleChange = (
     e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement>
@@ -228,21 +267,84 @@ export default function NewProductPage() {
             </div>
 
             <div>
-              <label className="block text-sm font-medium text-gray-400 mb-1">
-                URL de imagen *
+              <label className="block text-sm font-medium text-gray-400 mb-2">
+                Foto del producto
               </label>
-              <input
-                type="text"
-                inputMode="url"
-                name="image_url"
-                value={formData.image_url}
-                onChange={handleChange}
-                className="input-field"
-                placeholder="https://ejemplo.com/imagen.jpg (opcional)"
-              />
-              <p className="text-xs text-gray-500 mt-1">
-                Podés subir la imagen a Imgur, Cloudinary o usar el link de Google Drive
-              </p>
+
+              {formData.image_url ? (
+                <div className="flex items-center gap-4 mb-3">
+                  {/* eslint-disable-next-line @next/next/no-img-element */}
+                  <img
+                    src={formData.image_url}
+                    alt=""
+                    className="w-24 h-24 object-cover rounded border border-dark-line bg-dark"
+                  />
+                  <div className="text-sm">
+                    {uploadMessage && <p className="text-field">{uploadMessage}</p>}
+                    <button
+                      type="button"
+                      onClick={() => {
+                        setFormData((prev) => ({ ...prev, image_url: "" }));
+                        setUploadMessage("");
+                      }}
+                      className="mt-1 text-gray-400 hover:text-white transition-colors"
+                    >
+                      Cambiar foto
+                    </button>
+                  </div>
+                </div>
+              ) : (
+                <label
+                  onDragOver={(e) => e.preventDefault()}
+                  onDrop={handleDrop}
+                  className={`flex flex-col items-center justify-center gap-2 border-2 border-dashed border-dark-line rounded-lg px-4 py-8 text-center cursor-pointer hover:border-gray-500 transition-colors ${
+                    isUploading ? "opacity-60 pointer-events-none" : ""
+                  }`}
+                >
+                  <input
+                    type="file"
+                    accept="image/*"
+                    onChange={handleFileSelect}
+                    className="sr-only"
+                    disabled={isUploading}
+                  />
+                  <svg
+                    className="w-7 h-7 text-gray-500"
+                    fill="none"
+                    viewBox="0 0 24 24"
+                    strokeWidth={1.5}
+                    stroke="currentColor"
+                    aria-hidden
+                  >
+                    <path
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                      d="M3 16.5v2.25A2.25 2.25 0 0 0 5.25 21h13.5A2.25 2.25 0 0 0 21 18.75V16.5m-13.5-9L12 3m0 0 4.5 4.5M12 3v13.5"
+                    />
+                  </svg>
+                  <span className="text-gray-300">
+                    {isUploading ? "Subiendo..." : "Tocá para elegir una foto o arrastrala acá"}
+                  </span>
+                  <span className="text-xs text-gray-500">
+                    Desde el celular podés sacarla en el momento. Se achica sola antes de subir.
+                  </span>
+                </label>
+              )}
+
+              <details className="mt-3">
+                <summary className="text-xs text-gray-500 cursor-pointer hover:text-gray-300">
+                  O pegar la dirección de una imagen que ya está en internet
+                </summary>
+                <input
+                  type="text"
+                  inputMode="url"
+                  name="image_url"
+                  value={formData.image_url}
+                  onChange={handleChange}
+                  className="input-field mt-2"
+                  placeholder="https://..."
+                />
+              </details>
             </div>
           </div>
         </div>

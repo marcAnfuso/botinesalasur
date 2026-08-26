@@ -13,8 +13,13 @@ export async function POST(request: NextRequest) {
     // Validar tipo de archivo
     const allowedTypes = ["image/jpeg", "image/png", "image/webp", "image/gif"];
     if (!allowedTypes.includes(file.type)) {
+      const esHeic = /heic|heif/i.test(file.type) || /\.hei[cf]$/i.test(file.name);
       return NextResponse.json(
-        { error: "Tipo de archivo no permitido. Use JPG, PNG, WEBP o GIF." },
+        {
+          error: esHeic
+            ? "La foto está en formato HEIC (el de iPhone). Compartila como JPG, o en Cámara → Formatos elegí «Más compatible»."
+            : "Ese archivo no es una imagen que podamos usar. Subí un JPG, PNG o WEBP.",
+        },
         { status: 400 }
       );
     }
@@ -23,7 +28,7 @@ export async function POST(request: NextRequest) {
     const maxSize = 5 * 1024 * 1024;
     if (file.size > maxSize) {
       return NextResponse.json(
-        { error: "El archivo es muy grande. Máximo 5MB." },
+        { error: "La foto pesa más de 5 MB. Probá de nuevo: el navegador la achica sola, o mandala por un canal que la comprima." },
         { status: 400 }
       );
     }

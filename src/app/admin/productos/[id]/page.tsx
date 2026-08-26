@@ -5,6 +5,7 @@ import { useRouter } from "next/navigation";
 import Link from "next/link";
 import Image from "next/image";
 import { categories, brands, formatPrice } from "@/lib/supabase-data";
+import { prepararImagen } from "@/lib/preparar-imagen";
 
 interface Variant {
   id: string;
@@ -223,8 +224,12 @@ export default function EditProductPage({ params }: { params: { id: string } }) 
     setError("");
 
     try {
+      // Las fotos de celular se achican acá antes de viajar: pesan menos,
+      // pasan el límite del servidor y cargan rápido en la tienda.
+      const preparada = await prepararImagen(file);
+
       const formData = new FormData();
-      formData.append("file", file);
+      formData.append("file", preparada.file);
 
       const res = await fetch("/api/admin/upload", {
         method: "POST",
@@ -238,7 +243,12 @@ export default function EditProductPage({ params }: { params: { id: string } }) 
       }
 
       setFormData((prev) => ({ ...prev, image_url: data.url }));
-      setSuccessMessage("Imagen subida correctamente");
+      const kb = Math.round(preparada.file.size / 1024);
+      setSuccessMessage(
+        preparada.ancho
+          ? `Foto subida (${preparada.ancho}×${preparada.alto}, ${kb} KB)`
+          : "Imagen subida correctamente"
+      );
       setTimeout(() => setSuccessMessage(""), 3000);
     } catch (err: any) {
       setError(err.message || "Error al subir imagen");
