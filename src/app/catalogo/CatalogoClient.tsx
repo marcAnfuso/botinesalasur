@@ -112,106 +112,106 @@ export default function CatalogoClient({
       <div className="flex flex-col lg:flex-row gap-8">
         {/* Filtros - Desktop Sidebar */}
         <aside className="hidden lg:block w-64 flex-shrink-0">
-          <div className="sticky top-24 space-y-6">
-            {/* Categorías */}
-            <div>
-              <h3 className="font-semibold text-white mb-3">Categoría</h3>
-              <div className="space-y-2">
+          {/* Panel propio: sin superficie ni bordes, los filtros flotaban
+              sobre el fondo y no se leían como un grupo de opciones. */}
+          <div className="sticky top-24 border border-dark-line bg-dark-card">
+            <div className="flex items-center justify-between gap-3 px-4 py-3 border-b border-dark-line">
+              <h2 className="label text-gray-400">Filtrar</h2>
+              {hasActiveFilters && (
                 <button
-                  onClick={() => setSelectedCategory("")}
-                  className={`block w-full text-left px-3 py-2 rounded-lg transition-colors ${
-                    !selectedCategory
-                      ? "bg-primary text-white"
-                      : "text-gray-400 hover:text-white hover:bg-dark-card"
-                  }`}
+                  onClick={clearFilters}
+                  className="text-xs text-primary hover:text-primary-light transition-colors"
                 >
-                  Todas
+                  Limpiar
                 </button>
-                {categories.map((cat) => (
-                  <button
-                    key={cat.id}
-                    onClick={() => setSelectedCategory(cat.slug)}
-                    className={`block w-full text-left px-3 py-2 rounded-lg transition-colors ${
-                      selectedCategory === cat.slug
-                        ? "bg-primary text-white"
-                        : "text-gray-400 hover:text-white hover:bg-dark-card"
-                    }`}
-                  >
-                    {cat.name}
-                  </button>
-                ))}
+              )}
+            </div>
+
+            {/* Categoría */}
+            <div className="px-4 py-4 border-b border-dark-line">
+              <h3 className="label text-gray-500 mb-2.5">Categoría</h3>
+              <div className="-mx-2">
+                {[{ slug: "", name: "Todas" }, ...categories.map((c) => ({ slug: c.slug, name: c.name }))].map(
+                  (opcion) => {
+                    const activa = selectedCategory === opcion.slug;
+                    return (
+                      <button
+                        key={opcion.slug || "todas"}
+                        onClick={() => setSelectedCategory(opcion.slug)}
+                        aria-pressed={activa}
+                        className={`flex items-center gap-2 w-full text-left px-2 py-1.5 text-sm transition-colors ${
+                          activa
+                            ? "text-white"
+                            : "text-gray-400 hover:text-white hover:bg-white/5"
+                        }`}
+                      >
+                        <span
+                          aria-hidden
+                          className={`w-1.5 h-1.5 rounded-full shrink-0 transition-colors ${
+                            activa ? "bg-primary" : "bg-transparent"
+                          }`}
+                        />
+                        {opcion.name}
+                      </button>
+                    );
+                  }
+                )}
               </div>
             </div>
 
-            {/* Marcas */}
-            <div>
-              <h3 className="font-semibold text-white mb-3">Marca</h3>
-              <div className="space-y-2">
-                <button
-                  onClick={() => setSelectedBrand("")}
-                  className={`block w-full text-left px-3 py-2 rounded-lg transition-colors ${
-                    !selectedBrand
-                      ? "bg-primary text-white"
-                      : "text-gray-400 hover:text-white hover:bg-dark-card"
-                  }`}
-                >
-                  Todas
-                </button>
-                {brands.map((brand) => (
-                  <button
-                    key={brand}
-                    onClick={() => setSelectedBrand(brand)}
-                    className={`block w-full text-left px-3 py-2 rounded-lg transition-colors ${
-                      selectedBrand === brand
-                        ? "bg-primary text-white"
-                        : "text-gray-400 hover:text-white hover:bg-dark-card"
-                    }`}
-                  >
-                    {brand}
-                  </button>
-                ))}
+            {/* Marca */}
+            <div className="px-4 py-4 border-b border-dark-line">
+              <h3 className="label text-gray-500 mb-2.5">Marca</h3>
+              <div className="-mx-2">
+                {["", ...brands].map((marca) => {
+                  const activa = selectedBrand === marca;
+                  return (
+                    <button
+                      key={marca || "todas"}
+                      onClick={() => setSelectedBrand(marca)}
+                      aria-pressed={activa}
+                      className={`flex items-center gap-2 w-full text-left px-2 py-1.5 text-sm transition-colors ${
+                        activa
+                          ? "text-white"
+                          : "text-gray-400 hover:text-white hover:bg-white/5"
+                      }`}
+                    >
+                      <span
+                        aria-hidden
+                        className={`w-1.5 h-1.5 rounded-full shrink-0 transition-colors ${
+                          activa ? "bg-primary" : "bg-transparent"
+                        }`}
+                      />
+                      {marca || "Todas"}
+                    </button>
+                  );
+                })}
               </div>
             </div>
 
-            {/* Talles */}
-            <div>
-              <h3 className="font-semibold text-white mb-3">Talle</h3>
-              <div className="flex flex-wrap gap-2">
-                <button
-                  onClick={() => setSelectedSize("")}
-                  className={`px-3 py-2 rounded-lg text-sm transition-colors ${
-                    !selectedSize
-                      ? "bg-primary text-white"
-                      : "bg-dark-card text-gray-400 hover:text-white"
-                  }`}
-                >
-                  Todos
-                </button>
-                {allSizes.map((size) => (
-                  <button
-                    key={size}
-                    onClick={() => setSelectedSize(size)}
-                    className={`px-3 py-2 rounded-lg text-sm transition-colors ${
-                      selectedSize === size
-                        ? "bg-primary text-white"
-                        : "bg-dark-card text-gray-400 hover:text-white"
-                    }`}
-                  >
-                    {size}
-                  </button>
-                ))}
+            {/* Talle */}
+            <div className="px-4 py-4">
+              <h3 className="label text-gray-500 mb-2.5">Talle</h3>
+              <div className="flex flex-wrap gap-1.5">
+                {["", ...allSizes].map((talle) => {
+                  const activo = selectedSize === talle;
+                  return (
+                    <button
+                      key={talle || "todos"}
+                      onClick={() => setSelectedSize(talle)}
+                      aria-pressed={activo}
+                      className={`px-2.5 py-1.5 text-xs tnum border transition-colors ${
+                        activo
+                          ? "bg-primary border-primary text-white"
+                          : "border-dark-line text-gray-400 hover:text-white hover:border-gray-600"
+                      }`}
+                    >
+                      {talle || "Todos"}
+                    </button>
+                  );
+                })}
               </div>
             </div>
-
-            {/* Limpiar filtros */}
-            {hasActiveFilters && (
-              <button
-                onClick={clearFilters}
-                className="w-full py-2 text-sm text-primary hover:text-primary-light transition-colors"
-              >
-                Limpiar filtros
-              </button>
-            )}
           </div>
         </aside>
 
@@ -257,8 +257,19 @@ export default function CatalogoClient({
 
           {/* Mobile Filters Panel */}
           {showFilters && (
-            <div className="lg:hidden bg-dark-card rounded-none p-4 mb-6 animate-fadeIn">
-              <div className="grid grid-cols-2 gap-4">
+            <div className="lg:hidden border border-dark-line bg-dark-card mb-6 animate-fadeIn">
+              <div className="flex items-center justify-between gap-3 px-4 py-3 border-b border-dark-line">
+                <h2 className="label text-gray-400">Filtrar</h2>
+                {hasActiveFilters && (
+                  <button
+                    onClick={clearFilters}
+                    className="text-xs text-primary hover:text-primary-light transition-colors"
+                  >
+                    Limpiar
+                  </button>
+                )}
+              </div>
+              <div className="grid grid-cols-2 gap-4 p-4">
                 {/* Categoría */}
                 <div>
                   <label className="block text-sm font-medium text-gray-400 mb-2">
