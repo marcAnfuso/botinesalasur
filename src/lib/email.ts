@@ -173,6 +173,7 @@ Botinesala Sur - Botines de fútbol de alta calidad
     const result = await resendClient.emails.send({
       from: `Botinesala Sur <${fromEmail}>`,
       to: data.customerEmail,
+      replyTo: process.env.NOTIFICATION_EMAIL || undefined,
       subject: `Confirmación de compra #${data.externalReference} - Botinesala Sur`,
       html: emailHtml,
       text: emailText,
@@ -350,6 +351,7 @@ Total: $${data.total.toLocaleString("es-AR")}
     const result = await resendClient.emails.send({
       from: `Botinesala Sur <${fromEmail}>`,
       to: data.customerEmail,
+      replyTo: process.env.NOTIFICATION_EMAIL || undefined,
       subject: `Recibimos tu pedido #${data.externalReference} — falta el pago`,
       html: emailHtml,
       text: emailText,
