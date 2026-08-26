@@ -503,7 +503,8 @@ export default function EditProductPage({ params }: { params: { id: string } }) 
                     O ingresá una URL directamente:
                   </label>
                   <input
-                    type="url"
+                    type="text"
+                inputMode="url"
                     name="image_url"
                     value={formData.image_url}
                     onChange={handleChange}

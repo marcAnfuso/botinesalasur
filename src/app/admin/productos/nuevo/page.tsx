@@ -232,7 +232,8 @@ export default function NewProductPage() {
                 URL de imagen *
               </label>
               <input
-                type="url"
+                type="text"
+                inputMode="url"
                 name="image_url"
                 value={formData.image_url}
                 onChange={handleChange}
