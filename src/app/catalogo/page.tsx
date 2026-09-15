@@ -1,5 +1,5 @@
 import { Suspense } from "react";
-import { getProducts, categories, brands } from "@/lib/supabase-data";
+import { getProducts, categories } from "@/lib/supabase-data";
 import CatalogoClient from "./CatalogoClient";
 
 // Revalidar cada 60 segundos
@@ -7,6 +7,12 @@ export const revalidate = 60;
 
 async function CatalogoContent() {
   const products = await getProducts();
+
+  // El filtro muestra las marcas que de verdad tienen productos cargados,
+  // no la lista de opciones del admin.
+  const brands = Array.from(new Set(products.map((p) => p.brand)))
+    .filter(Boolean)
+    .sort((a, b) => a.localeCompare(b, "es"));
 
   return (
     <CatalogoClient

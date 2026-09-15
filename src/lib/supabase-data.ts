@@ -16,7 +16,7 @@ export const categories: Category[] = [
   { id: "4", name: "Accesorios", slug: "accesorios", description: "Medias, canilleras y más" },
 ];
 
-export const brands = ["Nike", "Adidas", "Puma"];
+export const brands = ["Nike", "Adidas", "Puma", "Joma", "Umbro", "Penalty", "Topper"];
 
 // Transformar datos de Supabase al formato de la app
 function transformProduct(
