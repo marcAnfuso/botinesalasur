@@ -3,7 +3,15 @@ import { supabaseAdmin } from "@/lib/supabase";
 import { logEvent } from "@/lib/events-server";
 
 interface CartItem {
-  product: { id: string; codigo?: number | null; name: string; brand: string; price: number };
+  product: {
+    id: string;
+    codigo?: number | null;
+    name: string;
+    brand: string;
+    price: number;
+    // Con la opción de WhatsApp rige el precio por transferencia, si existe
+    transferPrice?: number | null;
+  };
   variant: { id: string; size: string };
   quantity: number;
 }
@@ -106,8 +114,8 @@ export async function POST(request: NextRequest) {
       variant_size: item.variant.size,
       size: item.variant.size,
       quantity: item.quantity,
-      unit_price: item.product.price,
-      total_price: item.product.price * item.quantity,
+      unit_price: item.product.transferPrice ?? item.product.price,
+      total_price: (item.product.transferPrice ?? item.product.price) * item.quantity,
     }));
 
     const { error: errorItems } = await supabaseAdmin

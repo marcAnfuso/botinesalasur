@@ -78,13 +78,20 @@ export default function ProductCard({ product, priority }: ProductCardProps) {
           )}
 
           <div className="mt-auto pt-4 flex items-end justify-between gap-3">
-            <span
-              className={`display text-2xl tnum ${
-                hasStock ? "text-white" : "text-gray-500"
-              }`}
-            >
-              {formatPrice(product.price)}
-            </span>
+            <div>
+              <span
+                className={`display text-2xl tnum ${
+                  hasStock ? "text-white" : "text-gray-500"
+                }`}
+              >
+                {formatPrice(product.price)}
+              </span>
+              {product.transferPrice != null && hasStock && (
+                <p className="text-xs text-field tnum">
+                  {formatPrice(product.transferPrice)} por transferencia
+                </p>
+              )}
+            </div>
             <span
               className="text-xs text-gray-400 group-hover:text-primary transition-colors whitespace-nowrap"
               aria-hidden

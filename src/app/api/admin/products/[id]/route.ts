@@ -34,24 +34,40 @@ export async function PUT(
 ) {
   try {
     const body = await request.json();
-    const { name, brand, description, price, category, image_url, featured, active } = body;
+    const { name, brand, description, price, transfer_price, category, image_url, featured, active } = body;
 
     const updates: Record<string, any> = {};
     if (name !== undefined) updates.name = name;
     if (brand !== undefined) updates.brand = brand;
     if (description !== undefined) updates.description = description;
     if (price !== undefined) updates.price = Number(price);
+    if (transfer_price !== undefined)
+      updates.transfer_price = transfer_price ? Number(transfer_price) : null;
     if (category !== undefined) updates.category = category;
     if (image_url !== undefined) updates.image_url = image_url;
     if (featured !== undefined) updates.featured = featured;
     if (active !== undefined) updates.active = active;
 
-    const { data: product, error } = await supabaseAdmin
+    let actualizado = await supabaseAdmin
       .from("products")
       .update(updates)
       .eq("id", params.id)
       .select()
       .single();
+
+    // La columna llega con supabase-migration-transferencia.sql. Hasta que
+    // se corra, guardar el producto tiene que seguir funcionando.
+    if (actualizado.error && /transfer_price/i.test(actualizado.error.message)) {
+      const { transfer_price: _omitido, ...sinTransfer } = updates;
+      actualizado = await supabaseAdmin
+        .from("products")
+        .update(sinTransfer)
+        .eq("id", params.id)
+        .select()
+        .single();
+    }
+
+    const { data: product, error } = actualizado;
 
     if (error) {
       return NextResponse.json({ error: error.message }, { status: 500 });

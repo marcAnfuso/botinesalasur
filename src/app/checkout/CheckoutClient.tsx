@@ -34,6 +34,18 @@ export default function CheckoutClient({ zonas }: { zonas: ShippingZone[] }) {
   const zonaElegida = zonas.find((z) => z.slug === formData.shippingZone);
   const total = subtotal + shippingCost;
 
+  // Pagando por transferencia o efectivo rige el precio con descuento de
+  // cada producto (si lo tiene cargado). Es el total que aplica al elegir
+  // la opción de WhatsApp.
+  const precioTransfer = (p: (typeof items)[number]["product"]) =>
+    p.transferPrice ?? p.price;
+  const subtotalTransfer = items.reduce(
+    (acc, it) => acc + precioTransfer(it.product) * it.quantity,
+    0
+  );
+  const totalTransfer = subtotalTransfer + shippingCost;
+  const hayDescuentoTransfer = subtotalTransfer < subtotal;
+
   useEffect(() => {
     if (items.length > 0) {
       track("checkout_view", { items: items.length, subtotal });
@@ -125,7 +137,7 @@ export default function CheckoutClient({ zonas }: { zonas: ShippingZone[] }) {
           })),
           customer: formData,
           shippingCost,
-          total,
+          total: totalTransfer,
           sessionId: getSessionId(),
         }),
       });
@@ -145,7 +157,7 @@ export default function CheckoutClient({ zonas }: { zonas: ShippingZone[] }) {
     const itemsText = items
       .map(
         (item) =>
-          `- ${item.product.brand} ${item.product.name}${item.product.codigo ? ` ${formatCodigo(item.product.codigo)}` : ""} (Talle ${item.variant.size}) x${item.quantity} = ${formatPrice(item.product.price * item.quantity)}`
+          `- ${item.product.brand} ${item.product.name}${item.product.codigo ? ` ${formatCodigo(item.product.codigo)}` : ""} (Talle ${item.variant.size}) x${item.quantity} = ${formatPrice(precioTransfer(item.product) * item.quantity)}`
       )
       .join("\n");
 
@@ -164,9 +176,9 @@ Zona: ${zonaElegida?.label ?? formData.shippingZone}
 *Productos:*
 ${itemsText}
 
-*Subtotal:* ${formatPrice(subtotal)}
+*Subtotal:* ${formatPrice(subtotalTransfer)}
 *Envío:* ${formatPrice(shippingCost)}
-*TOTAL:* ${formatPrice(total)}
+*TOTAL:* ${formatPrice(totalTransfer)}${hayDescuentoTransfer ? " (precio por transferencia / efectivo)" : ""}
 
 ${formData.notes ? `*Notas:* ${formData.notes}` : ""}${referencia ? `\n\nSeguí tu pedido: ${window.location.origin}/mi-pedido?ref=${referencia}` : ""}`;
 
@@ -476,9 +488,17 @@ ${formData.notes ? `*Notas:* ${formData.notes}` : ""}${referencia ? `\n\nSeguí 
                     </svg>
                   </div>
                   <div className="flex-1">
-                    <p className="font-medium text-white">WhatsApp</p>
+                    <p className="font-medium text-white">Transferencia o efectivo</p>
                     <p className="text-sm text-gray-400">
-                      Coordinar transferencia o efectivo
+                      {hayDescuentoTransfer ? (
+                        <>
+                          Total con descuento:{" "}
+                          <span className="text-field font-medium tnum">{formatPrice(totalTransfer)}</span>
+                          {" "}· se coordina por WhatsApp
+                        </>
+                      ) : (
+                        "Se coordina por WhatsApp"
+                      )}
                     </p>
                   </div>
                   {paymentMethod === "whatsapp" && (
@@ -602,8 +622,16 @@ ${formData.notes ? `*Notas:* ${formData.notes}` : ""}${referencia ? `\n\nSeguí 
               </div>
               <div className="flex justify-between text-xl font-bold text-white pt-3 border-t border-dark-line">
                 <span>Total</span>
-                <span>{formatPrice(total)}</span>
+                <span className="tnum">
+                  {formatPrice(paymentMethod === "whatsapp" ? totalTransfer : total)}
+                </span>
               </div>
+              {hayDescuentoTransfer && paymentMethod !== "whatsapp" && (
+                <p className="text-sm text-field">
+                  Pagando por transferencia o efectivo:{" "}
+                  <span className="font-semibold tnum">{formatPrice(totalTransfer)}</span>
+                </p>
+              )}
             </div>
 
             {/* Seguridad */}

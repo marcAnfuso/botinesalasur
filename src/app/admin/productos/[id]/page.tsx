@@ -21,6 +21,7 @@ interface Product {
   brand: string;
   description: string;
   price: number;
+  transfer_price?: number | null;
   category: string;
   image_url: string;
   featured: boolean;
@@ -42,6 +43,7 @@ export default function EditProductPage({ params }: { params: { id: string } }) 
     brand: "",
     description: "",
     price: "",
+    transferPrice: "",
     category: "futsal",
     image_url: "",
     featured: false,
@@ -63,6 +65,7 @@ export default function EditProductPage({ params }: { params: { id: string } }) 
           brand: product.brand,
           description: product.description,
           price: product.price.toString(),
+          transferPrice: product.transfer_price != null ? String(product.transfer_price) : "",
           category: product.category,
           image_url: product.image_url,
           featured: product.featured,
@@ -135,6 +138,7 @@ export default function EditProductPage({ params }: { params: { id: string } }) 
         body: JSON.stringify({
           ...formData,
           price: Number(formData.price),
+          transfer_price: formData.transferPrice === "" ? null : Number(formData.transferPrice),
         }),
       });
 
@@ -426,6 +430,23 @@ export default function EditProductPage({ params }: { params: { id: string } }) 
                     min="0"
                     className="input-field"
                   />
+                </div>
+                <div>
+                  <label className="block text-sm font-medium text-gray-400 mb-1">
+                    Precio por transferencia (opcional)
+                  </label>
+                  <input
+                    type="number"
+                    name="transferPrice"
+                    value={formData.transferPrice}
+                    onChange={handleChange}
+                    min="0"
+                    className="input-field"
+                    placeholder="Vacío = sin descuento"
+                  />
+                  <p className="mt-1 text-xs text-gray-500">
+                    Lo que cobra pagando por transferencia o efectivo. Se muestra en la tienda.
+                  </p>
                 </div>
               </div>
 

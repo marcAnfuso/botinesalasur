@@ -24,6 +24,7 @@ export default function NewProductPage() {
     brand: "",
     description: "",
     price: "",
+    transferPrice: "",
     category: "futsal",
     image_url: "",
     featured: false,
@@ -116,6 +117,7 @@ export default function NewProductPage() {
           brand: formData.brand,
           description: formData.description,
           price: Number(formData.price),
+          transfer_price: formData.transferPrice === "" ? null : Number(formData.transferPrice),
           category: formData.category,
           image_url: formData.image_url || "/products/default.jpg",
           featured: formData.featured,
@@ -267,6 +269,23 @@ export default function NewProductPage() {
                   placeholder="89999"
                 />
               </div>
+                <div>
+                  <label className="block text-sm font-medium text-gray-400 mb-1">
+                    Precio por transferencia (opcional)
+                  </label>
+                  <input
+                    type="number"
+                    name="transferPrice"
+                    value={formData.transferPrice}
+                    onChange={handleChange}
+                    min="0"
+                    className="input-field"
+                    placeholder="Vacío = sin descuento"
+                  />
+                  <p className="mt-1 text-xs text-gray-500">
+                    Lo que cobra pagando por transferencia o efectivo. Se muestra en la tienda.
+                  </p>
+                </div>
             </div>
 
             <div>

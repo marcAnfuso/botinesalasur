@@ -11,6 +11,7 @@ import ImagenConZoom from "@/components/ImagenConZoom";
 import { ShippingZone } from "@/lib/shipping";
 import { track } from "@/lib/events";
 import { formatCodigo } from "@/lib/codigo";
+import GuiaDeTalles from "@/components/GuiaDeTalles";
 import { useToast } from "@/components/Toast";
 
 interface ProductoClientProps {
@@ -154,8 +155,20 @@ export default function ProductoClient({
           </div>
 
           {/* Price */}
-          <div className="text-3xl font-bold text-white">
-            {formatPrice(product.price)}
+          <div>
+            <p className="text-3xl font-bold text-white tnum">
+              {formatPrice(product.price)}
+            </p>
+            <p className="mt-1 text-sm text-gray-400">
+              3 cuotas sin interés de{" "}
+              <span className="text-white tnum">{formatPrice(Math.round(product.price / 3))}</span>
+            </p>
+            {product.transferPrice != null && (
+              <p className="mt-1 text-sm text-field">
+                <span className="font-semibold tnum">{formatPrice(product.transferPrice)}</span>{" "}
+                pagando por transferencia o efectivo
+              </p>
+            )}
           </div>
 
           {/* Description */}
@@ -163,9 +176,10 @@ export default function ProductoClient({
 
           {/* Size Selector */}
           <div>
-            <h3 className="font-semibold text-white mb-3">
-              Seleccioná tu talle
-            </h3>
+            <div className="flex items-baseline justify-between mb-3">
+              <h3 className="font-semibold text-white">Seleccioná tu talle</h3>
+              <GuiaDeTalles />
+            </div>
             <div className="flex flex-wrap gap-2">
               {product.variants.map((variant) => (
                 <button
@@ -271,7 +285,7 @@ export default function ProductoClient({
 
           {/* WhatsApp Contact */}
           <a
-            href={`https://wa.me/5491123456789?text=Hola! Me interesa el producto: ${product.name} (${selectedVariant?.size || ""})`}
+            href={`https://wa.me/message/CJPQFIY4XTSJC1?text=Hola! Me interesa el producto: ${product.name} (${selectedVariant?.size || ""})`}
             target="_blank"
             rel="noopener noreferrer"
             className="flex items-center justify-center gap-2 text-gray-400 hover:text-white transition-colors py-3"

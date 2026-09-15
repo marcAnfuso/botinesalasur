@@ -32,7 +32,7 @@ export async function GET() {
 export async function POST(request: NextRequest) {
   try {
     const body = await request.json();
-    const { name, brand, description, price, category, image_url, featured, active, variants } = body;
+    const { name, brand, description, price, transfer_price, category, image_url, featured, active, variants } = body;
 
     // Validación básica
     if (!name || !brand || !price || !category) {
@@ -43,20 +43,36 @@ export async function POST(request: NextRequest) {
     }
 
     // Crear producto
-    const { data: product, error: productError } = await supabaseAdmin
+    const nuevo = {
+      name,
+      brand,
+      description: description || "",
+      price: Number(price),
+      transfer_price: transfer_price ? Number(transfer_price) : null,
+      category,
+      image_url: image_url || "/products/default.jpg",
+      featured: featured || false,
+      active: active !== false,
+    };
+
+    let creado = await supabaseAdmin
       .from("products")
-      .insert({
-        name,
-        brand,
-        description: description || "",
-        price: Number(price),
-        category,
-        image_url: image_url || "/products/default.jpg",
-        featured: featured || false,
-        active: active !== false,
-      })
+      .insert(nuevo)
       .select()
       .single();
+
+    // La columna llega con supabase-migration-transferencia.sql. Hasta que
+    // se corra, guardar el producto tiene que seguir funcionando.
+    if (creado.error && /transfer_price/i.test(creado.error.message)) {
+      const { transfer_price: _omitido, ...sinTransfer } = nuevo;
+      creado = await supabaseAdmin
+        .from("products")
+        .insert(sinTransfer)
+        .select()
+        .single();
+    }
+
+    const { data: product, error: productError } = creado;
 
     if (productError) {
       return NextResponse.json({ error: productError.message }, { status: 500 });

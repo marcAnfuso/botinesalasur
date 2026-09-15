@@ -11,6 +11,8 @@ export interface Product {
   brand: string;
   description: string;
   price: number;
+  // Precio pagando por transferencia o efectivo; null si no se cargó
+  transferPrice?: number | null;
   category: "futsal" | "sintetico" | "futbol11" | "accesorios";
   imageUrl: string;
   images?: string[];
