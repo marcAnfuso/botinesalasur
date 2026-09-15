@@ -614,7 +614,9 @@ ${formData.notes ? `*Notas:* ${formData.notes}` : ""}${referencia ? `\n\nSeguí 
             <div className="border-t border-dark-line pt-4 space-y-3">
               <div className="flex justify-between text-gray-400">
                 <span>Subtotal</span>
-                <span>{formatPrice(subtotal)}</span>
+                <span className="tnum">
+                  {formatPrice(paymentMethod === "whatsapp" ? subtotalTransfer : subtotal)}
+                </span>
               </div>
               <div className="flex justify-between text-gray-400">
                 <span>Envío ({zonaElegida?.label ?? "a coordinar"})</span>
