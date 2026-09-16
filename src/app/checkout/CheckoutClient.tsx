@@ -298,42 +298,56 @@ ${formData.notes ? `*Notas:* ${formData.notes}` : ""}${referencia ? `\n\nSeguí 
                 Dirección de envío
               </h2>
               <div className="space-y-4">
-                <div>
-                  <label
-                    htmlFor="shippingZone"
-                    className="block text-sm font-medium text-gray-400 mb-1"
-                  >
-                    Zona de envío *
-                  </label>
-                  <select
-                    id="shippingZone"
-                    name="shippingZone"
-                    required
-                    value={formData.shippingZone}
-                    onChange={handleChange}
-                    className="select-field"
-                  >
+                <fieldset>
+                  <legend className="block text-sm font-medium text-gray-400 mb-2">
+                    ¿Cómo lo recibís? *
+                  </legend>
+                  <div className="space-y-2">
                     {zonas.map((z) => (
-                      <option key={z.slug} value={z.slug}>
-                        {z.label} —{" "}
-                        {z.slug === "coordinar"
-                          ? "lo arreglamos por WhatsApp"
-                          : z.cost === 0
-                          ? "sin cargo"
-                          : formatPrice(z.cost)}
-                      </option>
+                      <label
+                        key={z.slug}
+                        className={`flex items-start gap-3 p-3.5 rounded-lg border-2 cursor-pointer transition-colors ${
+                          formData.shippingZone === z.slug
+                            ? "border-primary bg-primary/10"
+                            : "border-dark-line hover:border-gray-600"
+                        }`}
+                      >
+                        <input
+                          type="radio"
+                          name="shippingZone"
+                          value={z.slug}
+                          checked={formData.shippingZone === z.slug}
+                          onChange={handleChange}
+                          className="sr-only"
+                        />
+                        <div className="flex-1 min-w-0">
+                          <p className="font-medium text-white">
+                            {z.label}
+                            <span
+                              className={`ml-2 text-sm font-normal tnum ${
+                                z.slug === "coordinar" ? "text-gray-400" : "text-gray-300"
+                              }`}
+                            >
+                              {z.slug === "coordinar"
+                                ? "lo arreglamos por WhatsApp"
+                                : z.cost === 0
+                                ? "sin cargo"
+                                : formatPrice(z.cost)}
+                            </span>
+                          </p>
+                          {z.description && (
+                            <p className="text-xs text-gray-500 mt-0.5">{z.description}</p>
+                          )}
+                        </div>
+                        {formData.shippingZone === z.slug && (
+                          <svg className="w-5 h-5 text-primary shrink-0 mt-0.5" fill="currentColor" viewBox="0 0 20 20">
+                            <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clipRule="evenodd"/>
+                          </svg>
+                        )}
+                      </label>
                     ))}
-                  </select>
-                  {zonas.find((z) => z.slug === formData.shippingZone)
-                    ?.description && (
-                    <p className="text-xs text-gray-500 mt-1">
-                      {
-                        zonas.find((z) => z.slug === formData.shippingZone)
-                          ?.description
-                      }
-                    </p>
-                  )}
-                </div>
+                  </div>
+                </fieldset>
 
                 <div>
                   <label

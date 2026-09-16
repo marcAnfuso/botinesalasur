@@ -88,7 +88,10 @@ export default function PedidoDrawer({
 
   const c = order.customer;
   const wa = c.phone.replace(/\D/g, "");
-  const zona = c.shippingZone === "gba-sur" ? "GBA Sur" : "Todo el país";
+  const zona =
+    { "gba-sur": "GBA Sur", otro: "Correo Argentino", coordinar: "A coordinar" }[
+      c.shippingZone
+    ] ?? c.shippingZone;
 
   return (
     <div className="fixed inset-0 z-[70]" role="dialog" aria-modal="true" aria-label={`Pedido ${order.externalReference ?? ""}`}>

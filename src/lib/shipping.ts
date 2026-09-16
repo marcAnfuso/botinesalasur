@@ -13,17 +13,18 @@ export interface ShippingZone {
 // aunque la migración todavía no se haya corrido.
 export const ZONAS_POR_DEFECTO: ShippingZone[] = [
   {
-    slug: "gba-sur",
-    label: "GBA Sur",
-    description: "Llavallol, Lanús, Lomas y alrededores. Envío en moto.",
-    cost: 2500,
+    slug: "otro",
+    label: "Envío por Correo Argentino",
+    description: "Te llega a domicilio, a todo el país.",
+    cost: 5500,
     sortOrder: 1,
   },
   {
-    slug: "otro",
-    label: "Todo el país",
-    description: "Envío por correo al resto de Argentina.",
-    cost: 5500,
+    slug: "coordinar",
+    label: "A coordinar con el vendedor",
+    description:
+      "No pagás el envío acá: te escribimos por WhatsApp y lo arreglamos (moto en el día, retiro, correo).",
+    cost: 0,
     sortOrder: 2,
   },
 ];

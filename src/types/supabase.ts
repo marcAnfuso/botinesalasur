@@ -82,7 +82,7 @@ export interface Database {
           shipping_city: string;
           shipping_province: string;
           shipping_postal_code: string;
-          shipping_zone: "gba-sur" | "otro";
+          shipping_zone: string;
           shipping_cost: number;
           subtotal: number;
           total: number;
@@ -102,7 +102,7 @@ export interface Database {
           shipping_city: string;
           shipping_province: string;
           shipping_postal_code: string;
-          shipping_zone: "gba-sur" | "otro";
+          shipping_zone: string;
           shipping_cost: number;
           subtotal: number;
           total: number;

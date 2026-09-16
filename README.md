@@ -44,6 +44,12 @@ En el SQL Editor de Supabase, correr **los dos archivos en este orden**:
    actividad de compra (se ve en `/admin/actividad`)
 5. `supabase-migration-codigos.sql` — código corto por producto (`#0042`),
    guardado también en cada ítem de pedido
+6. `supabase-migration-transferencia.sql` — columna `transfer_price` en
+   `products` (precio pagando por transferencia o efectivo)
+7. `supabase-migration-coordinar.sql` — envío "a coordinar con el vendedor" y
+   quita el CHECK de zonas de `orders` (las zonas válidas son las de
+   `shipping_zones`). Después de correrla, las opciones de envío quedaron en
+   dos: Correo Argentino (con precio, editable desde el panel) y a coordinar.
 
 Sin el segundo archivo el checkout falla en cuanto alguien intenta pagar.
 

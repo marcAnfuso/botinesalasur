@@ -31,7 +31,9 @@ export default async function PedidoDetallePage({
     ? await getEventsForOrder(order.externalReference)
     : [];
   const zoneLabel =
-    customer.shippingZone === "gba-sur" ? "GBA Sur" : "Todo el país";
+    { "gba-sur": "GBA Sur", otro: "Correo Argentino", coordinar: "A coordinar" }[
+      customer.shippingZone
+    ] ?? customer.shippingZone;
 
   const whatsappNumber = customer.phone.replace(/[^0-9]/g, "");
 

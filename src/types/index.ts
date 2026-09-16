@@ -46,7 +46,8 @@ export interface CustomerInfo {
   city: string;
   province: string;
   postalCode: string;
-  shippingZone: "gba-sur" | "otro";
+  // El slug de la zona elegida; los valores válidos viven en shipping_zones
+  shippingZone: string;
   notes?: string;
 }
 
