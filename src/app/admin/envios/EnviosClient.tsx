@@ -137,7 +137,7 @@ export default function EnviosClient({
                   />
                 </div>
                 <p className="mt-1.5 text-xs text-gray-500 tnum">
-                  {zona.cost === 0 ? "Envío gratis" : formatPrice(zona.cost)}
+                  {zona.slug === "coordinar" ? "Se arregla por WhatsApp, no se cobra en la web" : zona.cost === 0 ? "Envío gratis" : formatPrice(zona.cost)}
                 </p>
               </div>
             </div>

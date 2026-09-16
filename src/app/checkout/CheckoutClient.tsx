@@ -25,7 +25,7 @@ export default function CheckoutClient({ zonas }: { zonas: ShippingZone[] }) {
     city: "",
     province: "",
     postalCode: "",
-    shippingZone: zonas[zonas.length - 1]?.slug ?? "otro",
+    shippingZone: zonas.find((z) => z.slug === "otro")?.slug ?? zonas[0]?.slug ?? "otro",
     notes: "",
   });
 
@@ -177,7 +177,7 @@ Zona: ${zonaElegida?.label ?? formData.shippingZone}
 ${itemsText}
 
 *Subtotal:* ${formatPrice(subtotalTransfer)}
-*Envío:* ${formatPrice(shippingCost)}
+*Envío:* ${zonaElegida?.slug === "coordinar" ? "a coordinar" : formatPrice(shippingCost)}
 *TOTAL:* ${formatPrice(totalTransfer)}${hayDescuentoTransfer ? " (precio por transferencia / efectivo)" : ""}
 
 ${formData.notes ? `*Notas:* ${formData.notes}` : ""}${referencia ? `\n\nSeguí tu pedido: ${window.location.origin}/mi-pedido?ref=${referencia}` : ""}`;
@@ -316,7 +316,11 @@ ${formData.notes ? `*Notas:* ${formData.notes}` : ""}${referencia ? `\n\nSeguí 
                     {zonas.map((z) => (
                       <option key={z.slug} value={z.slug}>
                         {z.label} —{" "}
-                        {z.cost === 0 ? "sin cargo" : formatPrice(z.cost)}
+                        {z.slug === "coordinar"
+                          ? "lo arreglamos por WhatsApp"
+                          : z.cost === 0
+                          ? "sin cargo"
+                          : formatPrice(z.cost)}
                       </option>
                     ))}
                   </select>
@@ -620,7 +624,9 @@ ${formData.notes ? `*Notas:* ${formData.notes}` : ""}${referencia ? `\n\nSeguí 
               </div>
               <div className="flex justify-between text-gray-400">
                 <span>Envío ({zonaElegida?.label ?? "a coordinar"})</span>
-                <span>{formatPrice(shippingCost)}</span>
+                <span className="tnum">
+                  {zonaElegida?.slug === "coordinar" ? "A coordinar" : formatPrice(shippingCost)}
+                </span>
               </div>
               <div className="flex justify-between text-xl font-bold text-white pt-3 border-t border-dark-line">
                 <span>Total</span>

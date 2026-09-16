@@ -223,7 +223,7 @@ export function htmlNuevoPedido(d: NuevoPedidoMail): string {
         <tr><td style="padding:16px 24px 22px;">
           <table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="border-top:2px solid ${NEGRO};">
             <tr><td style="padding-top:12px;font-size:14px;color:${GRIS};">Subtotal</td><td style="padding-top:12px;text-align:right;font-size:14px;">${pesos(d.subtotal)}</td></tr>
-            <tr><td style="padding-top:4px;font-size:14px;color:${GRIS};">Envío</td><td style="padding-top:4px;text-align:right;font-size:14px;">${d.shippingCost === 0 ? "Sin cargo" : pesos(d.shippingCost)}</td></tr>
+            <tr><td style="padding-top:4px;font-size:14px;color:${GRIS};">Envío</td><td style="padding-top:4px;text-align:right;font-size:14px;">${d.shippingCost === 0 ? "Sin cargo en la web" : pesos(d.shippingCost)}</td></tr>
             <tr><td style="padding-top:8px;font-size:16px;font-weight:700;">Total cobrado</td><td style="padding-top:8px;text-align:right;font-size:20px;font-weight:800;color:${ROJO};">${pesos(d.total)}</td></tr>
           </table>
           <div style="margin-top:12px;font-size:13px;color:${GRIS};">
@@ -288,7 +288,7 @@ PRODUCTOS
 ${items}
 
 Subtotal: ${pesos(d.subtotal)}
-Envío: ${d.shippingCost === 0 ? "sin cargo" : pesos(d.shippingCost)}
+Envío: ${d.shippingCost === 0 ? "sin cargo en la web" : pesos(d.shippingCost)}
 TOTAL COBRADO: ${pesos(d.total)}
 
 Pago aprobado${d.paymentMethod ? ` · ${MEDIOS[d.paymentMethod] ?? "MercadoPago"}` : ""}${d.paymentId ? ` · ID ${d.paymentId}` : ""}
