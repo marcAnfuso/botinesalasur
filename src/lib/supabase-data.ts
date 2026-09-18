@@ -258,9 +258,12 @@ export async function deleteVariant(variantId: string): Promise<boolean> {
   return true;
 }
 
-// Obtener todos los productos (incluyendo inactivos) para admin
+// Obtener todos los productos (incluyendo inactivos) para admin.
+// Va con la service role a propósito: la política de RLS de products sólo
+// deja leer los activos, así que con la clave pública los ocultos no
+// aparecerían y el panel no podría volver a activarlos.
 export async function getAllProductsAdmin(): Promise<Product[]> {
-  const { data: products, error: productsError } = await supabase
+  const { data: products, error: productsError } = await supabaseAdmin
     .from("products")
     .select("*")
     .order("name", { ascending: true });
@@ -270,7 +273,7 @@ export async function getAllProductsAdmin(): Promise<Product[]> {
     return [];
   }
 
-  const { data: variants } = await supabase
+  const { data: variants } = await supabaseAdmin
     .from("product_variants")
     .select("*");
 
