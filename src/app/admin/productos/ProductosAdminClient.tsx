@@ -9,14 +9,12 @@ import { formatPrice } from "@/lib/supabase-data";
 import { BulkPriceMode, calcularPrecio } from "@/lib/bulk-price";
 import BulkPriceBar from "./BulkPriceBar";
 import { formatCodigo } from "@/lib/codigo";
+import AjusteStock from "@/components/AjusteStock";
 
 interface ProductosAdminClientProps {
   products: Product[];
   categories: Category[];
 }
-
-const totalStock = (variants: { stock: number }[]) =>
-  variants.reduce((acc, v) => acc + v.stock, 0);
 
 export default function ProductosAdminClient({
   products,
@@ -30,6 +28,14 @@ export default function ProductosAdminClient({
     "all"
   );
   const [seleccion, setSeleccion] = useState<Set<string>>(new Set());
+
+  // Ajuste rápido de stock: vender en el showroom no puede obligar a entrar
+  // a editar el producto. Lo tocado se refleja en la lista sin recargar.
+  const [ajustando, setAjustando] = useState<string | null>(null);
+  const [stockTocado, setStockTocado] = useState<Record<string, number>>({});
+
+  const stockDe = (product: Product) =>
+    product.variants.reduce((acc, v) => acc + (stockTocado[v.id] ?? v.stock), 0);
 
   const filteredProducts = useMemo(
     () =>
@@ -209,7 +215,7 @@ export default function ProductosAdminClient({
           <ul className="lg:hidden space-y-2">
             {filteredProducts.map((product) => {
               const elegido = seleccion.has(product.id);
-              const stock = totalStock(product.variants);
+              const stock = stockDe(product);
               return (
                 <li
                   key={product.id}
@@ -267,13 +273,19 @@ export default function ProductosAdminClient({
                         <span className="text-gray-400 capitalize">
                           {product.category}
                         </span>
-                        <span
-                          className={
-                            stock <= 5 ? "text-yellow-500" : "text-gray-400"
-                          }
+                        <button
+                          type="button"
+                          onClick={() => setAjustando(product.id)}
+                          className={`underline underline-offset-2 decoration-dotted decoration-gray-600 hover:text-white transition-colors ${
+                            stock === 0
+                              ? "text-red-400"
+                              : stock <= 5
+                              ? "text-yellow-500"
+                              : "text-gray-400"
+                          }`}
                         >
                           {stock} u.
-                        </span>
+                        </button>
                         {product.featured && (
                           <span className="text-yellow-500">Destacado</span>
                         )}
@@ -330,7 +342,7 @@ export default function ProductosAdminClient({
               <tbody className="divide-y divide-dark-line">
                 {filteredProducts.map((product) => {
                   const elegido = seleccion.has(product.id);
-                  const stock = totalStock(product.variants);
+                  const stock = stockDe(product);
                   return (
                     <tr
                       key={product.id}
@@ -385,13 +397,20 @@ export default function ProductosAdminClient({
                         {formatPrice(product.price)}
                       </td>
                       <td className="px-4 py-3">
-                        <span
-                          className={`text-sm tnum ${
-                            stock <= 5 ? "text-yellow-500" : "text-gray-400"
+                        <button
+                          type="button"
+                          onClick={() => setAjustando(product.id)}
+                          title="Ajustar stock por talle"
+                          className={`text-sm tnum underline underline-offset-2 decoration-dotted decoration-gray-600 hover:text-white transition-colors ${
+                            stock === 0
+                              ? "text-red-400"
+                              : stock <= 5
+                              ? "text-yellow-500"
+                              : "text-gray-400"
                           }`}
                         >
                           {stock} u.
-                        </span>
+                        </button>
                       </td>
                       <td className="px-4 py-3">
                         <span
@@ -462,6 +481,26 @@ export default function ProductosAdminClient({
         onPrevisualizar={previsualizar}
         onAplicar={aplicar}
       />
+
+      {(() => {
+        const abierto = filteredProducts.find((p) => p.id === ajustando);
+        if (!abierto) return null;
+        return (
+          <AjusteStock
+            product={{
+              ...abierto,
+              variants: abierto.variants.map((v) => ({
+                ...v,
+                stock: stockTocado[v.id] ?? v.stock,
+              })),
+            }}
+            onCerrar={() => setAjustando(null)}
+            onCambio={(variantId, stock) =>
+              setStockTocado((s) => ({ ...s, [variantId]: stock }))
+            }
+          />
+        );
+      })()}
     </div>
   );
 }
