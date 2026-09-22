@@ -2,6 +2,7 @@ import { Product } from "@/types";
 import { nombreProducto } from "./nombre-producto";
 import { formatCodigo } from "./codigo";
 import { categories } from "./supabase-data";
+import { TIENDA } from "./tienda";
 
 export const BASE_URL = process.env.NEXT_PUBLIC_BASE_URL || "https://botinesalasur.com.ar";
 
@@ -58,11 +59,14 @@ export const jsonLdTienda = {
   description: "Botines de fútsal, sintético y fútbol 11. Envíos a todo el país y showroom en Llavallol, GBA Sur.",
   address: {
     "@type": "PostalAddress",
-    addressLocality: "Llavallol",
-    addressRegion: "Buenos Aires",
+    ...(TIENDA.direccion ? { streetAddress: TIENDA.direccion } : {}),
+    addressLocality: TIENDA.localidad,
+    addressRegion: TIENDA.provincia,
     addressCountry: "AR",
   },
-  sameAs: ["https://www.instagram.com/botinesalasur/"],
+  geo: { "@type": "GeoCoordinates", latitude: TIENDA.geo.lat, longitude: TIENDA.geo.lng },
+  areaServed: [TIENDA.partido, "Lanús", "Almirante Brown", "Esteban Echeverría", "Zona Sur del Gran Buenos Aires", "Argentina"].map((n) => ({ "@type": "Place", name: n })),
+  sameAs: [TIENDA.instagram],
   currenciesAccepted: "ARS",
   paymentAccepted: "MercadoPago, transferencia, efectivo",
 };

@@ -105,7 +105,8 @@ export default async function HomePage() {
               style={{ animationDelay: "120ms" }}
             >
               Encontrá el par que buscás, en tu talle y al mejor precio. Enviamos
-              a todo el país o podés retirarlo en nuestro showroom de Llavallol.
+              a todo el país o podés retirarlo en nuestro{" "}
+              <Link href="/botines-zona-sur" className="text-white underline underline-offset-4 decoration-white/30 hover:decoration-white">showroom de Llavallol, en Zona Sur</Link>.
             </p>
 
             <div

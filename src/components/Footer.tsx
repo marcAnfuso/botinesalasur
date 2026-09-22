@@ -57,7 +57,7 @@ export default async function Footer() {
                   d="M19.5 10.5c0 7.142-7.5 11.25-7.5 11.25S4.5 17.642 4.5 10.5a7.5 7.5 0 1 1 15 0Z"
                 />
               </svg>
-              Llavallol, Buenos Aires
+              Showroom en Llavallol · Lomas de Zamora, Zona Sur
             </p>
           </div>
 
@@ -129,6 +129,14 @@ export default async function Footer() {
                   className="text-gray-400 hover:text-primary transition-colors"
                 >
                   Seguir mi pedido
+                </Link>
+              </li>
+              <li>
+                <Link
+                  href="/botines-zona-sur"
+                  className="text-gray-400 hover:text-primary transition-colors"
+                >
+                  Botines en Zona Sur
                 </Link>
               </li>
             </ul>
