@@ -27,11 +27,11 @@ const BASE_URL = process.env.NEXT_PUBLIC_BASE_URL || "https://botinesalasur.com.
 export const metadata: Metadata = {
   metadataBase: new URL(BASE_URL),
   title: {
-    default: "Botines en Zona Sur — Fútsal, Sintético y Fútbol 11 | Botinesala Sur",
+    default: "Botines de Fútsal, Sintético y Fútbol 11 · Envíos a todo el país | Botinesala Sur",
     template: "%s | Botinesala Sur",
   },
   description:
-    "Botines de fútsal, sintético y fútbol 11 en Lomas de Zamora: showroom en Llavallol, moto en el día a Zona Sur y envíos a todo el país. 3 cuotas sin interés.",
+    "Botines de fútsal, sintético y fútbol 11 con envíos a todo el país y 3 cuotas sin interés. Showroom en Llavallol (Lomas de Zamora, Zona Sur) para probarte el par.",
   keywords: [
     "botines",
     "futbol",
@@ -43,9 +43,9 @@ export const metadata: Metadata = {
     "argentina",
   ],
   openGraph: {
-    title: "Botines en Zona Sur — Fútsal, Sintético y Fútbol 11 | Botinesala Sur",
+    title: "Botines de Fútsal, Sintético y Fútbol 11 · Envíos a todo el país | Botinesala Sur",
     description:
-      "Showroom en Llavallol (Lomas de Zamora), moto en el día a Zona Sur y envíos a todo el país. 3 cuotas sin interés.",
+      "Envíos a todo el país y 3 cuotas sin interés. Showroom en Llavallol (Lomas de Zamora, Zona Sur) para probarte el par.",
     type: "website",
     locale: "es_AR",
     siteName: "Botinesala Sur",

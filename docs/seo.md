@@ -37,6 +37,11 @@ Fuentes: [Adidas](https://www.adidas.com.ar/botines-cancha_cubierta) · [Mercado
 
 ## 3. Plan, por impacto
 
+> Equilibrio: Alan vende a todo el país. La **home y las categorías** hablan
+> nacional ("envíos a todo el país", superficie, marca); lo **local** lo
+> pelea la página `/botines-zona-sur` (Lomas de Zamora, Llavallol, GBA Sur)
+> más el Perfil de Empresa. No achicar el sitio entero a la zona.
+
 **P0 — esta semana, sin código**
 
 | Qué | Quién | Por qué |
