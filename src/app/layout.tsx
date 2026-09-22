@@ -55,6 +55,9 @@ export const metadata: Metadata = {
   },
   twitter: { card: "summary_large_image" },
   alternates: { canonical: "/" },
+  // Token de Google Search Console (no es secreto: es el mismo que va en el
+  // DNS). Permite verificar la propiedad por etiqueta HTML.
+  verification: { google: "ysmq6dqwq0Vkd1lLeAvPwc-QXyBM3DmPWLDBb0QE7PM" },
 };
 
 export default function RootLayout({
