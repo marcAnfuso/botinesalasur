@@ -1,4 +1,5 @@
 import type { Metadata } from "next";
+import { jsonLdTienda } from "@/lib/seo";
 import { Inter, Archivo } from "next/font/google";
 import "./globals.css";
 import { CartProvider } from "@/context/CartContext";
@@ -48,7 +49,12 @@ export const metadata: Metadata = {
     type: "website",
     locale: "es_AR",
     siteName: "Botinesala Sur",
+    url: BASE_URL,
+    // La miniatura que muestran WhatsApp, Instagram y Facebook al compartir un link
+    images: [{ url: "/og.jpg", width: 1200, height: 630, alt: "Botinesala Sur — botines para fútsal, sintético y fútbol 11" }],
   },
+  twitter: { card: "summary_large_image" },
+  alternates: { canonical: "/" },
 };
 
 export default function RootLayout({
@@ -61,6 +67,10 @@ export default function RootLayout({
       <body
         className={`${inter.variable} ${archivo.variable} font-sans antialiased`}
       >
+        <script
+          type="application/ld+json"
+          dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLdTienda) }}
+        />
         {/* El contrato de diseño se emite como comentario HTML real: React
             descarta los comentarios JSX y el build los borraría. */}
         <div

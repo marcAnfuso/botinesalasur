@@ -1,11 +1,31 @@
 import { Suspense } from "react";
+import type { Metadata } from "next";
 import { getProducts, categories } from "@/lib/supabase-data";
+import { nombreCategoria } from "@/lib/seo";
 import CatalogoClient from "./CatalogoClient";
 
-// Revalidar cada 60 segundos
-export const revalidate = 60;
+// Se dibuja en el servidor por pedido, con los filtros de la URL: así el HTML
+// que recibe Google trae el título y los links a cada producto (antes el
+// grillado aparecía recién en el navegador).
+export const dynamic = "force-dynamic";
 
-async function CatalogoContent() {
+type Filtros = { categoria?: string; q?: string };
+
+export async function generateMetadata({ searchParams }: { searchParams: Filtros }): Promise<Metadata> {
+  const cat = searchParams.categoria ? nombreCategoria(searchParams.categoria) : null;
+  const titulo = cat ? `Botines de ${cat}` : "Catálogo de botines";
+  const descripcion = cat
+    ? `Botines de ${cat.toLowerCase()} en stock, con talles y precios. Envíos a todo el país y showroom en Llavallol.`
+    : "Todos los botines de fútsal, sintético y fútbol 11 en stock, con talles y precios. Envíos a todo el país y showroom en Llavallol.";
+  return {
+    title: titulo,
+    description: descripcion,
+    alternates: { canonical: searchParams.categoria ? `/catalogo?categoria=${searchParams.categoria}` : "/catalogo" },
+    openGraph: { title: `${titulo} | Botinesala Sur`, description: descripcion },
+  };
+}
+
+async function CatalogoContent({ filtros }: { filtros: Filtros }) {
   const products = await getProducts();
 
   // El filtro muestra las marcas que de verdad tienen productos cargados,
@@ -19,6 +39,7 @@ async function CatalogoContent() {
       products={products}
       categories={categories}
       brands={brands}
+      inicial={{ categoria: filtros.categoria ?? "", q: filtros.q ?? "" }}
     />
   );
 }
@@ -47,10 +68,10 @@ function CatalogoLoading() {
   );
 }
 
-export default function CatalogoPage() {
+export default function CatalogoPage({ searchParams }: { searchParams: Filtros }) {
   return (
     <Suspense fallback={<CatalogoLoading />}>
-      <CatalogoContent />
+      <CatalogoContent filtros={searchParams} />
     </Suspense>
   );
 }

@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useMemo, useEffect, useRef } from "react";
+import { useState, useMemo, useEffect, useRef, Suspense } from "react";
 import { useSearchParams } from "next/navigation";
 import ProductCard from "@/components/ProductCard";
 import { Product, Category } from "@/types";
@@ -18,36 +18,52 @@ interface CatalogoClientProps {
   products: Product[];
   categories: Category[];
   brands: string[];
+  // Filtros que vienen en la URL, leídos en el servidor: así el grillado se
+  // dibuja ya filtrado en el HTML, sin esperar al navegador.
+  inicial: { categoria: string; q: string };
+}
+
+// useSearchParams obliga a dibujar en el navegador todo lo que está adentro
+// del Suspense más cercano: por eso vive en este componente chiquito, y no
+// en el grillado.
+function SincronizarConUrl({
+  onCambio,
+}: {
+  onCambio: (categoria: string, q: string | null, foco: boolean) => void;
+}) {
+  const searchParams = useSearchParams();
+  useEffect(() => {
+    onCambio(
+      searchParams.get("categoria") || "",
+      searchParams.get("q"),
+      searchParams.get("buscar") === "1"
+    );
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [searchParams]);
+  return null;
 }
 
 export default function CatalogoClient({
   products,
   categories,
   brands,
+  inicial,
 }: CatalogoClientProps) {
-  const searchParams = useSearchParams();
-  const initialCategory = searchParams.get("categoria") || "";
-
-  const [query, setQuery] = useState(searchParams.get("q") || "");
+  const [query, setQuery] = useState(inicial.q);
   const inputBusqueda = useRef<HTMLInputElement>(null);
 
-  const [selectedCategory, setSelectedCategory] = useState(initialCategory);
+  const [selectedCategory, setSelectedCategory] = useState(inicial.categoria);
   const [selectedBrand, setSelectedBrand] = useState("");
   const [selectedSize, setSelectedSize] = useState("");
   const [sortBy, setSortBy] = useState("featured");
   const [showFilters, setShowFilters] = useState(false);
 
-  // Sincronizar con URL cuando cambia
-  useEffect(() => {
-    const categoria = searchParams.get("categoria") || "";
+  const sincronizar = (categoria: string, q: string | null, foco: boolean) => {
     setSelectedCategory(categoria);
-    const q = searchParams.get("q");
     if (q !== null) setQuery(q);
     // La lupa del header manda acá pidiendo el foco en el buscador.
-    if (searchParams.get("buscar") === "1") {
-      inputBusqueda.current?.focus();
-    }
-  }, [searchParams]);
+    if (foco) inputBusqueda.current?.focus();
+  };
 
   // Obtener todos los talles disponibles
   const allSizes = useMemo(() => {
@@ -135,6 +151,10 @@ export default function CatalogoClient({
     sortBy !== "featured";
 
   return (
+    <>
+      <Suspense fallback={null}>
+        <SincronizarConUrl onCambio={sincronizar} />
+      </Suspense>
     <div className="max-w-7xl mx-auto px-4 py-8">
       {/* Header */}
       <div className="mb-8">
@@ -454,5 +474,6 @@ export default function CatalogoClient({
         </div>
       </div>
     </div>
+    </>
   );
 }
