@@ -164,6 +164,12 @@ export default async function PedidoDetallePage({
                 <dd className="text-white">{customer.name}</dd>
               </div>
               <div>
+                <dt className="text-gray-500">DNI</dt>
+                <dd className={customer.dni ? "text-white tnum" : "text-yellow-500"}>
+                  {customer.dni ?? "sin cargar"}
+                </dd>
+              </div>
+              <div>
                 <dt className="text-gray-500">Email</dt>
                 <dd>
                   <a
@@ -193,7 +199,10 @@ export default async function PedidoDetallePage({
           <div className="bg-dark-card rounded-xl border border-gray-800 p-6">
             <h2 className="font-semibold text-white mb-4">Envío</h2>
             <address className="not-italic text-sm text-gray-300 space-y-1">
-              <p>{customer.address}</p>
+              <p>
+                {customer.address}
+                {customer.floorApt && <> · {customer.floorApt}</>}
+              </p>
               <p>
                 {customer.city}, {customer.province}
               </p>

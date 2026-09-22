@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { supabaseAdmin } from "@/lib/supabase";
 import { logEvent } from "@/lib/events-server";
+import { insertarPedido } from "@/lib/insertar-pedido";
 
 interface CartItem {
   product: {
@@ -22,7 +23,9 @@ interface WhatsAppOrder {
     name: string;
     email: string;
     phone: string;
+    dni?: string;
     address: string;
+    floorApt?: string;
     city: string;
     province: string;
     postalCode: string;
@@ -60,7 +63,9 @@ export async function POST(request: NextRequest) {
       customer_name: customer.name,
       customer_email: customer.email,
       customer_phone: customer.phone,
+      customer_dni: customer.dni?.trim() || null,
       shipping_address: customer.address,
+      shipping_floor_apt: customer.floorApt?.trim() || null,
       shipping_city: customer.city,
       shipping_province: customer.province,
       shipping_postal_code: customer.postalCode,
@@ -76,22 +81,7 @@ export async function POST(request: NextRequest) {
       channel: "whatsapp",
     };
 
-    let creada = await supabaseAdmin
-      .from("orders")
-      .insert(orden)
-      .select()
-      .single();
-
-    // La columna channel llega con supabase-migration-envios.sql. Si todavía
-    // no se corrió, el pedido igual tiene que quedar registrado.
-    if (creada.error && /channel/i.test(creada.error.message)) {
-      const { channel, ...sinCanal } = orden;
-      creada = await supabaseAdmin
-        .from("orders")
-        .insert(sinCanal)
-        .select()
-        .single();
-    }
+    const creada = await insertarPedido(orden);
 
     if (creada.error || !creada.data) {
       console.error("Error creating WhatsApp order:", creada.error);

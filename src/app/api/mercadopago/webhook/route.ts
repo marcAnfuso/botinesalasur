@@ -240,7 +240,9 @@ function datosDeMail(
     customerName: order.customer_name,
     customerEmail: order.customer_email,
     customerPhone: order.customer_phone,
+    customerDni: order.customer_dni ?? null,
     shippingAddress: order.shipping_address,
+    shippingFloorApt: order.shipping_floor_apt ?? null,
     shippingCity: order.shipping_city,
     shippingProvince: order.shipping_province,
     shippingPostalCode: order.shipping_postal_code,
@@ -299,7 +301,9 @@ interface OrderWithItems {
   customer_name: string;
   customer_email: string;
   customer_phone: string;
+  customer_dni?: string | null;
   shipping_address: string;
+  shipping_floor_apt?: string | null;
   shipping_city: string;
   shipping_province: string;
   shipping_postal_code: string;

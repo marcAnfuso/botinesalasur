@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { supabaseAdmin } from "@/lib/supabase";
 import { logEvent } from "@/lib/events-server";
+import { insertarPedido } from "@/lib/insertar-pedido";
 
 const MP_ACCESS_TOKEN = process.env.MERCADOPAGO_ACCESS_TOKEN;
 const BASE_URL = process.env.NEXT_PUBLIC_BASE_URL || "https://botinesalasur.vercel.app";
@@ -27,7 +28,9 @@ interface CheckoutData {
     name: string;
     email: string;
     phone: string;
+    dni?: string;
     address: string;
+    floorApt?: string;
     city: string;
     province: string;
     postalCode: string;
@@ -70,31 +73,29 @@ export async function POST(request: NextRequest) {
     const externalReference = generateExternalReference();
 
     // Create order in Supabase first
-    const { data: order, error: orderError } = await supabaseAdmin
-      .from("orders")
-      .insert({
-        external_reference: externalReference,
-        customer_name: customer.name,
-        customer_email: customer.email,
-        customer_phone: customer.phone,
-        shipping_address: customer.address,
-        shipping_city: customer.city,
-        shipping_province: customer.province,
-        shipping_postal_code: customer.postalCode,
-        shipping_zone: customer.shippingZone,
-        notes: customer.notes,
-        subtotal: total - shippingCost,
-        shipping_cost: shippingCost,
-        total: total,
-        status: "pending",
-        payment_status: "pending",
-      })
-      .select()
-      .single();
+    const { data: order, error: orderError } = await insertarPedido({
+      external_reference: externalReference,
+      customer_name: customer.name,
+      customer_email: customer.email,
+      customer_phone: customer.phone,
+      customer_dni: customer.dni?.trim() || null,
+      shipping_address: customer.address,
+      shipping_floor_apt: customer.floorApt?.trim() || null,
+      shipping_city: customer.city,
+      shipping_province: customer.province,
+      shipping_postal_code: customer.postalCode,
+      shipping_zone: customer.shippingZone,
+      notes: customer.notes,
+      subtotal: total - shippingCost,
+      shipping_cost: shippingCost,
+      total: total,
+      status: "pending",
+      payment_status: "pending",
+    });
 
-    if (orderError) {
+    if (orderError || !order) {
       console.error("Error creating order:", orderError);
-      await logEvent("preference_failed", { sessionId, details: { paso: "orden", error: orderError.message } });
+      await logEvent("preference_failed", { sessionId, details: { paso: "orden", error: orderError?.message } });
       return NextResponse.json(
         { error: "Error al crear la orden" },
         { status: 500 }

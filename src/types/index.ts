@@ -42,7 +42,10 @@ export interface CustomerInfo {
   name: string;
   email: string;
   phone: string;
+  dni?: string;
   address: string;
+  // Piso / departamento, aparte de la calle: Correo lo pide así
+  floorApt?: string;
   city: string;
   province: string;
   postalCode: string;

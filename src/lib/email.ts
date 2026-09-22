@@ -23,7 +23,9 @@ interface OrderEmailData {
   customerName: string;
   customerEmail: string;
   customerPhone: string;
+  customerDni?: string | null;
   shippingAddress: string;
+  shippingFloorApt?: string | null;
   shippingCity: string;
   shippingProvince: string;
   shippingPostalCode: string;
@@ -123,7 +125,7 @@ export async function sendOrderConfirmationEmail(data: OrderEmailData) {
 
       <h3 style="border-bottom: 2px solid #DC2626; padding-bottom: 10px; margin-top: 30px;">Dirección de envío</h3>
       <p style="background: #f8f8f8; padding: 15px; border-radius: 8px;">
-        ${data.shippingAddress}<br/>
+        ${data.shippingAddress}${data.shippingFloorApt ? ` · ${data.shippingFloorApt}` : ""}<br/>
         ${data.shippingCity}, ${data.shippingProvince}<br/>
         CP: ${data.shippingPostalCode}
       </p>

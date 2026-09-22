@@ -15,6 +15,7 @@ import {
   formatOrderDate,
 } from "@/lib/order-status";
 import { EVENT_LABELS, EVENTOS_DE_ERROR, EventName } from "@/lib/events";
+import { useToast } from "@/components/Toast";
 
 interface Evento {
   id: number;
@@ -49,6 +50,7 @@ export default function PedidoDrawer({
   const cerrarRef = useRef<HTMLButtonElement>(null);
   const panelRef = useRef<HTMLDivElement>(null);
   const [eventos, setEventos] = useState<Evento[] | null>(null);
+  const toast = useToast();
 
   // Foco al abrir, scroll del fondo bloqueado, Esc y flechas
   useEffect(() => {
@@ -88,6 +90,30 @@ export default function PedidoDrawer({
 
   const c = order.customer;
   const wa = c.phone.replace(/\D/g, "");
+
+  // Los campos en el orden en que los pide el formulario de MiCorreo, para
+  // pegarlos uno atrás de otro sin ir y volver entre pestañas.
+  const datosParaCorreo = [
+    ["Nombre y apellido", c.name],
+    ["DNI", c.dni ?? ""],
+    ["Celular", c.phone],
+    ["Email", c.email],
+    ["Código postal", c.postalCode],
+    ["Provincia", c.province],
+    ["Localidad", c.city],
+    ["Dirección", c.address],
+    ["Piso / Dpto", c.floorApt ?? ""],
+    ["Aclaración", c.notes ?? ""],
+  ];
+  const copiarParaCorreo = async () => {
+    const texto = datosParaCorreo.map(([k, v]) => `${k}: ${v}`).join("\n");
+    try {
+      await navigator.clipboard.writeText(texto);
+      toast.success("Datos del envío copiados");
+    } catch {
+      toast.error("No se pudo copiar. Seleccioná el texto a mano.");
+    }
+  };
   const zona =
     { "gba-sur": "GBA Sur", otro: "Correo Argentino", coordinar: "A coordinar" }[
       c.shippingZone
@@ -226,6 +252,14 @@ export default function PedidoDrawer({
             <section className="border border-dark-line bg-dark-card p-4">
               <h2 className="text-sm font-semibold text-white mb-2">Cliente</h2>
               <p className="text-sm text-white">{c.name}</p>
+              <p className="text-sm text-gray-300">
+                DNI{" "}
+                {c.dni ? (
+                  <span className="text-white tnum">{c.dni}</span>
+                ) : (
+                  <span className="text-yellow-500">sin cargar</span>
+                )}
+              </p>
               <p className="text-sm">
                 <a href={`mailto:${c.email}`} className="text-gray-300 hover:text-primary break-all">{c.email}</a>
               </p>
@@ -238,10 +272,25 @@ export default function PedidoDrawer({
             <section className="border border-dark-line bg-dark-card p-4">
               <h2 className="text-sm font-semibold text-white mb-2">Envío · {zona}</h2>
               <address className="not-italic text-sm text-gray-300 leading-relaxed">
-                {c.address}<br />{c.city}, {c.province}<br />CP {c.postalCode}
+                {c.address}
+                {c.floorApt && <> · {c.floorApt}</>}
+                <br />{c.city}, {c.province}<br />CP {c.postalCode}
               </address>
             </section>
           </div>
+
+          {c.shippingZone !== "coordinar" && (
+            <button
+              type="button"
+              onClick={copiarParaCorreo}
+              className="w-full flex items-center justify-center gap-2 border border-dark-line bg-dark-card px-4 py-2.5 text-sm text-gray-300 hover:text-white hover:border-gray-500 transition-colors"
+            >
+              <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" strokeWidth={1.8} stroke="currentColor">
+                <path strokeLinecap="round" strokeLinejoin="round" d="M15.75 17.25v3.375c0 .621-.504 1.125-1.125 1.125h-9.75a1.125 1.125 0 0 1-1.125-1.125V7.875c0-.621.504-1.125 1.125-1.125H6.75a9.06 9.06 0 0 1 1.5.124m7.5 10.376h3.375c.621 0 1.125-.504 1.125-1.125V11.25c0-4.46-3.243-8.161-7.5-8.876a9.06 9.06 0 0 0-1.5-.124H9.375c-.621 0-1.125.504-1.125 1.125v3.5m7.5 10.375H9.375a1.125 1.125 0 0 1-1.125-1.125v-9.25m12 6.625v-1.875a3.375 3.375 0 0 0-3.375-3.375h-1.5a1.125 1.125 0 0 1-1.125-1.125v-1.5a3.375 3.375 0 0 0-3.375-3.375H9.75" />
+              </svg>
+              Copiar datos para el despacho por Correo
+            </button>
+          )}
 
           {c.notes && (
             <section className="border border-yellow-500/30 bg-yellow-500/10 p-4">

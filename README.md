@@ -50,6 +50,9 @@ En el SQL Editor de Supabase, correr **los dos archivos en este orden**:
    quita el CHECK de zonas de `orders` (las zonas válidas son las de
    `shipping_zones`). Después de correrla, las opciones de envío quedaron en
    dos: Correo Argentino (con precio, editable desde el panel) y a coordinar.
+8. `supabase-migration-despacho.sql` — DNI y piso/departamento en `orders`,
+   los dos datos que Correo Argentino pide para despachar y el checkout no
+   tomaba.
 
 Sin el segundo archivo el checkout falla en cuanto alguien intenta pagar.
 
@@ -135,10 +138,18 @@ puede exponer el puerto local con un túnel (por ejemplo `ngrok http 3000`).
 
 ## Envíos
 
-Dos zonas, definidas en `src/app/checkout/page.tsx`:
+Las opciones viven en la tabla `shipping_zones` y se editan desde el panel
+(`/admin/envios`), sin tocar código. Hoy son dos:
 
-- **GBA Sur** (Llavallol, Lanús, Lomas y alrededores): $2.500
-- **Todo el país**: $5.500
+- **Envío por Correo Argentino**: precio único que carga la tienda.
+- **A coordinar con el vendedor**: sin cargo en la web; se arregla por
+  WhatsApp (moto en el día, retiro, etc.).
+
+El checkout pide los datos que Correo exige para despachar: nombre, DNI,
+celular, email, código postal, provincia (lista fija, con el código que usa la
+API de Correo en `src/lib/provincias.ts`), localidad, dirección, piso/dpto y
+aclaraciones. Desde el panel, el pedido tiene un botón que copia esos datos en
+el orden del formulario de MiCorreo.
 
 ## Despliegue
 

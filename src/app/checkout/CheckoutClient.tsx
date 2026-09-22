@@ -8,6 +8,7 @@ import { formatPrice } from "@/lib/supabase-data";
 import { ShippingZone, costosPorZona } from "@/lib/shipping";
 import { track, getSessionId } from "@/lib/events";
 import { formatCodigo } from "@/lib/codigo";
+import { PROVINCIAS } from "@/lib/provincias";
 
 type PaymentMethod = "mercadopago" | "whatsapp";
 
@@ -21,7 +22,9 @@ export default function CheckoutClient({ zonas }: { zonas: ShippingZone[] }) {
     name: "",
     email: "",
     phone: "",
+    dni: "",
     address: "",
+    floorApt: "",
     city: "",
     province: "",
     postalCode: "",
@@ -164,11 +167,12 @@ export default function CheckoutClient({ zonas }: { zonas: ShippingZone[] }) {
     const message = `*Nuevo Pedido - Botinesala Sur*
 
 *Cliente:* ${formData.name}
+*DNI:* ${formData.dni}
 *Email:* ${formData.email}
 *Teléfono:* ${formData.phone}
 
 *Dirección de envío:*
-${formData.address}
+${formData.address}${formData.floorApt ? ` — ${formData.floorApt}` : ""}
 ${formData.city}, ${formData.province}
 CP: ${formData.postalCode}
 Zona: ${zonaElegida?.label ?? formData.shippingZone}
@@ -245,11 +249,36 @@ ${formData.notes ? `*Notas:* ${formData.notes}` : ""}${referencia ? `\n\nSeguí 
                     id="name"
                     name="name"
                     required
+                    autoComplete="name"
                     value={formData.name}
                     onChange={handleChange}
                     className="input-field"
                     placeholder="Juan Pérez"
                   />
+                </div>
+                <div>
+                  <label
+                    htmlFor="dni"
+                    className="block text-sm font-medium text-gray-400 mb-1"
+                  >
+                    DNI *
+                  </label>
+                  <input
+                    type="text"
+                    id="dni"
+                    name="dni"
+                    required
+                    inputMode="numeric"
+                    pattern="[0-9.]{7,10}"
+                    title="Solo números, 7 u 8 dígitos"
+                    value={formData.dni}
+                    onChange={handleChange}
+                    className="input-field w-44 tnum"
+                    placeholder="12345678"
+                  />
+                  <p className="mt-1 text-xs text-gray-500">
+                    El correo lo pide para entregar el paquete.
+                  </p>
                 </div>
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                   <div>
@@ -356,16 +385,31 @@ ${formData.notes ? `*Notas:* ${formData.notes}` : ""}${referencia ? `\n\nSeguí 
                   >
                     Dirección *
                   </label>
-                  <input
-                    type="text"
-                    id="address"
-                    name="address"
-                    required
-                    value={formData.address}
-                    onChange={handleChange}
-                    className="input-field"
-                    placeholder="Av. Ejemplo 1234, Piso 2, Depto B"
-                  />
+                  <div className="grid grid-cols-[1fr_8rem] gap-4">
+                    <input
+                      type="text"
+                      id="address"
+                      name="address"
+                      required
+                      autoComplete="street-address"
+                      value={formData.address}
+                      onChange={handleChange}
+                      className="input-field"
+                      placeholder="Calle y número"
+                    />
+                    <div>
+                      <input
+                        type="text"
+                        id="floorApt"
+                        name="floorApt"
+                        aria-label="Piso y departamento"
+                        value={formData.floorApt}
+                        onChange={handleChange}
+                        className="input-field"
+                        placeholder="Piso / Dpto"
+                      />
+                    </div>
+                  </div>
                 </div>
 
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
@@ -394,16 +438,21 @@ ${formData.notes ? `*Notas:* ${formData.notes}` : ""}${referencia ? `\n\nSeguí 
                     >
                       Provincia *
                     </label>
-                    <input
-                      type="text"
+                    <select
                       id="province"
                       name="province"
                       required
                       value={formData.province}
                       onChange={handleChange}
-                      className="input-field"
-                      placeholder="Buenos Aires"
-                    />
+                      className="select-field"
+                    >
+                      <option value="">Elegí tu provincia</option>
+                      {PROVINCIAS.map((p) => (
+                        <option key={p.code} value={p.name}>
+                          {p.name}
+                        </option>
+                      ))}
+                    </select>
                   </div>
                 </div>
 
@@ -431,7 +480,7 @@ ${formData.notes ? `*Notas:* ${formData.notes}` : ""}${referencia ? `\n\nSeguí 
                     htmlFor="notes"
                     className="block text-sm font-medium text-gray-400 mb-1"
                   >
-                    Notas adicionales
+                    Aclaraciones para la entrega
                   </label>
                   <textarea
                     id="notes"
@@ -440,7 +489,7 @@ ${formData.notes ? `*Notas:* ${formData.notes}` : ""}${referencia ? `\n\nSeguí 
                     value={formData.notes}
                     onChange={handleChange}
                     className="input-field resize-none"
-                    placeholder="Indicaciones para la entrega, horarios, etc."
+                    placeholder="Horarios, referencias, a quién dejarle el paquete…"
                   />
                 </div>
               </div>

@@ -22,7 +22,9 @@ export interface NuevoPedidoMail {
   customerName: string;
   customerEmail: string;
   customerPhone: string;
+  customerDni?: string | null;
   shippingAddress: string;
+  shippingFloorApt?: string | null;
   shippingCity: string;
   shippingProvince: string;
   shippingPostalCode: string;
@@ -184,11 +186,12 @@ export function htmlNuevoPedido(d: NuevoPedidoMail): string {
                   }
                 </div>
                 <div style="margin-top:2px;font-size:14px;"><a href="mailto:${escapar(d.customerEmail)}" style="color:${GRIS};text-decoration:none;">${escapar(d.customerEmail)}</a></div>
+                <div style="margin-top:2px;font-size:14px;color:${GRIS};">DNI ${d.customerDni ? `<span style="color:${NEGRO};">${escapar(d.customerDni)}</span>` : `<span style="color:#b45309;">sin cargar</span>`}</div>
               </td>
               <td width="50%" style="vertical-align:top;padding-left:10px;border-left:1px solid ${LINEA};">
                 <div style="font-size:11px;font-weight:700;letter-spacing:0.12em;text-transform:uppercase;color:${GRIS};">Envío${d.shippingZoneLabel ? ` · ${escapar(d.shippingZoneLabel)}` : ""}</div>
                 <div style="margin-top:6px;font-size:14px;line-height:1.45;">
-                  ${escapar(d.shippingAddress)}<br>
+                  ${escapar(d.shippingAddress)}${d.shippingFloorApt ? ` · ${escapar(d.shippingFloorApt)}` : ""}<br>
                   ${escapar(d.shippingCity)}, ${escapar(d.shippingProvince)}<br>
                   CP ${escapar(d.shippingPostalCode)}
                 </div>
@@ -279,9 +282,10 @@ CLIENTE
 ${d.customerName}
 ${d.customerPhone}${wa ? ` · ${wa}` : ""}
 ${d.customerEmail}
+DNI ${d.customerDni ?? "sin cargar"}
 
 ENVÍO${d.shippingZoneLabel ? ` · ${d.shippingZoneLabel}` : ""}
-${d.shippingAddress}
+${d.shippingAddress}${d.shippingFloorApt ? ` · ${d.shippingFloorApt}` : ""}
 ${d.shippingCity}, ${d.shippingProvince} — CP ${d.shippingPostalCode}
 ${d.notes ? `\nNOTA DEL CLIENTE\n${d.notes}\n` : ""}
 PRODUCTOS
