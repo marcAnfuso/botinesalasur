@@ -9,6 +9,7 @@ import { ShippingZone, costosPorZona } from "@/lib/shipping";
 import { track, getSessionId } from "@/lib/events";
 import { formatCodigo } from "@/lib/codigo";
 import { PROVINCIAS } from "@/lib/provincias";
+import { nombreProducto } from "@/lib/nombre-producto";
 
 type PaymentMethod = "mercadopago" | "whatsapp";
 
@@ -160,7 +161,7 @@ export default function CheckoutClient({ zonas }: { zonas: ShippingZone[] }) {
     const itemsText = items
       .map(
         (item) =>
-          `- ${item.product.brand} ${item.product.name}${item.product.codigo ? ` ${formatCodigo(item.product.codigo)}` : ""} (Talle ${item.variant.size}) x${item.quantity} = ${formatPrice(precioTransfer(item.product) * item.quantity)}`
+          `- ${nombreProducto(item.product.brand, item.product.name)}${item.product.codigo ? ` ${formatCodigo(item.product.codigo)}` : ""} (Talle ${item.variant.size}) x${item.quantity} = ${formatPrice(precioTransfer(item.product) * item.quantity)}`
       )
       .join("\n");
 
@@ -188,9 +189,20 @@ ${formData.notes ? `*Notas:* ${formData.notes}` : ""}${referencia ? `\n\nSeguí 
 
     const whatsappUrl = `https://wa.me/message/CJPQFIY4XTSJC1?text=${encodeURIComponent(message)}`;
 
-    track("whatsapp_open", {}, referencia || null);
-    clearCart();
-    window.open(whatsappUrl, "_blank");
+    // Nada de window.open después de un await: en el celular el navegador lo
+    // bloquea como popup y la persona queda mirando un carrito vacío sin
+    // saber qué pasó. Se la lleva a una pantalla con el botón para abrir
+    // WhatsApp de un toque; ahí se vacía el carrito.
+    if (referencia) {
+      try {
+        sessionStorage.setItem("bas-wa", JSON.stringify({ ref: referencia, url: whatsappUrl }));
+      } catch {}
+      window.location.href = `/checkout/resultado?status=whatsapp&ref=${referencia}`;
+      return;
+    }
+    // Si no se pudo registrar, al menos que el chat se abra en esta pestaña
+    track("whatsapp_open", {}, null);
+    window.location.href = whatsappUrl;
   };
 
   if (items.length === 0) {
@@ -635,14 +647,15 @@ ${formData.notes ? `*Notas:* ${formData.notes}` : ""}${referencia ? `\n\nSeguí 
             <p className="text-sm text-gray-500 text-center">
               {paymentMethod === "mercadopago"
                 ? "Serás redirigido a MercadoPago para completar el pago de forma segura."
-                : "Al confirmar, te redirigiremos a WhatsApp para coordinar el pago y envío."}
+                : "Al confirmar, anotamos tu pedido y te dejamos el mensaje listo para mandarnos por WhatsApp."}
             </p>
           </form>
         </div>
 
-        {/* Resumen del pedido */}
-        <div>
-          <div className="bg-dark-card rounded-none p-6 sticky top-24">
+        {/* Resumen del pedido: en el teléfono va primero, así se ve qué se
+            compra y cuánto antes de cargar datos y tocar pagar. */}
+        <div className="order-first lg:order-none">
+          <div className="bg-dark-card rounded-none p-6 lg:sticky lg:top-24">
             <h2 className="text-lg font-semibold text-white mb-4">
               Resumen del pedido
             </h2>

@@ -1,4 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
+import { nombreProducto } from "@/lib/nombre-producto";
 import { supabaseAdmin } from "@/lib/supabase";
 import { logEvent } from "@/lib/events-server";
 import { getShippingZones } from "@/lib/shipping";
@@ -50,7 +51,7 @@ export async function GET(request: NextRequest) {
           payment_type: order.mp_payment_data?.payment_type_id ?? null,
           shipping_zone_label: zona?.label ?? null,
           items: (order.order_items || []).map((i: any) => ({
-            name: [i.product_brand, i.product_name].filter(Boolean).join(" "),
+            name: nombreProducto(i.product_brand, i.product_name),
             code: i.product_code ?? null,
             size: i.size || i.variant_size || "",
             quantity: i.quantity,

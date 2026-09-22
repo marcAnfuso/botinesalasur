@@ -4,6 +4,7 @@ import { useEffect, useRef, useState } from "react";
 import { Product } from "@/types";
 import { formatCodigo } from "@/lib/codigo";
 import { useToast } from "@/components/Toast";
+import { nombreProducto } from "@/lib/nombre-producto";
 
 interface AjusteStockProps {
   product: Product;
@@ -76,7 +77,7 @@ export default function AjusteStock({ product, onCerrar, onCambio }: AjusteStock
   };
 
   const total = Object.values(stocks).reduce((a, b) => a + b, 0);
-  const nombre = [product.brand, product.name].filter(Boolean).join(" ");
+  const nombre = nombreProducto(product.brand, product.name);
 
   return (
     <div

@@ -1,4 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
+import { nombreProducto } from "@/lib/nombre-producto";
 import { getOrderForCustomer } from "@/lib/supabase-data";
 import { logEvent } from "@/lib/events-server";
 
@@ -72,9 +73,10 @@ export async function POST(request: NextRequest) {
           city: order.customer.city,
           province: order.customer.province,
           postalCode: order.customer.postalCode,
+          zone: order.customer.shippingZone,
         },
         items: order.items.map((i) => ({
-          name: [i.productBrand, i.productName].filter(Boolean).join(" "),
+          name: nombreProducto(i.productBrand, i.productName),
           code: i.productCode,
           size: i.size,
           quantity: i.quantity,

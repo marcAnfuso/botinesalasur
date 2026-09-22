@@ -18,7 +18,7 @@ interface Pedido {
   channel: OrderChannel;
   paidAt: string | null;
   customerName: string;
-  shipping: { address: string; city: string; province: string; postalCode: string };
+  shipping: { address: string; city: string; province: string; postalCode: string; zone?: string };
   items: { name: string; code?: number | null; size: string; quantity: number; unitPrice: number; totalPrice: number }[];
   subtotal: number;
   shippingCost: number;
@@ -207,7 +207,7 @@ export default function MiPedidoClient({ refInicial }: { refInicial: string }) {
                 <div className="flex justify-between text-gray-400">
                   <dt>Envío</dt>
                   <dd className="tnum text-gray-300">
-                    {pedido.shippingCost === 0 ? "Sin cargo" : formatPrice(pedido.shippingCost)}
+                    {pedido.shipping.zone === "coordinar" ? "A coordinar" : pedido.shippingCost === 0 ? "Sin cargo" : formatPrice(pedido.shippingCost)}
                   </dd>
                 </div>
                 <div className="flex justify-between pt-2 border-t border-dark-line">

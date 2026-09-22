@@ -1,4 +1,5 @@
 import Link from "next/link";
+import { nombreProducto } from "@/lib/nombre-producto";
 import { notFound } from "next/navigation";
 import { getOrderById, formatPrice } from "@/lib/supabase-data";
 import { getEventsForOrder } from "@/lib/events-server";
@@ -96,9 +97,7 @@ export default async function PedidoDetallePage({
                   >
                     <div className="flex-1 min-w-0">
                       <p className="text-white font-medium truncate">
-                        {[item.productBrand, item.productName]
-                          .filter(Boolean)
-                          .join(" ")}
+                        {nombreProducto(item.productBrand, item.productName)}
                       </p>
                       <p className="text-sm text-gray-400">
                         {item.productCode && (
@@ -129,7 +128,7 @@ export default async function PedidoDetallePage({
               <div className="flex justify-between text-sm">
                 <span className="text-gray-400">Envío ({zoneLabel})</span>
                 <span className="text-gray-300">
-                  {formatPrice(order.shippingCost)}
+                  {customer.shippingZone === "coordinar" ? "A coordinar" : formatPrice(order.shippingCost)}
                 </span>
               </div>
               <div className="flex justify-between pt-2 border-t border-gray-800">

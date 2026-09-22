@@ -16,6 +16,7 @@ import {
 } from "@/lib/order-status";
 import { EVENT_LABELS, EVENTOS_DE_ERROR, EventName } from "@/lib/events";
 import { useToast } from "@/components/Toast";
+import { nombreProducto } from "@/lib/nombre-producto";
 
 interface Evento {
   id: number;
@@ -226,7 +227,7 @@ export default function PedidoDrawer({
                   <li key={it.id} className="px-4 py-3 flex items-start justify-between gap-3">
                     <div className="min-w-0">
                       <p className="text-white text-sm font-medium">
-                        {[it.productBrand, it.productName].filter(Boolean).join(" ")}
+                        {nombreProducto(it.productBrand, it.productName)}
                       </p>
                       <p className="text-xs text-gray-400 mt-0.5">
                         {it.productCode && (
@@ -242,7 +243,7 @@ export default function PedidoDrawer({
             )}
             <dl className="px-4 py-3 border-t border-dark-line text-sm space-y-1">
               <div className="flex justify-between text-gray-400"><dt>Subtotal</dt><dd className="tnum">{formatPrice(order.subtotal)}</dd></div>
-              <div className="flex justify-between text-gray-400"><dt>Envío ({zona})</dt><dd className="tnum">{formatPrice(order.shippingCost)}</dd></div>
+              <div className="flex justify-between text-gray-400"><dt>Envío ({zona})</dt><dd className="tnum">{c.shippingZone === "coordinar" ? "A coordinar" : formatPrice(order.shippingCost)}</dd></div>
               <div className="flex justify-between font-semibold text-white pt-1 border-t border-dark-line"><dt>Total</dt><dd className="tnum">{formatPrice(order.total)}</dd></div>
             </dl>
           </section>

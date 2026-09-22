@@ -26,6 +26,7 @@ interface OrderEmailData {
   customerDni?: string | null;
   shippingAddress: string;
   shippingFloorApt?: string | null;
+  shippingZone?: string | null;
   shippingCity: string;
   shippingProvince: string;
   shippingPostalCode: string;
@@ -114,7 +115,7 @@ export async function sendOrderConfirmationEmail(data: OrderEmailData) {
           </tr>
           <tr>
             <td colspan="2" style="padding: 10px; text-align: right;">Envío:</td>
-            <td style="padding: 10px; text-align: right;">$${data.shippingCost.toLocaleString("es-AR")}</td>
+            <td style="padding: 10px; text-align: right;">${data.shippingZone === "coordinar" ? "A coordinar" : "$" + data.shippingCost.toLocaleString("es-AR")}</td>
           </tr>
           <tr style="font-weight: bold; font-size: 1.1em;">
             <td colspan="2" style="padding: 10px; text-align: right; border-top: 2px solid #333;">Total:</td>
@@ -158,7 +159,7 @@ DETALLE DEL PEDIDO:
 ${data.items.map((item) => `- ${item.productName}${item.productCode ? ` ${formatCodigo(item.productCode)}` : ""} (Talle ${item.size}) x${item.quantity} = $${item.totalPrice.toLocaleString("es-AR")}`).join("\n")}
 
 Subtotal: $${data.subtotal.toLocaleString("es-AR")}
-Envío: $${data.shippingCost.toLocaleString("es-AR")}
+Envío: ${data.shippingZone === "coordinar" ? "A coordinar" : "$" + data.shippingCost.toLocaleString("es-AR")}
 TOTAL: $${data.total.toLocaleString("es-AR")}
 
 DIRECCIÓN DE ENVÍO:

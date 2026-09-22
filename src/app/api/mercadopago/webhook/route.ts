@@ -8,6 +8,7 @@ import {
 import { verificarFirmaMercadoPago } from "@/lib/mercadopago-signature";
 import { logEvent } from "@/lib/events-server";
 import { getShippingZones } from "@/lib/shipping";
+import { nombreProducto } from "@/lib/nombre-producto";
 
 const MP_ACCESS_TOKEN = process.env.MERCADOPAGO_ACCESS_TOKEN;
 const MP_WEBHOOK_SECRET = process.env.MERCADOPAGO_WEBHOOK_SECRET;
@@ -233,6 +234,7 @@ function datosDeMail(
     notes: order.notes ?? null,
     createdAt: order.created_at ?? null,
     shippingZoneLabel: extra.shippingZoneLabel ?? null,
+    shippingZone: order.shipping_zone ?? null,
     paymentMethod: extra.paymentMethod ?? null,
     paidAt: extra.paidAt ?? null,
     orderId: order.id,
@@ -247,9 +249,7 @@ function datosDeMail(
     shippingProvince: order.shipping_province,
     shippingPostalCode: order.shipping_postal_code,
     items: (order.order_items || []).map((item) => ({
-      productName: [item.product_brand, item.product_name]
-        .filter(Boolean)
-        .join(" "),
+      productName: nombreProducto(item.product_brand, item.product_name),
       productCode: item.product_code ?? null,
       imageUrl: item.products?.image_url ?? null,
       size: item.size || item.variant_size || "",

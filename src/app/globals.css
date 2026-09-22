@@ -154,12 +154,16 @@ button:focus-visible {
   @apply inline-flex items-center justify-center gap-2 bg-transparent text-white font-semibold py-3 px-6 rounded border border-dark-line transition-colors duration-200 hover:border-chalk/50 hover:bg-white/5;
 }
 
-.input-field {
-  @apply w-full bg-dark-card border border-dark-line rounded px-4 py-3 text-white placeholder-gray-500 transition-colors focus:outline-none focus:border-primary;
-}
+/* En @layer components para que una utilidad puntual (pl-9 con un ícono
+   adentro, por ejemplo) pueda pisar el padding por defecto. */
+@layer components {
+  .input-field {
+    @apply w-full bg-dark-card border border-dark-line rounded px-4 py-3 text-white placeholder-gray-500 transition-colors focus:outline-none focus:border-primary;
+  }
 
-.select-field {
-  @apply w-full bg-dark-card border border-dark-line rounded px-4 py-3 text-white transition-colors appearance-none cursor-pointer focus:outline-none focus:border-primary;
+  .select-field {
+    @apply w-full bg-dark-card border border-dark-line rounded px-4 py-3 text-white transition-colors appearance-none cursor-pointer focus:outline-none focus:border-primary;
+  }
 }
 
 .cart-badge {

@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { supabaseAdmin } from "@/lib/supabase";
 import { logEvent } from "@/lib/events-server";
 import { insertarPedido } from "@/lib/insertar-pedido";
+import { nombreProducto } from "@/lib/nombre-producto";
 
 const MP_ACCESS_TOKEN = process.env.MERCADOPAGO_ACCESS_TOKEN;
 const BASE_URL = process.env.NEXT_PUBLIC_BASE_URL || "https://botinesalasur.vercel.app";
@@ -139,7 +140,7 @@ export async function POST(request: NextRequest) {
     // Build MercadoPago preference
     const mpItems = items.map((item) => ({
       id: item.product.id,
-      title: `${item.product.brand} ${item.product.name} - Talle ${item.variant.size}`,
+      title: `${nombreProducto(item.product.brand, item.product.name)} - Talle ${item.variant.size}`,
       description: `Botín de fútbol talle ${item.variant.size}`,
       picture_url: item.product.imageUrl,
       currency_id: "ARS",
