@@ -1,5 +1,6 @@
 import Link from "next/link";
 import { nombreProducto } from "@/lib/nombre-producto";
+import { numeroPedido } from "@/lib/pedido-numero";
 import { notFound } from "next/navigation";
 import { getOrderById, formatPrice } from "@/lib/supabase-data";
 import { getEventsForOrder } from "@/lib/events-server";
@@ -50,7 +51,7 @@ export default async function PedidoDetallePage({
         </Link>
         <div className="flex flex-wrap items-center gap-3 mt-2">
           <h1 className="text-3xl font-bold text-white">
-            {order.externalReference || order.id.slice(0, 8)}
+            {numeroPedido(order.numero, order.externalReference || order.id.slice(0, 8))}
           </h1>
           <span
             className={`px-2.5 py-1 rounded text-xs font-medium ${
@@ -230,7 +231,7 @@ export default async function PedidoDetallePage({
                 </dd>
               </div>
               <div>
-                <dt className="text-gray-500">Referencia</dt>
+                <dt className="text-gray-500">Referencia MP</dt>
                 <dd className="text-white break-all">
                   {order.externalReference || "—"}
                 </dd>

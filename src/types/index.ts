@@ -101,6 +101,7 @@ export interface AdminOrderItem {
 
 export interface AdminOrder {
   id: string;
+  numero?: number | null;
   externalReference: string | null;
   customer: CustomerInfo;
   items: AdminOrderItem[];

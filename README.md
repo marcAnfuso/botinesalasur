@@ -53,6 +53,8 @@ En el SQL Editor de Supabase, correr **los dos archivos en este orden**:
 8. `supabase-migration-despacho.sql` — DNI y piso/departamento en `orders`,
    los dos datos que Correo Argentino pide para despachar y el checkout no
    tomaba.
+9. `supabase-migration-numero.sql` — número de pedido corto (`#1043`) que ve
+   el cliente; la referencia larga queda para MercadoPago.
 
 Sin el segundo archivo el checkout falla en cuanto alguien intenta pagar.
 

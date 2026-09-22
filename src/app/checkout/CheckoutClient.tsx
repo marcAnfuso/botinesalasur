@@ -129,6 +129,7 @@ export default function CheckoutClient({ zonas }: { zonas: ShippingZone[] }) {
     // El pedido se registra ANTES de abrir el chat: si no, la venta existe
     // sólo en WhatsApp y el panel muestra una realidad incompleta.
     let referencia = "";
+    let numero: number | null = null;
     try {
       const res = await fetch("/api/orders/whatsapp", {
         method: "POST",
@@ -146,7 +147,10 @@ export default function CheckoutClient({ zonas }: { zonas: ShippingZone[] }) {
         }),
       });
       const data = await res.json();
-      if (res.ok) referencia = data.externalReference;
+      if (res.ok) {
+        referencia = data.externalReference;
+        numero = data.numero ?? null;
+      }
       else {
         console.error("No se pudo registrar el pedido:", data.error);
         track("checkout_error", { method: "whatsapp", status: res.status, error: data.error });
@@ -165,7 +169,7 @@ export default function CheckoutClient({ zonas }: { zonas: ShippingZone[] }) {
       )
       .join("\n");
 
-    const message = `*Nuevo Pedido - Botinesala Sur*
+    const message = `*Nuevo Pedido - Botinesala Sur*${numero ? ` · #${numero}` : ""}
 
 *Cliente:* ${formData.name}
 *DNI:* ${formData.dni}
@@ -197,7 +201,7 @@ ${formData.notes ? `*Notas:* ${formData.notes}` : ""}${referencia ? `\n\nSeguí 
       try {
         sessionStorage.setItem("bas-wa", JSON.stringify({ ref: referencia, url: whatsappUrl }));
       } catch {}
-      window.location.href = `/checkout/resultado?status=whatsapp&ref=${referencia}`;
+      window.location.href = `/checkout/resultado?status=whatsapp&ref=${referencia}${numero ? `&n=${numero}` : ""}`;
       return;
     }
     // Si no se pudo registrar, al menos que el chat se abra en esta pestaña

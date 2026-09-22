@@ -38,6 +38,7 @@ export async function GET(request: NextRequest) {
       const zona = zonas.find((z) => z.slug === order.shipping_zone);
       return NextResponse.json({
         verified: true,
+        numero: order?.numero ?? null,
         payment: {
           order_id: order.id,
           external_reference: order.external_reference,
@@ -84,6 +85,7 @@ export async function GET(request: NextRequest) {
 
         return NextResponse.json({
           verified: true,
+        numero: order?.numero ?? null,
           source: "mercadopago_api",
           payment: {
             payment_id: mpPayment.id,
@@ -102,6 +104,7 @@ export async function GET(request: NextRequest) {
         verified: false,
         order: {
           id: order.id,
+          numero: order.numero ?? null,
           external_reference: order.external_reference,
           status: order.status,
           payment_status: order.payment_status,

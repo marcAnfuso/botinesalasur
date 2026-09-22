@@ -17,6 +17,7 @@ import {
 import { EVENT_LABELS, EVENTOS_DE_ERROR, EventName } from "@/lib/events";
 import { useToast } from "@/components/Toast";
 import { nombreProducto } from "@/lib/nombre-producto";
+import { numeroPedido } from "@/lib/pedido-numero";
 
 interface Evento {
   id: number;
@@ -121,7 +122,7 @@ export default function PedidoDrawer({
     ] ?? c.shippingZone;
 
   return (
-    <div className="fixed inset-0 z-[70]" role="dialog" aria-modal="true" aria-label={`Pedido ${order.externalReference ?? ""}`}>
+    <div className="fixed inset-0 z-[70]" role="dialog" aria-modal="true" aria-label={`Pedido ${numeroPedido(order.numero, order.externalReference)}`}>
       {/* fondo: cierra al tocar */}
       <button
         type="button"
@@ -149,7 +150,7 @@ export default function PedidoDrawer({
           </button>
           <div className="min-w-0 flex-1">
             <p className="font-semibold text-white tnum truncate">
-              {order.externalReference || order.id.slice(0, 8)}
+              {numeroPedido(order.numero, order.externalReference || order.id.slice(0, 8))}
             </p>
             <p className="text-xs text-gray-500">{formatOrderDate(order.createdAt)}</p>
           </div>
@@ -303,7 +304,7 @@ export default function PedidoDrawer({
             <h2 className="text-sm font-semibold text-white mb-2">Pago</h2>
             <dl className="text-sm space-y-1">
               <div className="flex justify-between gap-3"><dt className="text-gray-500">Estado</dt><dd className="text-white">{PAYMENT_STATUS_LABELS[order.paymentStatus]}</dd></div>
-              <div className="flex justify-between gap-3"><dt className="text-gray-500">Referencia</dt><dd className="text-white tnum">{order.externalReference ?? "—"}</dd></div>
+              <div className="flex justify-between gap-3"><dt className="text-gray-500">Referencia MP</dt><dd className="text-white tnum">{order.externalReference ?? "—"}</dd></div>
               <div className="flex justify-between gap-3"><dt className="text-gray-500">ID MercadoPago</dt><dd className="text-white tnum break-all text-right">{order.mpPaymentId ?? "—"}</dd></div>
               {order.paidAt && (
                 <div className="flex justify-between gap-3"><dt className="text-gray-500">Pagado</dt><dd className="text-white">{formatOrderDate(order.paidAt)}</dd></div>

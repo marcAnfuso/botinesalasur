@@ -24,6 +24,7 @@ interface Pago {
 
 interface Resultado {
   verified: boolean;
+  numero?: number | null;
   payment?: Pago;
   order?: { external_reference: string; status: string; payment_status: string };
 }
@@ -186,6 +187,7 @@ function CheckoutResultContent() {
   const status = searchParams.get("status");
   const externalRef = searchParams.get("ref");
   const paymentId = searchParams.get("payment_id");
+  const numeroParam = searchParams.get("n");
 
   const [loading, setLoading] = useState(true);
   const [result, setResult] = useState<Resultado | null>(null);
@@ -200,7 +202,7 @@ function CheckoutResultContent() {
       const g = JSON.parse(sessionStorage.getItem("bas-wa") || "null");
       if (g?.ref === externalRef && typeof g.url === "string") return g.url;
     } catch {}
-    const texto = `Hola! Hice el pedido ${externalRef ?? ""} en la web y quiero coordinar el pago y el envío.`;
+    const texto = `Hola! Hice el pedido ${numeroParam ? `#${numeroParam}` : externalRef ?? ""} en la web y quiero coordinar el pago y el envío.`;
     return `${WHATSAPP}?text=${encodeURIComponent(texto)}`;
   });
 
@@ -242,6 +244,8 @@ function CheckoutResultContent() {
   if (loading) return <LoadingSpinner />;
 
   const ref = result?.payment?.external_reference || externalRef || "";
+  // Al cliente se le muestra el número corto; la referencia larga sólo si no hay número
+  const numeroVisible = result?.numero ? `#${result.numero}` : numeroParam ? `#${numeroParam}` : ref;
 
   // ── Pago confirmado ──
   if (result?.verified && result.payment) {
@@ -264,7 +268,7 @@ function CheckoutResultContent() {
               Resumen del pedido
             </h2>
             <dl>
-              <Fila etiqueta="Número de orden">{ref}</Fila>
+              <Fila etiqueta="Número de pedido">{numeroVisible}</Fila>
               {p.customer_name && <Fila etiqueta="Cliente">{p.customer_name}</Fila>}
               {typeof p.amount === "number" && (
                 <Fila etiqueta="Total">
@@ -359,7 +363,7 @@ function CheckoutResultContent() {
         <div className="px-6 py-6 flex flex-col items-center gap-4 border-t border-dark-line">
           {ref && (
             <p className="text-sm text-gray-400">
-              Tu pedido: <span className="text-white tnum">{ref}</span>
+              Tu pedido: <span className="text-white tnum">{numeroVisible}</span>
             </p>
           )}
           <a
@@ -395,7 +399,7 @@ function CheckoutResultContent() {
         <div className="px-6 py-6 flex flex-col sm:flex-row items-center justify-between gap-4">
           {ref && (
             <p className="text-sm text-gray-400">
-              Tu pedido: <span className="text-white tnum">{ref}</span>
+              Tu pedido: <span className="text-white tnum">{numeroVisible}</span>
             </p>
           )}
           <button onClick={() => window.location.reload()} className="btn-primary">
@@ -419,7 +423,7 @@ function CheckoutResultContent() {
         />
         {ref && (
           <p className="px-6 py-5 text-sm text-gray-400 text-center">
-            Tu pedido: <span className="text-white tnum">{ref}</span>
+            Tu pedido: <span className="text-white tnum">{numeroVisible}</span>
           </p>
         )}
         <Acciones referencia={ref} />
@@ -439,7 +443,7 @@ function CheckoutResultContent() {
       />
       {ref && (
         <p className="px-6 py-5 text-sm text-gray-400 text-center">
-          Referencia: <span className="text-white tnum">{ref}</span>
+          Pedido: <span className="text-white tnum">{numeroVisible}</span>
         </p>
       )}
       <Acciones referencia={ref} reintentar />

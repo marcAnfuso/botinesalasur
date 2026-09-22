@@ -6,12 +6,14 @@ import { formatPrice } from "@/lib/supabase-data";
 import { formatOrderDate } from "@/lib/order-status";
 import { getSessionId } from "@/lib/events";
 import { formatCodigo } from "@/lib/codigo";
+import { numeroPedido } from "@/lib/pedido-numero";
 import { OrderStatus, PaymentStatus, OrderChannel } from "@/types";
 
 const WHATSAPP = "https://wa.me/message/CJPQFIY4XTSJC1";
 
 interface Pedido {
   ref: string;
+  numero?: number | null;
   createdAt: string;
   status: OrderStatus;
   paymentStatus: PaymentStatus;
@@ -108,7 +110,7 @@ export default function MiPedidoClient({ refInicial }: { refInicial: string }) {
     <div className="max-w-2xl mx-auto px-4 py-10 md:py-14">
       <h1 className="display text-4xl md:text-5xl text-white">Mi pedido</h1>
       <p className="mt-3 text-gray-400 max-w-prose">
-        Escribí la referencia que te dimos al comprar y el mail que usaste, y te
+        Escribí el número de pedido que te dimos al comprar y el mail que usaste, y te
         mostramos en qué está.
       </p>
 
@@ -118,14 +120,14 @@ export default function MiPedidoClient({ refInicial }: { refInicial: string }) {
       >
         <div>
           <label htmlFor="ref" className="block text-sm text-gray-400 mb-1.5">
-            Referencia
+            Número de pedido
           </label>
           <input
             id="ref"
             type="text"
             value={ref}
             onChange={(e) => setRef(e.target.value.toUpperCase())}
-            placeholder="BOTS-20260826-AB12CD"
+            placeholder="#1043"
             autoComplete="off"
             spellCheck={false}
             required
@@ -164,7 +166,7 @@ export default function MiPedidoClient({ refInicial }: { refInicial: string }) {
           <section className="mt-8 animate-fadeIn" aria-live="polite">
             <div className={`border p-5 ${TONO[ex.tono]}`}>
               <p className="label text-gray-400">
-                Pedido <span className="text-white tnum">{pedido.ref}</span> ·{" "}
+                Pedido <span className="text-white tnum">{numeroPedido(pedido.numero, pedido.ref)}</span> ·{" "}
                 {formatOrderDate(pedido.createdAt)}
               </p>
               <h2 className="mt-2 text-xl font-semibold text-white">{ex.titulo}</h2>
@@ -235,7 +237,7 @@ export default function MiPedidoClient({ refInicial }: { refInicial: string }) {
       })()}
 
       <p className="mt-10 text-sm text-gray-500">
-        ¿No encontrás la referencia? Está en el mail de confirmación y en la
+        ¿No encontrás el número? Está en el mail de confirmación y en la
         pantalla que viste al terminar la compra. Si no la tenés,{" "}
         <a href={WHATSAPP} target="_blank" rel="noopener noreferrer" className="text-primary hover:text-primary-light">
           escribinos

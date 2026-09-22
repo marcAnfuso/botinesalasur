@@ -1,4 +1,5 @@
 import { supabase, supabaseAdmin } from "./supabase";
+import { leerNumeroPedido } from "./pedido-numero";
 import {
   Product,
   ProductVariant,
@@ -308,6 +309,7 @@ function transformOrder(row: any): AdminOrder {
   return {
     id: row.id,
     externalReference: row.external_reference ?? null,
+    numero: row.numero ?? null,
     customer: {
       name: row.customer_name,
       email: row.customer_email,
@@ -392,12 +394,16 @@ export async function getOrderForCustomer(
   email: string
 ): Promise<AdminOrder | null> {
   const mail = email.trim().replace(/[%_\\]/g, (c) => "\\" + c);
-  const { data, error } = await supabaseAdmin
+  // Se puede buscar por el número corto (#1043) o por la referencia larga
+  const numero = leerNumeroPedido(ref);
+  const base = supabaseAdmin
     .from("orders")
     .select("*, order_items(*)")
-    .eq("external_reference", ref.trim().toUpperCase())
-    .ilike("customer_email", mail)
-    .maybeSingle();
+    .ilike("customer_email", mail);
+  const { data, error } = await (numero != null
+    ? base.eq("numero", numero)
+    : base.eq("external_reference", ref.trim().toUpperCase())
+  ).maybeSingle();
 
   if (error || !data) return null;
   return transformOrder(data);

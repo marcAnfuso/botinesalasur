@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { supabaseAdmin } from "@/lib/supabase";
 import { logEvent } from "@/lib/events-server";
 import { insertarPedido } from "@/lib/insertar-pedido";
+import { nombreProlijo, capitalizar, dniProlijo } from "@/lib/prolijo";
 import { nombreProducto } from "@/lib/nombre-producto";
 
 const MP_ACCESS_TOKEN = process.env.MERCADOPAGO_ACCESS_TOKEN;
@@ -76,13 +77,13 @@ export async function POST(request: NextRequest) {
     // Create order in Supabase first
     const { data: order, error: orderError } = await insertarPedido({
       external_reference: externalReference,
-      customer_name: customer.name,
+      customer_name: nombreProlijo(customer.name),
       customer_email: customer.email,
       customer_phone: customer.phone,
-      customer_dni: customer.dni?.trim() || null,
-      shipping_address: customer.address,
-      shipping_floor_apt: customer.floorApt?.trim() || null,
-      shipping_city: customer.city,
+      customer_dni: customer.dni ? dniProlijo(customer.dni) || null : null,
+      shipping_address: capitalizar(customer.address),
+      shipping_floor_apt: customer.floorApt?.trim().toUpperCase() || null,
+      shipping_city: capitalizar(customer.city),
       shipping_province: customer.province,
       shipping_postal_code: customer.postalCode,
       shipping_zone: customer.shippingZone,
@@ -243,6 +244,7 @@ export async function POST(request: NextRequest) {
       init_point: mpData.init_point,
       preference_id: mpData.id,
       external_reference: externalReference,
+      numero: order.numero ?? null,
       order_id: order.id,
     });
   } catch (error) {

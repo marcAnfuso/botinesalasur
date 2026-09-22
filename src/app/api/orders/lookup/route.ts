@@ -35,7 +35,7 @@ export async function POST(request: NextRequest) {
   if (!ref || !email) {
     return responder(
       NextResponse.json(
-        { error: "Escribí la referencia del pedido y el mail con el que compraste." },
+        { error: "Escribí el número de pedido y el mail con el que compraste." },
         { status: 400 }
       )
     );
@@ -62,6 +62,7 @@ export async function POST(request: NextRequest) {
     NextResponse.json({
       pedido: {
         ref: order.externalReference,
+        numero: order.numero ?? null,
         createdAt: order.createdAt,
         status: order.status,
         paymentStatus: order.paymentStatus,

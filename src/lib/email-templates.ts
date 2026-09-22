@@ -3,6 +3,7 @@
 // es lo único que los clientes de correo respetan de forma pareja.
 
 import { formatCodigo } from "./codigo";
+import { numeroPedido } from "./pedido-numero";
 
 export interface ItemMail {
   productName: string;
@@ -18,6 +19,7 @@ export interface NuevoPedidoMail {
   baseUrl: string;
   orderId: string;
   externalReference: string;
+  numero?: number | null;
   createdAt?: string | null;
   customerName: string;
   customerEmail: string;
@@ -144,7 +146,7 @@ export function htmlNuevoPedido(d: NuevoPedidoMail): string {
 <meta name="viewport" content="width=device-width,initial-scale=1">
 <meta name="color-scheme" content="light">
 <meta name="supported-color-schemes" content="light">
-<title>Nuevo pedido ${escapar(d.externalReference)}</title>
+<title>Nuevo pedido ${escapar(numeroPedido(d.numero, d.externalReference))}</title>
 </head>
 <body style="margin:0;padding:0;background:#f2f2f4;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,Helvetica,Arial,sans-serif;color:${NEGRO};">
   <!-- lo que se ve en la lista de la bandeja, antes de abrir -->
@@ -165,7 +167,7 @@ export function htmlNuevoPedido(d: NuevoPedidoMail): string {
             </div>
             <div style="margin-top:14px;font-size:36px;font-weight:800;letter-spacing:-0.02em;color:#ffffff;">${pesos(d.total)}</div>
             <div style="margin-top:8px;font-size:13px;color:#b8b8c2;">
-              Pedido <span style="color:#ffffff;font-family:ui-monospace,Menlo,monospace;">${escapar(d.externalReference)}</span>
+              Pedido <span style="color:#ffffff;font-family:ui-monospace,Menlo,monospace;">${escapar(numeroPedido(d.numero, d.externalReference))}</span>
               ${cuando ? `&nbsp;·&nbsp; ${escapar(cuando)} hs` : ""}
             </div>
           </td>
@@ -276,7 +278,7 @@ export function textoNuevoPedido(d: NuevoPedidoMail): string {
     )
     .join("\n");
   return `NUEVA VENTA CONFIRMADA — ${pesos(d.total)}
-Pedido ${d.externalReference}${d.paidAt ? ` · ${fechaLarga(d.paidAt)} hs` : ""}
+Pedido ${numeroPedido(d.numero, d.externalReference)}${d.paidAt ? ` · ${fechaLarga(d.paidAt)} hs` : ""}
 
 CLIENTE
 ${d.customerName}
@@ -298,5 +300,208 @@ TOTAL COBRADO: ${pesos(d.total)}
 Pago aprobado${d.paymentMethod ? ` · ${MEDIOS[d.paymentMethod] ?? "MercadoPago"}` : ""}${d.paymentId ? ` · ID ${d.paymentId}` : ""}
 
 Ver pedido en el panel: ${d.baseUrl}/admin/pedidos?ver=${d.orderId}
+`;
+}
+
+// ───────────── confirmación al cliente ─────────────
+
+export interface ConfirmacionMail {
+  baseUrl: string;
+  externalReference: string;
+  numero?: number | null;
+  customerName: string;
+  customerEmail: string;
+  shippingAddress: string;
+  shippingFloorApt?: string | null;
+  shippingCity: string;
+  shippingProvince: string;
+  shippingPostalCode: string;
+  shippingZone?: string | null;
+  items: ItemMail[];
+  subtotal: number;
+  shippingCost: number;
+  total: number;
+}
+
+const WHATSAPP_TIENDA = "https://wa.me/message/CJPQFIY4XTSJC1";
+const VERDE = "#16a34a";
+
+// El nombre se guarda en mayúsculas; el saludo va "Marcos", no "MARCOS"
+function primerNombre(nombre: string): string {
+  const p = nombre.trim().split(/\s+/)[0] || "";
+  return p.charAt(0).toUpperCase() + p.slice(1).toLowerCase();
+}
+
+// Lo que el cliente necesita saber, en este orden: que está todo bien, qué
+// tiene que hacer ahora (escribirnos), qué compró, y dónde ver el estado.
+// "Referencia" no le dice nada a nadie: acá es "tu número de pedido".
+export function htmlConfirmacionCliente(d: ConfirmacionMail): string {
+  const nombre = primerNombre(d.customerName);
+  const coordinar = (d.shippingZone ?? "coordinar") === "coordinar";
+  const num = numeroPedido(d.numero, d.externalReference);
+  const mensaje = `Hola! Soy ${primerNombre(d.customerName)}. Hice el pedido ${num} en la web y quiero coordinar la entrega.`;
+  const wa = `${WHATSAPP_TIENDA}?text=${encodeURIComponent(mensaje)}`;
+  const seguimiento = `${d.baseUrl}/mi-pedido?ref=${encodeURIComponent(d.numero ? String(d.numero) : d.externalReference)}`;
+  const logo = `${d.baseUrl}/images/logo-botinesalasur.png`;
+
+  const filas = d.items
+    .map((it) => {
+      const img = absoluta(it.imageUrl, d.baseUrl);
+      return `
+        <tr>
+          <td style="padding:12px 0;border-top:1px solid ${LINEA};vertical-align:top;width:64px;">
+            ${
+              img
+                ? `<img src="${escapar(img)}" width="56" height="56" alt="" style="display:block;width:56px;height:56px;object-fit:cover;border-radius:4px;background:#f0f0f2;">`
+                : `<div style="width:56px;height:56px;border-radius:4px;background:#f0f0f2;"></div>`
+            }
+          </td>
+          <td style="padding:12px 0 12px 12px;border-top:1px solid ${LINEA};vertical-align:top;">
+            <div style="font-weight:600;color:${NEGRO};">${escapar(it.productName)}</div>
+            <div style="margin-top:3px;font-size:13px;color:${GRIS};">
+              ${it.productCode ? `<span style="display:inline-block;padding:1px 7px;border:1px solid ${LINEA};border-radius:3px;font-family:ui-monospace,Menlo,monospace;font-size:12px;color:${NEGRO};margin-right:8px;">${formatCodigo(it.productCode)}</span>` : ""}
+              Talle <strong style="color:${NEGRO};">${escapar(it.size)}</strong>
+              &nbsp;·&nbsp; ${it.quantity} × ${pesos(it.unitPrice)}
+            </div>
+          </td>
+          <td style="padding:12px 0 12px 12px;border-top:1px solid ${LINEA};vertical-align:top;text-align:right;white-space:nowrap;font-weight:600;color:${NEGRO};">
+            ${pesos(it.totalPrice)}
+          </td>
+        </tr>`;
+    })
+    .join("");
+
+  const pasoTitulo = coordinar ? "Te falta el último paso" : "Qué sigue ahora";
+  const pasoTexto = coordinar
+    ? "Escribinos por WhatsApp para coordinar la entrega o el retiro por el showroom de Llavallol. Ya te dejamos el mensaje armado: solo tocás el botón y lo mandás."
+    : "Estamos preparando tu par. Te avisamos por acá cuando salga; si querés adelantarte o cambiar algo, escribinos por WhatsApp.";
+
+  return `<!doctype html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<meta name="color-scheme" content="light">
+<meta name="supported-color-schemes" content="light">
+<title>Compra confirmada · pedido ${escapar(num)}</title>
+</head>
+<body style="margin:0;padding:0;background:#f2f2f4;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,Helvetica,Arial,sans-serif;color:${NEGRO};">
+  <div style="display:none;max-height:0;overflow:hidden;color:transparent;">
+    Tu compra está confirmada. ${coordinar ? "Falta un paso: escribinos por WhatsApp para coordinar la entrega." : "Te avisamos cuando salga."}
+  </div>
+
+  <table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="background:#f2f2f4;">
+    <tr><td align="center" style="padding:24px 12px;">
+      <table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="max-width:600px;background:#ffffff;border:1px solid ${LINEA};">
+
+        <!-- cabecera -->
+        <tr>
+          <td style="background:${NEGRO};padding:24px 24px 26px;text-align:center;border-top:4px solid ${ROJO};">
+            <img src="${logo}" width="56" height="56" alt="Botinesala Sur" style="display:inline-block;width:56px;height:56px;border-radius:50%;">
+            <div style="margin-top:14px;font-size:26px;font-weight:800;letter-spacing:-0.01em;color:#ffffff;">
+              ¡Listo${nombre ? `, ${escapar(nombre)}` : ""}!
+            </div>
+            <div style="margin-top:6px;font-size:16px;color:#ffffff;">Tu compra está <span style="color:#4ade80;font-weight:700;">confirmada</span>.</div>
+            <div style="margin-top:12px;font-size:13px;color:#b8b8c2;">
+              Pedido <span style="color:#ffffff;font-family:ui-monospace,Menlo,monospace;">${escapar(num)}</span>
+            </div>
+          </td>
+        </tr>
+
+        <!-- el paso que falta -->
+        <tr><td style="padding:22px 24px 0;">
+          <div style="padding:16px 18px;border:2px solid ${VERDE};border-radius:6px;background:#f0fdf4;">
+            <div style="font-size:11px;font-weight:700;letter-spacing:0.12em;text-transform:uppercase;color:#166534;">${pasoTitulo}</div>
+            <div style="margin-top:6px;font-size:15px;line-height:1.5;color:${NEGRO};">${pasoTexto}</div>
+            ${
+              coordinar
+                ? `<a href="${wa}" style="display:block;margin-top:14px;text-align:center;padding:14px 12px;background:${VERDE};color:#ffffff;font-weight:700;font-size:16px;text-decoration:none;border-radius:4px;">Coordinar por WhatsApp</a>`
+                : `<a href="${WHATSAPP_TIENDA}" style="display:inline-block;margin-top:12px;color:${VERDE};font-weight:700;text-decoration:none;">Escribirnos por WhatsApp →</a>`
+            }
+          </div>
+        </td></tr>
+
+        <!-- lo que compraste -->
+        <tr><td style="padding:24px 24px 0;">
+          <div style="font-size:11px;font-weight:700;letter-spacing:0.12em;text-transform:uppercase;color:${GRIS};">Lo que compraste</div>
+          <table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="margin-top:6px;">
+            ${filas}
+          </table>
+          <table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="border-top:2px solid ${NEGRO};">
+            <tr><td style="padding-top:12px;font-size:14px;color:${GRIS};">Subtotal</td><td style="padding-top:12px;text-align:right;font-size:14px;">${pesos(d.subtotal)}</td></tr>
+            <tr><td style="padding-top:4px;font-size:14px;color:${GRIS};">Envío</td><td style="padding-top:4px;text-align:right;font-size:14px;">${coordinar ? "A coordinar" : d.shippingCost === 0 ? "Sin cargo" : pesos(d.shippingCost)}</td></tr>
+            <tr><td style="padding-top:8px;font-size:16px;font-weight:700;">Total pagado</td><td style="padding-top:8px;text-align:right;font-size:20px;font-weight:800;color:${ROJO};">${pesos(d.total)}</td></tr>
+          </table>
+        </td></tr>
+
+        <!-- datos de entrega -->
+        <tr><td style="padding:24px 24px 0;">
+          <div style="font-size:11px;font-weight:700;letter-spacing:0.12em;text-transform:uppercase;color:${GRIS};">Datos de entrega que nos diste</div>
+          <div style="margin-top:6px;font-size:14px;line-height:1.5;">
+            ${escapar(d.shippingAddress)}${d.shippingFloorApt ? ` · ${escapar(d.shippingFloorApt)}` : ""}<br>
+            ${escapar(d.shippingCity)}, ${escapar(d.shippingProvince)} — CP ${escapar(d.shippingPostalCode)}
+          </div>
+          <div style="margin-top:6px;font-size:13px;color:${GRIS};">¿Hay algo mal? Avisanos por WhatsApp antes de que salga.</div>
+        </td></tr>
+
+        <!-- número de pedido y seguimiento -->
+        <tr><td style="padding:24px 24px 26px;">
+          <div style="padding:14px 16px;background:#f7f7f8;border:1px solid ${LINEA};border-radius:4px;font-size:14px;line-height:1.55;color:${NEGRO};">
+            Tu número de pedido es <strong style="font-family:ui-monospace,Menlo,monospace;">${escapar(num)}</strong>. Guardá este mail: con ese número y tu dirección de correo podés
+            <a href="${seguimiento}" style="color:${ROJO};font-weight:600;text-decoration:none;">ver el estado del pedido</a> cuando quieras.
+          </div>
+        </td></tr>
+
+        <!-- pie -->
+        <tr>
+          <td style="padding:14px 24px;border-top:1px solid ${LINEA};font-size:12px;color:${GRIS};text-align:center;line-height:1.5;">
+            Botinesala Sur · Botines para fútsal, sintético y fútbol 11 · Llavallol, Buenos Aires<br>
+            Este mail se envió a ${escapar(d.customerEmail)} por tu compra en <a href="${d.baseUrl}" style="color:${GRIS};">botinesalasur.com.ar</a>.
+          </td>
+        </tr>
+      </table>
+    </td></tr>
+  </table>
+</body>
+</html>`;
+}
+
+export function textoConfirmacionCliente(d: ConfirmacionMail): string {
+  const nombre = primerNombre(d.customerName);
+  const coordinar = (d.shippingZone ?? "coordinar") === "coordinar";
+  const num = numeroPedido(d.numero, d.externalReference);
+  const mensaje = `Hola! Soy ${primerNombre(d.customerName)}. Hice el pedido ${num} en la web y quiero coordinar la entrega.`;
+  const wa = `${WHATSAPP_TIENDA}?text=${encodeURIComponent(mensaje)}`;
+  const items = d.items
+    .map((it) => `• ${it.productName}${it.productCode ? ` ${formatCodigo(it.productCode)}` : ""} — talle ${it.size} × ${it.quantity} = ${pesos(it.totalPrice)}`)
+    .join("\n");
+  return `¡Listo${nombre ? `, ${nombre}` : ""}! Tu compra está confirmada.
+Pedido ${num}
+
+${
+  coordinar
+    ? `TE FALTA EL ÚLTIMO PASO
+Escribinos por WhatsApp para coordinar la entrega o el retiro por el showroom de Llavallol:
+${wa}`
+    : `QUÉ SIGUE AHORA
+Estamos preparando tu par. Te avisamos por acá cuando salga. Si querés adelantarte o cambiar algo: ${WHATSAPP_TIENDA}`
+}
+
+LO QUE COMPRASTE
+${items}
+
+Subtotal: ${pesos(d.subtotal)}
+Envío: ${coordinar ? "a coordinar" : d.shippingCost === 0 ? "sin cargo" : pesos(d.shippingCost)}
+TOTAL PAGADO: ${pesos(d.total)}
+
+DATOS DE ENTREGA QUE NOS DISTE
+${d.shippingAddress}${d.shippingFloorApt ? ` · ${d.shippingFloorApt}` : ""}
+${d.shippingCity}, ${d.shippingProvince} — CP ${d.shippingPostalCode}
+¿Hay algo mal? Avisanos por WhatsApp antes de que salga.
+
+Tu número de pedido es ${num}. Con ese número y tu mail podés ver el estado cuando quieras:
+${d.baseUrl}/mi-pedido?ref=${encodeURIComponent(d.numero ? String(d.numero) : d.externalReference)}
+
+Botinesala Sur · Llavallol, Buenos Aires
 `;
 }

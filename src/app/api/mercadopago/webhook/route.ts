@@ -235,6 +235,7 @@ function datosDeMail(
     createdAt: order.created_at ?? null,
     shippingZoneLabel: extra.shippingZoneLabel ?? null,
     shippingZone: order.shipping_zone ?? null,
+    numero: order.numero ?? null,
     paymentMethod: extra.paymentMethod ?? null,
     paidAt: extra.paidAt ?? null,
     orderId: order.id,
@@ -297,6 +298,7 @@ async function updateStock(orderId: string) {
 
 interface OrderWithItems {
   id: string;
+  numero?: number | null;
   external_reference: string;
   customer_name: string;
   customer_email: string;

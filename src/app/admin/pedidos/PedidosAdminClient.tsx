@@ -17,6 +17,7 @@ import {
 } from "@/lib/order-status";
 import { useToast } from "@/components/Toast";
 import PedidoDrawer from "./PedidoDrawer";
+import { numeroPedido } from "@/lib/pedido-numero";
 
 type Filter =
   | "todos"
@@ -122,6 +123,7 @@ export default function PedidosAdminClient({
           o.customer.name.toLowerCase().includes(q) ||
           o.customer.email.toLowerCase().includes(q) ||
           (o.externalReference || "").toLowerCase().includes(q) ||
+          numeroPedido(o.numero).replace("#", "").includes(q.replace("#", "")) ||
           o.items.some((i) =>
             `${i.productBrand} ${i.productName}`.toLowerCase().includes(q)
           )
@@ -248,7 +250,7 @@ export default function PedidosAdminClient({
                       onClick={() => abrir(order.id)}
                       className="font-semibold text-white hover:text-primary transition-colors text-left"
                     >
-                      {order.externalReference || order.id.slice(0, 8)}
+                      {numeroPedido(order.numero, order.externalReference || order.id.slice(0, 8))}
                     </button>
                     <span
                       className={`px-2 py-0.5 rounded text-xs font-medium ${

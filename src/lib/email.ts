@@ -1,6 +1,12 @@
 import { Resend } from "resend";
 import { formatCodigo } from "./codigo";
-import { htmlNuevoPedido, textoNuevoPedido } from "./email-templates";
+import { numeroPedido } from "./pedido-numero";
+import {
+  htmlNuevoPedido,
+  textoNuevoPedido,
+  htmlConfirmacionCliente,
+  textoConfirmacionCliente,
+} from "./email-templates";
 
 const BASE_URL = process.env.NEXT_PUBLIC_BASE_URL || "https://botinesalasur.com.ar";
 
@@ -20,6 +26,7 @@ function getResend(): Resend | null {
 interface OrderEmailData {
   orderId: string;
   externalReference: string;
+  numero?: number | null;
   customerName: string;
   customerEmail: string;
   customerPhone: string;
@@ -70,123 +77,10 @@ export async function sendOrderConfirmationEmail(data: OrderEmailData) {
   }
 
   const fromEmail = process.env.RESEND_FROM_EMAIL || "onboarding@resend.dev";
-
-  const itemsHtml = data.items
-    .map(
-      (item) => `
-      <tr>
-        <td style="padding: 10px; border-bottom: 1px solid #eee;">
-          ${item.productName}${item.productCode ? ` <span style="color:#999">(${formatCodigo(item.productCode)})</span>` : ""}<br/>
-          <small style="color: #666;">Talle: ${item.size}</small>
-        </td>
-        <td style="padding: 10px; border-bottom: 1px solid #eee; text-align: center;">
-          ${item.quantity}
-        </td>
-        <td style="padding: 10px; border-bottom: 1px solid #eee; text-align: right;">
-          $${item.totalPrice.toLocaleString("es-AR")}
-        </td>
-      </tr>
-    `
-    )
-    .join("");
-
-  const emailHtml = `
-    <!DOCTYPE html>
-    <html>
-    <head>
-      <meta charset="utf-8">
-      <title>Confirmación de compra - Botinesala Sur</title>
-    </head>
-    <body style="font-family: Arial, sans-serif; line-height: 1.6; color: #333; max-width: 600px; margin: 0 auto; padding: 20px;">
-      <div style="text-align: center; margin-bottom: 30px;">
-        <h1 style="color: #DC2626; margin: 0;">Botinesala Sur</h1>
-        <p style="color: #666;">Tu compra ha sido confirmada</p>
-      </div>
-
-      <div style="background: #f8f8f8; padding: 20px; border-radius: 8px; margin-bottom: 20px;">
-        <h2 style="margin-top: 0; color: #22C55E;">¡Gracias por tu compra, ${data.customerName.split(" ")[0]}!</h2>
-        <p>Tu pedido <strong>#${data.externalReference}</strong> ha sido confirmado exitosamente.</p>
-      </div>
-
-      <h3 style="border-bottom: 2px solid #DC2626; padding-bottom: 10px;">Detalle del pedido</h3>
-      <table style="width: 100%; border-collapse: collapse;">
-        <thead>
-          <tr style="background: #f4f4f4;">
-            <th style="padding: 10px; text-align: left;">Producto</th>
-            <th style="padding: 10px; text-align: center;">Cant.</th>
-            <th style="padding: 10px; text-align: right;">Precio</th>
-          </tr>
-        </thead>
-        <tbody>
-          ${itemsHtml}
-        </tbody>
-        <tfoot>
-          <tr>
-            <td colspan="2" style="padding: 10px; text-align: right;">Subtotal:</td>
-            <td style="padding: 10px; text-align: right;">$${data.subtotal.toLocaleString("es-AR")}</td>
-          </tr>
-          <tr>
-            <td colspan="2" style="padding: 10px; text-align: right;">Envío:</td>
-            <td style="padding: 10px; text-align: right;">${data.shippingZone === "coordinar" ? "A coordinar" : "$" + data.shippingCost.toLocaleString("es-AR")}</td>
-          </tr>
-          <tr style="font-weight: bold; font-size: 1.1em;">
-            <td colspan="2" style="padding: 10px; text-align: right; border-top: 2px solid #333;">Total:</td>
-            <td style="padding: 10px; text-align: right; border-top: 2px solid #333;">$${data.total.toLocaleString("es-AR")}</td>
-          </tr>
-        </tfoot>
-      </table>
-
-      <h3 style="border-bottom: 2px solid #DC2626; padding-bottom: 10px; margin-top: 30px;">Dirección de envío</h3>
-      <p style="background: #f8f8f8; padding: 15px; border-radius: 8px;">
-        ${data.shippingAddress}${data.shippingFloorApt ? ` · ${data.shippingFloorApt}` : ""}<br/>
-        ${data.shippingCity}, ${data.shippingProvince}<br/>
-        CP: ${data.shippingPostalCode}
-      </p>
-
-      <div style="text-align: center; margin-top: 30px; padding: 20px; background: #f8f8f8; border-radius: 8px;">
-        <p style="margin: 0 0 16px 0;">
-          <a href="${BASE_URL}/mi-pedido?ref=${data.externalReference}" style="color: #DC2626;">Seguí tu pedido en la web</a>
-          <span style="color: #999;"> — con la referencia y este mail</span>
-        </p>
-        <p style="margin: 0 0 10px 0;">¿Tenés alguna consulta?</p>
-        <a href="https://wa.me/message/CJPQFIY4XTSJC1" style="display: inline-block; background: #25D366; color: white; padding: 12px 24px; border-radius: 6px; text-decoration: none;">
-          Contactanos por WhatsApp
-        </a>
-      </div>
-
-      <div style="text-align: center; margin-top: 30px; padding-top: 20px; border-top: 1px solid #eee; color: #666; font-size: 12px;">
-        <p>Botinesala Sur - Botines de fútbol de alta calidad</p>
-        <p>Este email fue enviado a ${data.customerEmail}</p>
-      </div>
-    </body>
-    </html>
-  `;
-
-  const emailText = `
-¡Gracias por tu compra, ${data.customerName.split(" ")[0]}!
-
-Tu pedido #${data.externalReference} ha sido confirmado exitosamente.
-
-DETALLE DEL PEDIDO:
-${data.items.map((item) => `- ${item.productName}${item.productCode ? ` ${formatCodigo(item.productCode)}` : ""} (Talle ${item.size}) x${item.quantity} = $${item.totalPrice.toLocaleString("es-AR")}`).join("\n")}
-
-Subtotal: $${data.subtotal.toLocaleString("es-AR")}
-Envío: ${data.shippingZone === "coordinar" ? "A coordinar" : "$" + data.shippingCost.toLocaleString("es-AR")}
-TOTAL: $${data.total.toLocaleString("es-AR")}
-
-DIRECCIÓN DE ENVÍO:
-${data.shippingAddress}
-${data.shippingCity}, ${data.shippingProvince}
-CP: ${data.shippingPostalCode}
-
-Seguí tu pedido: ${BASE_URL}/mi-pedido?ref=${data.externalReference}
-
-¿Tenés alguna consulta? Contactanos por WhatsApp:
-https://wa.me/message/CJPQFIY4XTSJC1
-
----
-Botinesala Sur - Botines de fútbol de alta calidad
-  `;
+  const datos = { ...data, baseUrl: BASE_URL };
+  // El nombre se guarda en mayúsculas; el asunto saluda "Marcos", no "MARCOS"
+  const crudo = data.customerName.trim().split(/\s+/)[0] || "";
+  const nombre = crudo.charAt(0).toUpperCase() + crudo.slice(1).toLowerCase();
 
   try {
     const resendClient = getResend();
@@ -199,9 +93,9 @@ Botinesala Sur - Botines de fútbol de alta calidad
       from: `Botinesala Sur <${fromEmail}>`,
       to: data.customerEmail,
       replyTo: destinatariosAviso().length ? destinatariosAviso() : undefined,
-      subject: `Confirmación de compra #${data.externalReference} - Botinesala Sur`,
-      html: emailHtml,
-      text: emailText,
+      subject: `¡Listo${nombre ? `, ${nombre}` : ""}! Tu compra está confirmada — pedido ${numeroPedido(data.numero, data.externalReference)}`,
+      html: htmlConfirmacionCliente(datos),
+      text: textoConfirmacionCliente(datos),
     });
 
     console.log("Email sent successfully:", result);
@@ -289,7 +183,7 @@ export async function sendPendingPaymentEmail(data: OrderEmailData) {
       <div style="background: #f8f8f8; padding: 24px; border-radius: 8px;">
         <h2 style="margin-top: 0; color: #B45309;">Tu pedido está reservado, ${nombre}</h2>
         <p>
-          Anotamos tu pedido <strong>#${data.externalReference}</strong>, pero
+          Anotamos tu pedido <strong>${numeroPedido(data.numero, data.externalReference)}</strong>, pero
           todavía no nos figura el pago acreditado.
         </p>
         <p>
@@ -331,7 +225,7 @@ Botinesala Sur — Recibimos tu pedido
 
 Tu pedido está reservado, ${nombre}.
 
-Anotamos tu pedido #${data.externalReference}, pero todavía no nos figura el pago acreditado.
+Anotamos tu pedido ${numeroPedido(data.numero, data.externalReference)}, pero todavía no nos figura el pago acreditado.
 
 Si elegiste pagar en efectivo por Rapipago o Pago Fácil, completá el pago con el cupón que te dio MercadoPago. La acreditación puede tardar hasta 3 días hábiles.
 
@@ -353,7 +247,7 @@ Total: $${data.total.toLocaleString("es-AR")}
       from: `Botinesala Sur <${fromEmail}>`,
       to: data.customerEmail,
       replyTo: destinatariosAviso().length ? destinatariosAviso() : undefined,
-      subject: `Recibimos tu pedido #${data.externalReference} — falta el pago`,
+      subject: `Recibimos tu pedido ${numeroPedido(data.numero, data.externalReference)} — falta el pago`,
       html: emailHtml,
       text: emailText,
     });

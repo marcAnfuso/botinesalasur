@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { supabaseAdmin } from "@/lib/supabase";
 import { logEvent } from "@/lib/events-server";
 import { insertarPedido } from "@/lib/insertar-pedido";
+import { nombreProlijo, capitalizar, dniProlijo } from "@/lib/prolijo";
 
 interface CartItem {
   product: {
@@ -60,13 +61,13 @@ export async function POST(request: NextRequest) {
 
     const orden = {
       external_reference: externalReference,
-      customer_name: customer.name,
+      customer_name: nombreProlijo(customer.name),
       customer_email: customer.email,
       customer_phone: customer.phone,
-      customer_dni: customer.dni?.trim() || null,
-      shipping_address: customer.address,
-      shipping_floor_apt: customer.floorApt?.trim() || null,
-      shipping_city: customer.city,
+      customer_dni: customer.dni ? dniProlijo(customer.dni) || null : null,
+      shipping_address: capitalizar(customer.address),
+      shipping_floor_apt: customer.floorApt?.trim().toUpperCase() || null,
+      shipping_city: capitalizar(customer.city),
       shipping_province: customer.province,
       shipping_postal_code: customer.postalCode,
       shipping_zone: customer.shippingZone,
@@ -133,6 +134,7 @@ export async function POST(request: NextRequest) {
       success: true,
       orderId,
       externalReference,
+      numero: creada.data.numero ?? null,
     });
   } catch (error) {
     console.error("Error in WhatsApp order:", error);

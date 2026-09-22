@@ -1,5 +1,6 @@
 import Link from "next/link";
 import { destinatariosAviso } from "@/lib/email";
+import { numeroPedido } from "@/lib/pedido-numero";
 import {
   getAllProductsAdmin,
   getOrders,
@@ -235,7 +236,7 @@ export default async function AdminDashboard() {
                 <div className="flex-1 min-w-0">
                   <div className="flex flex-wrap items-center gap-2">
                     <span className="text-white font-medium">
-                      {order.externalReference || order.id.slice(0, 8)}
+                      {numeroPedido(order.numero, order.externalReference || order.id.slice(0, 8))}
                     </span>
                     <span
                       className={`px-2 py-0.5 rounded text-xs font-medium ${
