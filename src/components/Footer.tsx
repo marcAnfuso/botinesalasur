@@ -143,9 +143,11 @@ export default async function Footer() {
                   )}
                 </li>
               ))}
-              <li className="text-xs text-gray-500 pt-1">
-                El costo lo ves al finalizar la compra.
-              </li>
+              {zonas.some((z) => z.cost > 0) && (
+                <li className="text-xs text-gray-500 pt-1">
+                  El costo lo ves al finalizar la compra.
+                </li>
+              )}
             </ul>
           </div>
         </div>

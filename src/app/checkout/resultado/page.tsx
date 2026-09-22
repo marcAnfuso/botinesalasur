@@ -263,7 +263,11 @@ function CheckoutResultContent() {
                 <Fila etiqueta="Medio de pago">{MEDIOS[p.payment_type] ?? "MercadoPago"}</Fila>
               )}
               <Fila etiqueta="Entrega">
-                {p.shipping_zone_label ? `${p.shipping_zone_label} · a coordinar` : "A coordinar"}
+                {!p.shipping_zone_label
+                  ? "A coordinar"
+                  : /coordinar/i.test(p.shipping_zone_label)
+                  ? p.shipping_zone_label
+                  : `${p.shipping_zone_label} · a coordinar`}
               </Fila>
             </dl>
 

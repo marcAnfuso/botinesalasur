@@ -202,7 +202,7 @@ export default function CartDrawer({ isOpen, onClose }: CartDrawerProps) {
               </span>
             </div>
             <p className="text-xs text-gray-500 mb-4">
-              El costo de envío se calcula en el checkout.
+              El envío lo definís en el siguiente paso.
             </p>
             <Link
               href="/checkout"

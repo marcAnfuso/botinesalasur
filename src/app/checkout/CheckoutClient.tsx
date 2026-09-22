@@ -28,7 +28,7 @@ export default function CheckoutClient({ zonas }: { zonas: ShippingZone[] }) {
     city: "",
     province: "",
     postalCode: "",
-    shippingZone: zonas.find((z) => z.slug === "otro")?.slug ?? zonas[0]?.slug ?? "otro",
+    shippingZone: zonas[0]?.slug ?? "coordinar",
     notes: "",
   });
 
@@ -329,16 +329,20 @@ ${formData.notes ? `*Notas:* ${formData.notes}` : ""}${referencia ? `\n\nSeguí 
               <div className="space-y-4">
                 <fieldset>
                   <legend className="block text-sm font-medium text-gray-400 mb-2">
-                    ¿Cómo lo recibís? *
+                    {zonas.length === 1 ? "Envío" : "¿Cómo lo recibís? *"}
                   </legend>
                   <div className="space-y-2">
                     {zonas.map((z) => (
+                      // Con una sola forma de envío no hay nada que elegir: se
+                      // muestra como información, sin radio ni estado "elegido".
                       <label
                         key={z.slug}
-                        className={`flex items-start gap-3 p-3.5 rounded-lg border-2 cursor-pointer transition-colors ${
-                          formData.shippingZone === z.slug
-                            ? "border-primary bg-primary/10"
-                            : "border-dark-line hover:border-gray-600"
+                        className={`flex items-start gap-3 p-3.5 rounded-lg border-2 transition-colors ${
+                          zonas.length === 1
+                            ? "border-dark-line bg-dark/40"
+                            : formData.shippingZone === z.slug
+                            ? "border-primary bg-primary/10 cursor-pointer"
+                            : "border-dark-line hover:border-gray-600 cursor-pointer"
                         }`}
                       >
                         <input
@@ -368,7 +372,7 @@ ${formData.notes ? `*Notas:* ${formData.notes}` : ""}${referencia ? `\n\nSeguí 
                             <p className="text-xs text-gray-500 mt-0.5">{z.description}</p>
                           )}
                         </div>
-                        {formData.shippingZone === z.slug && (
+                        {zonas.length > 1 && formData.shippingZone === z.slug && (
                           <svg className="w-5 h-5 text-primary shrink-0 mt-0.5" fill="currentColor" viewBox="0 0 20 20">
                             <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clipRule="evenodd"/>
                           </svg>

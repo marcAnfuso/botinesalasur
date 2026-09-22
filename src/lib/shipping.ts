@@ -13,19 +13,12 @@ export interface ShippingZone {
 // aunque la migración todavía no se haya corrido.
 export const ZONAS_POR_DEFECTO: ShippingZone[] = [
   {
-    slug: "otro",
-    label: "Envío por Correo Argentino",
-    description: "Te llega a domicilio, a todo el país.",
-    cost: 5500,
-    sortOrder: 1,
-  },
-  {
     slug: "coordinar",
-    label: "A coordinar con el vendedor",
+    label: "Coordinar con el vendedor",
     description:
-      "No pagás el envío acá: te escribimos por WhatsApp y lo arreglamos (moto en el día, retiro, correo).",
+      "Por Vía Cargo o Correo Argentino. Nos comunicamos con vos para coordinarlo; el envío no se cobra acá.",
     cost: 0,
-    sortOrder: 2,
+    sortOrder: 1,
   },
 ];
 

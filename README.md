@@ -139,11 +139,12 @@ puede exponer el puerto local con un túnel (por ejemplo `ngrok http 3000`).
 ## Envíos
 
 Las opciones viven en la tabla `shipping_zones` y se editan desde el panel
-(`/admin/envios`), sin tocar código. Hoy son dos:
+(`/admin/envios`), sin tocar código. Por ahora hay una sola:
 
-- **Envío por Correo Argentino**: precio único que carga la tienda.
-- **A coordinar con el vendedor**: sin cargo en la web; se arregla por
-  WhatsApp (moto en el día, retiro, etc.).
+- **Coordinar con el vendedor**: sin cargo en la web; la tienda se comunica
+  con el cliente y lo manda por Vía Cargo o Correo Argentino (o moto en el
+  día). Con una sola opción el checkout la muestra como información, sin
+  nada que elegir. Si se agrega otra fila con costo, vuelve el selector.
 
 El checkout pide los datos que Correo exige para despachar: nombre, DNI,
 celular, email, código postal, provincia (lista fija, con el código que usa la
