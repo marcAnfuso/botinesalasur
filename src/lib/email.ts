@@ -106,13 +106,17 @@ export async function sendOrderConfirmationEmail(data: OrderEmailData) {
   }
 }
 
-export async function sendNewOrderNotification(data: OrderEmailData) {
+export async function sendNewOrderNotification(
+  data: OrderEmailData,
+  // Para el mail de prueba del panel: a quién mandarlo en vez de a la tienda
+  destinatariosForzados?: string[]
+) {
   if (!process.env.RESEND_API_KEY) {
     console.log("RESEND_API_KEY not configured, skipping email");
     return { success: false, error: "Email not configured" };
   }
 
-  const destinatarios = destinatariosAviso();
+  const destinatarios = destinatariosForzados?.length ? destinatariosForzados : destinatariosAviso();
   if (destinatarios.length === 0) {
     console.log("NOTIFICATION_EMAIL not configured, skipping admin notification");
     return { success: false, error: "Notification email not configured" };

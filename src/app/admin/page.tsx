@@ -1,6 +1,7 @@
 import Link from "next/link";
 import { destinatariosAviso } from "@/lib/email";
 import { numeroPedido } from "@/lib/pedido-numero";
+import MailPrueba from "@/components/admin/MailPrueba";
 import {
   getAllProductsAdmin,
   getOrders,
@@ -328,6 +329,7 @@ export default async function AdminDashboard() {
             </dd>
           </div>
         </dl>
+        <MailPrueba porDefecto={avisosA[0] ?? ""} />
         <p className="px-4 py-3 border-t border-gray-800 text-xs text-gray-500">
           Estos valores se cambian en Vercel (Settings → Environment Variables) y
           toman efecto con un redeploy.
