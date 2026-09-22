@@ -77,15 +77,25 @@ export default function ProductCard({ product, priority }: ProductCardProps) {
             </p>
           )}
 
-          <div className="mt-auto pt-4 flex items-end justify-between gap-3">
-            <div>
-              <span
-                className={`display text-2xl tnum ${
-                  hasStock ? "text-white" : "text-gray-500"
-                }`}
-              >
-                {formatPrice(product.price)}
-              </span>
+          <div className="mt-auto pt-4 flex items-end justify-between gap-2">
+            <div className="min-w-0">
+              <div className="flex flex-wrap items-center gap-x-1.5 gap-y-1.5">
+                <span
+                  className={`display text-2xl tnum ${
+                    hasStock ? "text-white" : "text-gray-500"
+                  }`}
+                >
+                  {formatPrice(product.price)}
+                </span>
+                {hasStock && (
+                  <span
+                    className="text-[0.625rem] font-semibold uppercase tracking-[0.06em] text-gray-300 bg-dark px-1.5 py-1 whitespace-nowrap"
+                    title="3 cuotas sin interés con MercadoPago"
+                  >
+                    3 sin interés
+                  </span>
+                )}
+              </div>
               {product.transferPrice != null && hasStock && (
                 <p className="text-xs text-field tnum">
                   {formatPrice(product.transferPrice)} por transferencia

@@ -259,6 +259,11 @@ export default function ProductosAdminClient({
                       <p className="mt-1 text-lg font-semibold text-white tnum">
                         {formatPrice(product.price)}
                       </p>
+                      {product.transferPrice != null && (
+                        <p className="text-xs text-field tnum">
+                          {formatPrice(product.transferPrice)} transferencia
+                        </p>
+                      )}
 
                       <div className="mt-2 flex flex-wrap items-center gap-x-3 gap-y-1 text-xs">
                         <span
@@ -393,8 +398,15 @@ export default function ProductosAdminClient({
                       <td className="px-4 py-3 text-sm text-gray-400 capitalize">
                         {product.category}
                       </td>
-                      <td className="px-4 py-3 font-medium text-white tnum whitespace-nowrap">
-                        {formatPrice(product.price)}
+                      <td className="px-4 py-3 whitespace-nowrap">
+                        <span className="font-medium text-white tnum">
+                          {formatPrice(product.price)}
+                        </span>
+                        {product.transferPrice != null && (
+                          <span className="block text-xs text-field tnum">
+                            {formatPrice(product.transferPrice)} transferencia
+                          </span>
+                        )}
                       </td>
                       <td className="px-4 py-3">
                         <button
