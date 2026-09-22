@@ -17,6 +17,10 @@ import {
 export const revalidate = 0;
 
 export default async function AdminDashboard() {
+  const avisosA = process.env.NOTIFICATION_EMAIL?.trim() || null;
+  const remitente = process.env.RESEND_FROM_EMAIL?.trim() || "onboarding@resend.dev (por defecto)";
+  const mailsActivos = Boolean(process.env.RESEND_API_KEY);
+  const mpActivo = Boolean(process.env.MERCADOPAGO_ACCESS_TOKEN);
   const [products, orders] = await Promise.all([
     getAllProductsAdmin(),
     getOrders(),
@@ -279,14 +283,46 @@ export default async function AdminDashboard() {
         </div>
       </div>
 
-      {/* Info Box */}
-      <div className="mt-8 bg-field/10 border border-field/30 rounded-xl p-6">
-        <h3 className="font-semibold text-field mb-2">
-          Conectado a Supabase
-        </h3>
-        <p className="text-gray-400 text-sm">
-          Los datos que ves se cargan en tiempo real desde la base de datos.
-          Los cambios que hagas desde el panel se reflejarán inmediatamente en la tienda.
+      {/* Configuración: qué casilla recibe los avisos y qué está conectado.
+          Sólo direcciones y estados; ninguna clave se muestra acá. */}
+      <div className="mt-8 bg-dark-card rounded-xl border border-gray-800 overflow-hidden">
+        <div className="p-6 border-b border-gray-800">
+          <h2 className="font-semibold text-white">Avisos y conexiones</h2>
+          <p className="text-sm text-gray-400 mt-1">
+            Cada compra confirmada manda un aviso a la tienda y una confirmación al cliente.
+          </p>
+        </div>
+        <dl className="divide-y divide-gray-800 text-sm">
+          <div className="flex items-center justify-between gap-4 p-4">
+            <dt className="text-gray-400">Los avisos de venta llegan a</dt>
+            <dd className="text-right">
+              {avisosA ? (
+                <span className="text-white break-all">{avisosA}</span>
+              ) : (
+                <span className="text-yellow-500">sin configurar — nadie recibe el aviso</span>
+              )}
+            </dd>
+          </div>
+          <div className="flex items-center justify-between gap-4 p-4">
+            <dt className="text-gray-400">Los mails salen desde</dt>
+            <dd className="text-white text-right break-all">{remitente}</dd>
+          </div>
+          <div className="flex items-center justify-between gap-4 p-4">
+            <dt className="text-gray-400">Envío de mails (Resend)</dt>
+            <dd className={mailsActivos ? "text-field" : "text-yellow-500"}>
+              {mailsActivos ? "conectado" : "desactivado: falta la clave"}
+            </dd>
+          </div>
+          <div className="flex items-center justify-between gap-4 p-4">
+            <dt className="text-gray-400">Cobros (MercadoPago)</dt>
+            <dd className={mpActivo ? "text-field" : "text-yellow-500"}>
+              {mpActivo ? "conectado" : "desactivado: falta el token"}
+            </dd>
+          </div>
+        </dl>
+        <p className="px-4 py-3 border-t border-gray-800 text-xs text-gray-500">
+          Estos valores se cambian en Vercel (Settings → Environment Variables) y
+          toman efecto con un redeploy.
         </p>
       </div>
     </div>
