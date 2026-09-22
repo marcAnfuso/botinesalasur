@@ -1,4 +1,5 @@
 import Link from "next/link";
+import { destinatariosAviso } from "@/lib/email";
 import {
   getAllProductsAdmin,
   getOrders,
@@ -17,7 +18,7 @@ import {
 export const revalidate = 0;
 
 export default async function AdminDashboard() {
-  const avisosA = process.env.NOTIFICATION_EMAIL?.trim() || null;
+  const avisosA = destinatariosAviso();
   const remitente = process.env.RESEND_FROM_EMAIL?.trim() || "onboarding@resend.dev (por defecto)";
   const mailsActivos = Boolean(process.env.RESEND_API_KEY);
   const mpActivo = Boolean(process.env.MERCADOPAGO_ACCESS_TOKEN);
@@ -296,8 +297,14 @@ export default async function AdminDashboard() {
           <div className="flex items-center justify-between gap-4 p-4">
             <dt className="text-gray-400">Los avisos de venta llegan a</dt>
             <dd className="text-right">
-              {avisosA ? (
-                <span className="text-white break-all">{avisosA}</span>
+              {avisosA.length > 0 ? (
+                <span className="text-white break-all">
+                  {avisosA.map((d) => (
+                    <span key={d} className="block">
+                      {d}
+                    </span>
+                  ))}
+                </span>
               ) : (
                 <span className="text-yellow-500">sin configurar — nadie recibe el aviso</span>
               )}

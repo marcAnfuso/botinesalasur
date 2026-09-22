@@ -51,6 +51,18 @@ interface OrderEmailData {
   createdAt?: string | null;
 }
 
+// NOTIFICATION_EMAIL admite varias casillas separadas por coma (o punto y
+// coma): "fede@…, alan@…". Todas reciben el aviso de venta y las respuestas
+// de los clientes.
+export function destinatariosAviso(): string[] {
+  const crudo = process.env.NOTIFICATION_EMAIL ?? "";
+  const vistos = new Set<string>();
+  return crudo
+    .split(/[,;\s]+/)
+    .map((d) => d.trim())
+    .filter((d) => d.includes("@") && !vistos.has(d.toLowerCase()) && vistos.add(d.toLowerCase()));
+}
+
 export async function sendOrderConfirmationEmail(data: OrderEmailData) {
   if (!process.env.RESEND_API_KEY) {
     console.log("RESEND_API_KEY not configured, skipping email");
@@ -186,7 +198,7 @@ Botinesala Sur - Botines de fútbol de alta calidad
     const result = await resendClient.emails.send({
       from: `Botinesala Sur <${fromEmail}>`,
       to: data.customerEmail,
-      replyTo: process.env.NOTIFICATION_EMAIL || undefined,
+      replyTo: destinatariosAviso().length ? destinatariosAviso() : undefined,
       subject: `Confirmación de compra #${data.externalReference} - Botinesala Sur`,
       html: emailHtml,
       text: emailText,
@@ -206,8 +218,8 @@ export async function sendNewOrderNotification(data: OrderEmailData) {
     return { success: false, error: "Email not configured" };
   }
 
-  const notificationEmail = process.env.NOTIFICATION_EMAIL;
-  if (!notificationEmail) {
+  const destinatarios = destinatariosAviso();
+  if (destinatarios.length === 0) {
     console.log("NOTIFICATION_EMAIL not configured, skipping admin notification");
     return { success: false, error: "Notification email not configured" };
   }
@@ -225,7 +237,7 @@ export async function sendNewOrderNotification(data: OrderEmailData) {
 
     const result = await resendClient.emails.send({
       from: `Botinesala Sur <${fromEmail}>`,
-      to: notificationEmail,
+      to: destinatarios,
       // El asunto ya cuenta lo importante: cuánto, quién y cuántos pares.
       subject: `Nueva venta · $${Math.round(data.total).toLocaleString("es-AR")} · ${data.customerName} (${unidades} ${unidades === 1 ? "par" : "pares"})`,
       html: htmlNuevoPedido(datos),
@@ -340,7 +352,7 @@ Total: $${data.total.toLocaleString("es-AR")}
     const result = await resendClient.emails.send({
       from: `Botinesala Sur <${fromEmail}>`,
       to: data.customerEmail,
-      replyTo: process.env.NOTIFICATION_EMAIL || undefined,
+      replyTo: destinatariosAviso().length ? destinatariosAviso() : undefined,
       subject: `Recibimos tu pedido #${data.externalReference} — falta el pago`,
       html: emailHtml,
       text: emailText,
