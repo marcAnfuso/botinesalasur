@@ -12,6 +12,7 @@ import { ShippingZone } from "@/lib/shipping";
 import { track } from "@/lib/events";
 import { formatCodigo } from "@/lib/codigo";
 import GuiaDeTalles from "@/components/GuiaDeTalles";
+import { CUOTAS_SIN_INTERES } from "@/lib/cuotas";
 import { useToast } from "@/components/Toast";
 
 interface ProductoClientProps {
@@ -159,10 +160,14 @@ export default function ProductoClient({
             <p className="text-3xl font-bold text-white tnum">
               {formatPrice(product.price)}
             </p>
-            <p className="mt-1 text-sm text-gray-400">
-              3 cuotas sin interés de{" "}
-              <span className="text-white tnum">{formatPrice(Math.round(product.price / 3))}</span>
-            </p>
+            {CUOTAS_SIN_INTERES > 0 && (
+              <p className="mt-1 text-sm text-gray-400">
+                {CUOTAS_SIN_INTERES} cuotas sin interés de{" "}
+                <span className="text-white tnum">
+                  {formatPrice(Math.round(product.price / CUOTAS_SIN_INTERES))}
+                </span>
+              </p>
+            )}
             {product.transferPrice != null && (
               <p className="mt-1 text-sm text-field">
                 <span className="font-semibold tnum">{formatPrice(product.transferPrice)}</span>{" "}

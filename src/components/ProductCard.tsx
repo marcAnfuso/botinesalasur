@@ -4,6 +4,7 @@ import Image from "next/image";
 import Link from "next/link";
 import { Product } from "@/types";
 import { formatPrice } from "@/lib/supabase-data";
+import { CUOTAS_SIN_INTERES } from "@/lib/cuotas";
 
 interface ProductCardProps {
   product: Product;
@@ -87,12 +88,12 @@ export default function ProductCard({ product, priority }: ProductCardProps) {
                 >
                   {formatPrice(product.price)}
                 </span>
-                {hasStock && (
+                {hasStock && CUOTAS_SIN_INTERES > 0 && (
                   <span
                     className="text-[0.625rem] font-semibold uppercase tracking-[0.06em] text-gray-300 bg-dark px-1.5 py-1 whitespace-nowrap"
-                    title="3 cuotas sin interés con MercadoPago"
+                    title={`${CUOTAS_SIN_INTERES} cuotas sin interés con MercadoPago`}
                   >
-                    3 sin interés
+                    {CUOTAS_SIN_INTERES} sin interés
                   </span>
                 )}
               </div>
