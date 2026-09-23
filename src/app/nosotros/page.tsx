@@ -81,9 +81,9 @@ export default function NosotrosPage() {
             (más de {TIENDA.instagramSeguidores.toLocaleString("es-AR")} seguidores)
           </li>
           <li>
-            WhatsApp:{" "}
+            WhatsApp / teléfono:{" "}
             <a href={TIENDA.whatsapp} target="_blank" rel="noopener noreferrer" className="text-primary hover:underline underline-offset-4">
-              escribinos
+              {TIENDA.telefono}
             </a>
           </li>
           <li>

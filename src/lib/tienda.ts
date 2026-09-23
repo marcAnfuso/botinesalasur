@@ -8,6 +8,10 @@ export const TIENDA = {
   partido: "Lomas de Zamora",
   zona: "Zona Sur del GBA",
   provincia: "Buenos Aires",
+  codigoPostal: "B1836",
+  // El mismo número que figura en el Perfil de Empresa de Google
+  telefono: "011 6233-3587",
+  telefonoE164: "+541162333587",
   // Calle y número del showroom. Hasta que Alan la confirme, la web dice
   // "a coordinar por WhatsApp" y el Perfil de Empresa puede ir sin dirección
   // visible (negocio con área de servicio).
