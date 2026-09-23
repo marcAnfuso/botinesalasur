@@ -31,7 +31,7 @@ export const metadata: Metadata = {
     template: "%s | Botinesala Sur",
   },
   description:
-    "Botines de fútsal, sintético y fútbol 11 con envíos a todo el país y 3 cuotas sin interés. Showroom en Llavallol (Lomas de Zamora, Zona Sur) para probarte el par.",
+    "Botines de fútsal, fútbol 5 (sintético) y fútbol 11 con envíos a todo el país y 3 cuotas sin interés. Showroom en Llavallol (Lomas de Zamora, Zona Sur) para probarte el par.",
   keywords: [
     "botines",
     "futbol",

@@ -9,11 +9,11 @@ export const CATEGORIAS_TEXTO: Record<string, { titulo: string; intro: string; d
       "Botines de fútsal con suela lisa para parquet y cemento. Nike, Adidas, Joma y Umbro con stock por talle, envíos a todo el país y showroom en Llavallol.",
   },
   sintetico: {
-    titulo: "Botines para sintético",
+    titulo: "Botines para sintético (fútbol 5)",
     intro:
       "Tapones cortos y muchos, de goma, para césped sintético (los de fútbol 5 y 7 al aire libre): agarran sin clavarse y no castigan la rodilla. Es el botín que más se usa en Zona Sur.",
     descripcion:
-      "Botines para césped sintético con tapones cortos de goma. Nike, Adidas y más, stock por talle, envíos a todo el país y showroom en Llavallol.",
+      "Botines para fútbol 5 en césped sintético, con tapones cortos de goma. Nike, Adidas y más, stock por talle, envíos a todo el país y showroom en Llavallol.",
   },
   futbol11: {
     titulo: "Botines de fútbol 11",

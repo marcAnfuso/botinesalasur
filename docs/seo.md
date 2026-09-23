@@ -96,9 +96,9 @@ Lo que más pesa y **no es código** (Alan):
 1. **Reseñas en el Perfil de Empresa de Google.** "4,9 estrellas · 80 reseñas"
    es la frase que más repiten las IA. Pedir reseña después de cada entrega
    (link directo desde el mail de confirmación, cuando lo tengan).
-2. **Números reales para publicar**: seguidores de Instagram, años vendiendo,
-   pares entregados. Cuando los pasen, van a `/nosotros` y a la home. No se
-   inventan.
+2. **Números reales publicados** (22-9): más de 11.000 seguidores en Instagram,
+   vendiendo desde 2024, compradores mostrando su par en las historias
+   destacadas. Falta: pares entregados / pedidos, cuando tengan la cuenta.
 3. **Presencia fuera del sitio que las IA leen**: tienda oficial en
    MercadoLibre (con calificaciones), Instagram con la bio completa (qué,
    dónde, link), aparecer en listas de "tiendas de botines en zona sur"

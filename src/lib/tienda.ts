@@ -16,6 +16,10 @@ export const TIENDA = {
   geo: { lat: -34.7947, lng: -58.4406 },
   whatsapp: "https://wa.me/message/CJPQFIY4XTSJC1",
   instagram: "https://www.instagram.com/botinesalasur/",
+  // Dato público del perfil, 22-9-2026: 11,4 mil. Se muestra redondeado
+  // hacia abajo para no quedar viejo enseguida. Actualizar cada tanto.
+  instagramSeguidores: 11000,
+  desde: 2024,
   // Dónde llega la moto en el día
   localidadesMoto: [
     "Llavallol", "Lomas de Zamora", "Temperley", "Banfield", "Turdera",

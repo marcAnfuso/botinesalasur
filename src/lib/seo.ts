@@ -68,6 +68,7 @@ export const jsonLdTienda = {
   geo: { "@type": "GeoCoordinates", latitude: TIENDA.geo.lat, longitude: TIENDA.geo.lng },
   areaServed: [TIENDA.partido, "Lanús", "Almirante Brown", "Esteban Echeverría", "Zona Sur del Gran Buenos Aires", "Argentina"].map((n) => ({ "@type": "Place", name: n })),
   sameAs: [TIENDA.instagram],
+  foundingDate: String(TIENDA.desde),
   currenciesAccepted: "ARS",
   paymentAccepted: "MercadoPago, transferencia, efectivo",
 };

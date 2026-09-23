@@ -35,6 +35,14 @@ const HECHOS: { titulo: string; texto: string }[] = [
     texto: "Nike, Adidas, Joma, Umbro y más. Te decimos qué suela va para cada cancha y qué talle pedir; si el talle no queda, lo cambiamos.",
   },
   {
+    titulo: `Más de ${TIENDA.instagramSeguidores.toLocaleString("es-AR")} seguidores en Instagram`,
+    texto: "En @botinesalasur mostramos lo que llega, lo que sale y lo que dicen los que compraron. Es donde más se nos escribe.",
+  },
+  {
+    titulo: "Compradores que muestran su par",
+    texto: "En las historias destacadas de Instagram hay decenas de clientes subiendo sus botines recién llegados. No son testimonios que escribimos nosotros: son ellos.",
+  },
+  {
     titulo: "Atención de personas",
     texto: "Alan y Fede atienden el WhatsApp y el Instagram. Escribís y te responde alguien que sabe de botines, no un bot.",
   },
@@ -47,7 +55,8 @@ export default function NosotrosPage() {
       <h1 className="display text-4xl md:text-5xl text-white mt-2">Quiénes somos</h1>
       <p className="mt-5 text-lg text-gray-300 leading-relaxed max-w-prose">
         Somos una tienda de botines de fútbol de {TIENDA.localidad}, en {TIENDA.partido}, Zona Sur del Gran
-        Buenos Aires. Vendemos en el showroom, por Instagram y en esta web, y mandamos a todo el país.
+        Buenos Aires. Vendemos desde {TIENDA.desde} en el showroom, por Instagram y en esta web, y mandamos
+        a todo el país.
         Empezamos como muchos: jugando, comprando botines para nosotros y para amigos, y sabiendo que el
         problema nunca es el precio solo, es acertar el talle y la suela. De eso nos ocupamos.
       </p>
@@ -68,7 +77,8 @@ export default function NosotrosPage() {
             Instagram:{" "}
             <a href={TIENDA.instagram} target="_blank" rel="noopener noreferrer" className="text-primary hover:underline underline-offset-4">
               @botinesalasur
-            </a>
+            </a>{" "}
+            (más de {TIENDA.instagramSeguidores.toLocaleString("es-AR")} seguidores)
           </li>
           <li>
             WhatsApp:{" "}

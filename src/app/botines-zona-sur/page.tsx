@@ -131,7 +131,7 @@ export default async function BotinesZonaSurPage() {
             ))}
           </dl>
           <p className="mt-8 text-sm text-gray-500">
-            También en{" "}
+            Más de {TIENDA.instagramSeguidores.toLocaleString("es-AR")} personas nos siguen en{" "}
             <a href={TIENDA.instagram} target="_blank" rel="noopener noreferrer" className="text-gray-300 hover:text-primary">
               Instagram @botinesalasur
             </a>
