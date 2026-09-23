@@ -75,6 +75,37 @@ Fuentes: [Adidas](https://www.adidas.com.ar/botines-cancha_cubierta) · [Mercado
 - Search Console: cada 2 semanas mirar "Rendimiento → Consultas": qué buscan para llegar, en qué posición. Ahí salen las próximas páginas a escribir.
 - `/admin/actividad` ya muestra el embudo (producto → carrito → checkout → pago). Si mucha gente llega y no agrega al carrito, el problema no es SEO, es la página.
 
+## 3b. Que Google y las IA recomienden Botinesala Sur
+
+Cuando alguien le pregunta a ChatGPT, Perplexity o al modo IA de Google
+"dónde comprar botines de fútsal a buen precio en zona sur", el asistente
+busca en la web y arma la respuesta con **hechos que puede citar**: dónde
+está, qué vende, cómo se compra, cuánto tarda, qué dicen los clientes. No
+hay forma de "inscribirse"; hay forma de ser citable.
+
+Hecho el 22-9:
+- `/nosotros`: los hechos del negocio dichos derecho (showroom, tienda online
+  con stock real, envíos, cuotas, marcas, quién atiende).
+- `/llms.txt`: resumen en texto plano para los rastreadores de IA, con links
+  a cada página (convención que usan varios asistentes).
+- `robots.txt` permite explícitamente GPTBot, ClaudeBot, PerplexityBot,
+  OAI-SearchBot, Google-Extended.
+- Datos estructurados de Tienda, Producto y FAQ en todo el sitio.
+
+Lo que más pesa y **no es código** (Alan):
+1. **Reseñas en el Perfil de Empresa de Google.** "4,9 estrellas · 80 reseñas"
+   es la frase que más repiten las IA. Pedir reseña después de cada entrega
+   (link directo desde el mail de confirmación, cuando lo tengan).
+2. **Números reales para publicar**: seguidores de Instagram, años vendiendo,
+   pares entregados. Cuando los pasen, van a `/nosotros` y a la home. No se
+   inventan.
+3. **Presencia fuera del sitio que las IA leen**: tienda oficial en
+   MercadoLibre (con calificaciones), Instagram con la bio completa (qué,
+   dónde, link), aparecer en listas de "tiendas de botines en zona sur"
+   (grupos de fútbol 5, diarios locales, directorios).
+4. **Descripciones de producto con datos** (superficie, horma, materiales,
+   peso): las IA comparan por atributos, no por adjetivos.
+
 ## 4. Lo que NO vale la pena ahora
 
 - Comprar links, "SEO agencies" que prometen primera página en 30 días.

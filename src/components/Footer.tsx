@@ -140,6 +140,11 @@ export default async function Footer() {
                 </Link>
               </li>
               <li>
+                <Link href="/nosotros" className="text-gray-400 hover:text-primary transition-colors">
+                  Quiénes somos
+                </Link>
+              </li>
+              <li>
                 <Link href="/envios-y-cambios" className="text-gray-400 hover:text-primary transition-colors">
                   Envíos y cambios
                 </Link>

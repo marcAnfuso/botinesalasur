@@ -14,6 +14,7 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     { url: `${BASE_URL}/`, lastModified: ahora, changeFrequency: "daily", priority: 1 },
     { url: `${BASE_URL}/catalogo`, lastModified: ahora, changeFrequency: "daily", priority: 0.9 },
     { url: `${BASE_URL}/botines-zona-sur`, lastModified: ahora, changeFrequency: "weekly", priority: 0.9 },
+    { url: `${BASE_URL}/nosotros`, lastModified: ahora, changeFrequency: "monthly", priority: 0.6 },
     { url: `${BASE_URL}/envios-y-cambios`, lastModified: ahora, changeFrequency: "monthly", priority: 0.5 },
     { url: `${BASE_URL}/preguntas-frecuentes`, lastModified: ahora, changeFrequency: "monthly", priority: 0.5 },
     ...categories.map((c) => ({

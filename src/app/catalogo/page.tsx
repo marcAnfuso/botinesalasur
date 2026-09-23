@@ -26,10 +26,6 @@ export async function generateMetadata({ searchParams }: { searchParams: Filtros
 }
 
 async function CatalogoContent({ filtros }: { filtros: Filtros }) {
-  // Las categorías viven en /botines/<categoria>; la URL vieja redirige.
-  if (filtros.categoria && categories.some((c) => c.slug === filtros.categoria)) {
-    permanentRedirect(`/botines/${filtros.categoria}`);
-  }
   const products = await getProducts();
 
   // El filtro muestra las marcas que de verdad tienen productos cargados,
@@ -73,6 +69,12 @@ function CatalogoLoading() {
 }
 
 export default function CatalogoPage({ searchParams }: { searchParams: Filtros }) {
+  // Las categorías viven en /botines/<categoria>; la URL vieja redirige con
+  // 308. Va acá, fuera del Suspense: adentro, con la página ya en camino,
+  // Next sólo puede redirigir del lado del cliente y Google ve un 200.
+  if (searchParams.categoria && categories.some((c) => c.slug === searchParams.categoria)) {
+    permanentRedirect(`/botines/${searchParams.categoria}`);
+  }
   return (
     <Suspense fallback={<CatalogoLoading />}>
       <CatalogoContent filtros={searchParams} />
