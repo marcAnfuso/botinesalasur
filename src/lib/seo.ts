@@ -3,6 +3,7 @@ import { nombreProducto } from "./nombre-producto";
 import { formatCodigo } from "./codigo";
 import { categories } from "./supabase-data";
 import { TIENDA } from "./tienda";
+import { urlProducto } from "./producto-url";
 
 export const BASE_URL = process.env.NEXT_PUBLIC_BASE_URL || "https://botinesalasur.com.ar";
 
@@ -39,7 +40,7 @@ export function jsonLdProducto(p: Product) {
     category: nombreCategoria(p.category),
     offers: {
       "@type": "Offer",
-      url: `${BASE_URL}/producto/${p.id}`,
+      url: `${BASE_URL}${urlProducto(p)}`,
       priceCurrency: "ARS",
       price: p.price,
       availability: hayStock ? "https://schema.org/InStock" : "https://schema.org/OutOfStock",

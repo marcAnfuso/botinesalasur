@@ -20,7 +20,10 @@ interface CatalogoClientProps {
   brands: string[];
   // Filtros que vienen en la URL, leídos en el servidor: así el grillado se
   // dibuja ya filtrado en el HTML, sin esperar al navegador.
-  inicial: { categoria: string; q: string };
+  inicial: { categoria: string; q: string; marca: string };
+  // Las páginas de categoría traen su propio título y texto
+  titulo?: string;
+  intro?: string;
 }
 
 // useSearchParams obliga a dibujar en el navegador todo lo que está adentro
@@ -29,13 +32,14 @@ interface CatalogoClientProps {
 function SincronizarConUrl({
   onCambio,
 }: {
-  onCambio: (categoria: string, q: string | null, foco: boolean) => void;
+  onCambio: (categoria: string | null, q: string | null, marca: string | null, foco: boolean) => void;
 }) {
   const searchParams = useSearchParams();
   useEffect(() => {
     onCambio(
-      searchParams.get("categoria") || "",
+      searchParams.get("categoria"),
       searchParams.get("q"),
+      searchParams.get("marca"),
       searchParams.get("buscar") === "1"
     );
     // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -48,19 +52,23 @@ export default function CatalogoClient({
   categories,
   brands,
   inicial,
+  titulo,
+  intro,
 }: CatalogoClientProps) {
   const [query, setQuery] = useState(inicial.q);
   const inputBusqueda = useRef<HTMLInputElement>(null);
 
   const [selectedCategory, setSelectedCategory] = useState(inicial.categoria);
-  const [selectedBrand, setSelectedBrand] = useState("");
+  const [selectedBrand, setSelectedBrand] = useState(inicial.marca);
   const [selectedSize, setSelectedSize] = useState("");
   const [sortBy, setSortBy] = useState("featured");
   const [showFilters, setShowFilters] = useState(false);
 
-  const sincronizar = (categoria: string, q: string | null, foco: boolean) => {
-    setSelectedCategory(categoria);
+  const sincronizar = (categoria: string | null, q: string | null, marca: string | null, foco: boolean) => {
+    // En /botines/<categoria> la categoría viene fija por props, no por la URL
+    if (categoria !== null) setSelectedCategory(categoria);
     if (q !== null) setQuery(q);
+    if (marca !== null) setSelectedBrand(marca);
     // La lupa del header manda acá pidiendo el foco en el buscador.
     if (foco) inputBusqueda.current?.focus();
   };
@@ -158,7 +166,10 @@ export default function CatalogoClient({
     <div className="max-w-7xl mx-auto px-4 py-8">
       {/* Header */}
       <div className="mb-8">
-        <h1 className="display text-4xl md:text-5xl text-white mb-4">Catálogo</h1>
+        <h1 className="display text-4xl md:text-5xl text-white mb-4">{titulo ?? "Catálogo"}</h1>
+          {intro && (
+            <p className="mt-3 text-gray-400 max-w-3xl leading-relaxed">{intro}</p>
+          )}
 
         <div className="flex flex-col sm:flex-row sm:items-center gap-3">
           <div className="relative sm:max-w-sm w-full">

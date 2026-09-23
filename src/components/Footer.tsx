@@ -6,10 +6,10 @@ const WHATSAPP = "https://wa.me/message/CJPQFIY4XTSJC1";
 const INSTAGRAM = "https://instagram.com/botinesalasur";
 
 const CATEGORIAS = [
-  { label: "Fútsal", href: "/catalogo?categoria=futsal" },
-  { label: "Sintético", href: "/catalogo?categoria=sintetico" },
-  { label: "Fútbol 11", href: "/catalogo?categoria=futbol11" },
-  { label: "Accesorios", href: "/catalogo?categoria=accesorios" },
+  { label: "Fútsal", href: "/botines/futsal" },
+  { label: "Sintético", href: "/botines/sintetico" },
+  { label: "Fútbol 11", href: "/botines/futbol11" },
+  { label: "Accesorios", href: "/botines/accesorios" },
   { label: "Catálogo completo", href: "/catalogo" },
 ];
 
@@ -137,6 +137,16 @@ export default async function Footer() {
                   className="text-gray-400 hover:text-primary transition-colors"
                 >
                   Botines en Zona Sur
+                </Link>
+              </li>
+              <li>
+                <Link href="/envios-y-cambios" className="text-gray-400 hover:text-primary transition-colors">
+                  Envíos y cambios
+                </Link>
+              </li>
+              <li>
+                <Link href="/preguntas-frecuentes" className="text-gray-400 hover:text-primary transition-colors">
+                  Preguntas frecuentes
                 </Link>
               </li>
             </ul>

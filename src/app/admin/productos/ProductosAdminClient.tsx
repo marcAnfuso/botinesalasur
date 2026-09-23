@@ -10,6 +10,7 @@ import { BulkPriceMode, calcularPrecio } from "@/lib/bulk-price";
 import BulkPriceBar from "./BulkPriceBar";
 import { formatCodigo } from "@/lib/codigo";
 import AjusteStock from "@/components/AjusteStock";
+import { urlProducto } from "@/lib/producto-url";
 
 interface ProductosAdminClientProps {
   products: Product[];
@@ -306,7 +307,7 @@ export default function ProductosAdminClient({
                       Editar
                     </Link>
                     <Link
-                      href={`/producto/${product.id}`}
+                      href={urlProducto(product)}
                       target="_blank"
                       className="flex-1 py-2.5 text-center text-sm text-gray-300 hover:text-white hover:bg-dark-lighter transition-colors"
                     >
@@ -457,7 +458,7 @@ export default function ProductosAdminClient({
                             </svg>
                           </Link>
                           <Link
-                            href={`/producto/${product.id}`}
+                            href={urlProducto(product)}
                             target="_blank"
                             className="p-2 text-gray-400 hover:text-white transition-colors"
                             title="Ver en la tienda"

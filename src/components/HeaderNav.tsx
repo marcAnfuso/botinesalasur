@@ -6,10 +6,10 @@ import { usePathname, useSearchParams } from "next/navigation";
 export const NAV = [
   { label: "Inicio", href: "/" },
   { label: "Catálogo", href: "/catalogo" },
-  { label: "Fútsal", href: "/catalogo?categoria=futsal" },
-  { label: "Sintético", href: "/catalogo?categoria=sintetico" },
-  { label: "Fútbol 11", href: "/catalogo?categoria=futbol11" },
-  { label: "Accesorios", href: "/catalogo?categoria=accesorios" },
+  { label: "Fútsal", href: "/botines/futsal" },
+  { label: "Sintético", href: "/botines/sintetico" },
+  { label: "Fútbol 11", href: "/botines/futbol11" },
+  { label: "Accesorios", href: "/botines/accesorios" },
 ];
 
 // useSearchParams obliga a una frontera de Suspense: vive acá y no en el

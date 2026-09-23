@@ -155,6 +155,23 @@ export async function getProductById(id: string): Promise<Product | null> {
   return transformProduct(product, variants || []);
 }
 
+// Obtener un producto por su código corto (#0032 → 32): lo usa la URL con nombre
+export async function getProductByCodigo(codigo: number): Promise<Product | null> {
+  // codigo no está en los tipos generados de Supabase: se consulta sin tipar
+  const { data, error } = await supabase
+    .from("products")
+    .select("*")
+    .eq("codigo" as never, codigo as never)
+    .maybeSingle();
+  const product = data as any;
+  if (error || !product) return null;
+  const { data: variants } = await supabase
+    .from("product_variants")
+    .select("*")
+    .eq("product_id", product.id);
+  return transformProduct(product, variants || []);
+}
+
 // Formatear precio
 export function formatPrice(price: number): string {
   return new Intl.NumberFormat("es-AR", {

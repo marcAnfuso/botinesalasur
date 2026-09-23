@@ -83,7 +83,7 @@ export default function ProductoClient({
               <li>/</li>
               <li>
                 <Link
-                  href={`/catalogo?categoria=${category.slug}`}
+                  href={`/botines/${category.slug}`}
                   className="hover:text-white transition-colors"
                 >
                   {category.name}
@@ -142,9 +142,13 @@ export default function ProductoClient({
         <div className="space-y-6">
           {/* Brand & Name */}
           <div>
-            <span className="text-primary font-medium uppercase tracking-wider">
+            <Link
+              href={`/catalogo?marca=${encodeURIComponent(product.brand)}`}
+              className="text-primary font-medium uppercase tracking-wider hover:underline underline-offset-4"
+              title={`Ver todos los ${product.brand}`}
+            >
               {product.brand}
-            </span>
+            </Link>
             {product.codigo && (
               <span className="ml-3 text-xs tnum text-gray-500" title="Código del producto">
                 Cód. {formatCodigo(product.codigo)}

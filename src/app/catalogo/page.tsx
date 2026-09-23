@@ -1,7 +1,7 @@
 import { Suspense } from "react";
 import type { Metadata } from "next";
+import { permanentRedirect } from "next/navigation";
 import { getProducts, categories } from "@/lib/supabase-data";
-import { nombreCategoria } from "@/lib/seo";
 import CatalogoClient from "./CatalogoClient";
 
 // Se dibuja en el servidor por pedido, con los filtros de la URL: así el HTML
@@ -9,23 +9,27 @@ import CatalogoClient from "./CatalogoClient";
 // grillado aparecía recién en el navegador).
 export const dynamic = "force-dynamic";
 
-type Filtros = { categoria?: string; q?: string };
+type Filtros = { categoria?: string; q?: string; marca?: string };
 
 export async function generateMetadata({ searchParams }: { searchParams: Filtros }): Promise<Metadata> {
-  const cat = searchParams.categoria ? nombreCategoria(searchParams.categoria) : null;
-  const titulo = cat ? `Botines de ${cat}` : "Catálogo de botines";
-  const descripcion = cat
-    ? `Botines de ${cat.toLowerCase()} en stock, con talles y precios. Envíos a todo el país y showroom en Llavallol.`
+  const marca = searchParams.marca?.trim();
+  const titulo = marca ? `Botines ${marca}` : "Catálogo de botines";
+  const descripcion = marca
+    ? `Botines ${marca} de fútsal, sintético y fútbol 11 en stock, con talles y precios. Envíos a todo el país y showroom en Llavallol.`
     : "Todos los botines de fútsal, sintético y fútbol 11 en stock, con talles y precios. Envíos a todo el país y showroom en Llavallol.";
   return {
     title: titulo,
     description: descripcion,
-    alternates: { canonical: searchParams.categoria ? `/catalogo?categoria=${searchParams.categoria}` : "/catalogo" },
+    alternates: { canonical: marca ? `/catalogo?marca=${encodeURIComponent(marca)}` : "/catalogo" },
     openGraph: { title: `${titulo} | Botinesala Sur`, description: descripcion },
   };
 }
 
 async function CatalogoContent({ filtros }: { filtros: Filtros }) {
+  // Las categorías viven en /botines/<categoria>; la URL vieja redirige.
+  if (filtros.categoria && categories.some((c) => c.slug === filtros.categoria)) {
+    permanentRedirect(`/botines/${filtros.categoria}`);
+  }
   const products = await getProducts();
 
   // El filtro muestra las marcas que de verdad tienen productos cargados,
@@ -39,7 +43,7 @@ async function CatalogoContent({ filtros }: { filtros: Filtros }) {
       products={products}
       categories={categories}
       brands={brands}
-      inicial={{ categoria: filtros.categoria ?? "", q: filtros.q ?? "" }}
+      inicial={{ categoria: "", q: filtros.q ?? "", marca: filtros.marca ?? "" }}
     />
   );
 }

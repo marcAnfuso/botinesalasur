@@ -5,6 +5,7 @@ import Link from "next/link";
 import { Product } from "@/types";
 import { formatPrice } from "@/lib/supabase-data";
 import { CUOTAS_SIN_INTERES } from "@/lib/cuotas";
+import { urlProducto } from "@/lib/producto-url";
 
 interface ProductCardProps {
   product: Product;
@@ -19,7 +20,7 @@ export default function ProductCard({ product, priority }: ProductCardProps) {
 
   return (
     <Link
-      href={`/producto/${product.id}`}
+      href={urlProducto(product)}
       className="group block focus:outline-none"
     >
       <article className="relative h-full flex flex-col border border-dark-line bg-dark-card transition-colors duration-200 group-hover:border-gray-600 group-focus-visible:border-primary">

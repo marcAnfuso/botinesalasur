@@ -91,7 +91,7 @@ export default async function HomePage() {
                     </span>
                   )}
                   <Link
-                    href={`/catalogo?categoria=${c.slug}`}
+                    href={`/botines/${c.slug}`}
                     className="hover:text-white transition-colors"
                   >
                     {c.nombre}
@@ -180,7 +180,7 @@ export default async function HomePage() {
             return (
               <Link
                 key={cancha.slug}
-                href={`/catalogo?categoria=${cancha.slug}`}
+                href={`/botines/${cancha.slug}`}
                 className="group relative overflow-hidden border border-dark-line focus:outline-none focus-visible:border-primary"
               >
                 <div className="relative h-60 md:h-72 bg-dark-lighter overflow-hidden">

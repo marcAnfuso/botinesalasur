@@ -52,7 +52,7 @@ Fuentes: [Adidas](https://www.adidas.com.ar/botines-cancha_cubierta) · [Mercado
 | **Fotos con fondo limpio y del mismo encuadre**; una segunda foto de la suela. | Alan | Google Imágenes y Shopping muestran la foto; las de fondo blanco convierten más. |
 | Enviar el sitemap en Search Console y pedir indexación de `/` y `/catalogo`. | Marc | Días en vez de semanas. |
 
-**P1 — próximas 2 semanas, código chico**
+**P1 — hecho el 22-9 (código)** — URLs `/botines/<categoría>` con texto propio, URLs de producto con nombre (las viejas redirigen), títulos con la promesa, marca enlazada, páginas de envíos/cambios y preguntas frecuentes.
 
 | Qué | Detalle |
 |---|---|
@@ -66,7 +66,7 @@ Fuentes: [Adidas](https://www.adidas.com.ar/botines-cancha_cubierta) · [Mercado
 
 | Qué | Detalle |
 |---|---|
-| **Google Merchant Center, fichas gratuitas** | Con un feed de productos (`/feed/google.xml`, lo genero yo) los botines aparecen en la pestaña Shopping y en resultados con precio y foto, **sin pagar**. Requiere: sitio verificado (ya), políticas de envío/devolución visibles (P1), y datos por talle. Fuente: [Google — fichas gratuitas](https://support.google.com/merchants/answer/9826670?hl=es-419). |
+| **Google Merchant Center, fichas gratuitas** | El feed ya existe: `https://botinesalasur.com.ar/feed/google.xml` (un ítem por talle). Falta crear la cuenta en Merchant Center, verificar el sitio y cargar esa URL como feed programado los botines aparecen en la pestaña Shopping y en resultados con precio y foto, **sin pagar**. Requiere: sitio verificado (ya), políticas de envío/devolución visibles (P1), y datos por talle. Fuente: [Google — fichas gratuitas](https://support.google.com/merchants/answer/9826670?hl=es-419). |
 | **Guías** ("Cómo elegir botines de fútsal", "Guía de talles", "Sintético vs fútbol 11: qué suela va") | Contenido que rankea por búsquedas de duda y termina en el catálogo. Una por mes alcanza. |
 | **Reseñas** | Pedir a los que compraron una reseña en el Perfil de Empresa (link directo en el mail de confirmación, después de la entrega). Las estrellas en el mapa mueven más que cualquier texto. |
 
