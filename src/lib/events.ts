@@ -22,6 +22,8 @@ export const EVENT_NAMES = [
   "whatsapp_order_failed",
   "webhook_received",
   "webhook_rejected",
+  "webhook_ignored",
+  "price_mismatch",
   "webhook_order_not_found",
   "webhook_payment",
   "payment_verified",
@@ -49,6 +51,8 @@ export const EVENT_LABELS: Record<EventName, string> = {
   whatsapp_order_failed: "Falló el pedido por WhatsApp",
   webhook_received: "Aviso de MercadoPago",
   webhook_rejected: "Aviso rechazado",
+  webhook_ignored: "Aviso de MP ignorado (no es de pago)",
+  price_mismatch: "Total manipulado o desactualizado",
   webhook_order_not_found: "Aviso sin pedido",
   webhook_payment: "Estado de pago",
   payment_verified: "Pago verificado",
@@ -60,6 +64,7 @@ export const EVENTOS_DE_ERROR: EventName[] = [
   "preference_failed",
   "whatsapp_order_failed",
   "webhook_rejected",
+  "price_mismatch",
   "webhook_order_not_found",
 ];
 

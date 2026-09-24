@@ -108,6 +108,8 @@ export default function CheckoutClient({ zonas }: { zonas: ShippingZone[] }) {
       if (!response.ok) {
         track("checkout_error", { method: "mercadopago", status: response.status, error: data.error });
         alert(data.error || "Error al procesar el pago");
+        // Stock agotado o precio cambiado: el carrito ya no sirve tal como está
+        if (data.limpiarCarrito) clearCart();
         return;
       }
 
@@ -150,10 +152,16 @@ export default function CheckoutClient({ zonas }: { zonas: ShippingZone[] }) {
       if (res.ok) {
         referencia = data.externalReference;
         numero = data.numero ?? null;
-      }
-      else {
+      } else {
         console.error("No se pudo registrar el pedido:", data.error);
         track("checkout_error", { method: "whatsapp", status: res.status, error: data.error });
+        // Si el servidor dijo que el pedido no es válido (sin stock, precio
+        // cambiado), no se sigue al chat con un pedido que no existe.
+        if (res.status === 400 || res.status === 409) {
+          alert(data.error || "No pudimos registrar el pedido. Revisá el carrito.");
+          if (data.limpiarCarrito) clearCart();
+          return;
+        }
       }
     } catch (error) {
       // Un fallo al registrar no puede costarle la venta al negocio:

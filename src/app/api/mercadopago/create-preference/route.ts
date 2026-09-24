@@ -4,6 +4,7 @@ import { logEvent } from "@/lib/events-server";
 import { insertarPedido } from "@/lib/insertar-pedido";
 import { nombreProlijo, capitalizar, dniProlijo } from "@/lib/prolijo";
 import { nombreProducto } from "@/lib/nombre-producto";
+import { valorarCarrito } from "@/lib/valorar-carrito";
 
 const MP_ACCESS_TOKEN = process.env.MERCADOPAGO_ACCESS_TOKEN;
 const BASE_URL = process.env.NEXT_PUBLIC_BASE_URL || "https://botinesalasur.vercel.app";
@@ -62,14 +63,21 @@ export async function POST(request: NextRequest) {
     }
 
     const data: CheckoutData = await request.json();
-    const { items, customer, shippingCost, total, sessionId } = data;
+    const { items, customer, sessionId } = data;
 
-    if (!items || items.length === 0) {
-      return NextResponse.json(
-        { error: "No hay productos en el carrito" },
-        { status: 400 }
-      );
+    // Nada de lo que vale plata viene del navegador: precios, stock y envío
+    // se resuelven acá contra la base.
+    const val = await valorarCarrito(
+      (items ?? []).map((i) => ({ variantId: i.variant?.id, productId: i.product?.id, quantity: i.quantity })),
+      customer?.shippingZone,
+      "mercadopago",
+      data.total,
+      sessionId
+    );
+    if (!val.ok) {
+      return NextResponse.json({ error: val.error, limpiarCarrito: val.limpiarCarrito ?? false }, { status: val.status });
     }
+    const { lineas, subtotal, shippingCost, total } = val;
 
     // Generate unique reference
     const externalReference = generateExternalReference();
@@ -88,9 +96,9 @@ export async function POST(request: NextRequest) {
       shipping_postal_code: customer.postalCode,
       shipping_zone: customer.shippingZone,
       notes: customer.notes,
-      subtotal: total - shippingCost,
+      subtotal,
       shipping_cost: shippingCost,
-      total: total,
+      total,
       status: "pending",
       payment_status: "pending",
     });
@@ -107,18 +115,18 @@ export async function POST(request: NextRequest) {
     // Create order items.
     // product_brand and variant_size are NOT NULL in the schema; size and
     // total_price are the columns added by the MercadoPago migration.
-    const orderItems = items.map((item) => ({
+    const orderItems = lineas.map((l) => ({
       order_id: order.id,
-      product_id: item.product.id,
-      product_code: item.product.codigo ?? null,
-      variant_id: item.variant.id,
-      product_name: item.product.name,
-      product_brand: item.product.brand,
-      variant_size: item.variant.size,
-      size: item.variant.size,
-      quantity: item.quantity,
-      unit_price: item.product.price,
-      total_price: item.product.price * item.quantity,
+      product_id: l.productId,
+      product_code: l.productCode,
+      variant_id: l.variantId,
+      product_name: l.productName,
+      product_brand: l.productBrand,
+      variant_size: l.size,
+      size: l.size,
+      quantity: l.quantity,
+      unit_price: l.unitPrice,
+      total_price: l.totalPrice,
     }));
 
     const { error: itemsError } = await supabaseAdmin
@@ -139,21 +147,21 @@ export async function POST(request: NextRequest) {
     }
 
     // Build MercadoPago preference
-    const mpItems = items.map((item) => ({
-      id: item.product.id,
-      title: `${nombreProducto(item.product.brand, item.product.name)} - Talle ${item.variant.size}`,
-      description: `Botín de fútbol talle ${item.variant.size}`,
-      picture_url: item.product.imageUrl,
+    const mpItems = lineas.map((l) => ({
+      id: l.productId,
+      title: `${nombreProducto(l.productBrand, l.productName)} - Talle ${l.size}`,
+      description: `Botín de fútbol talle ${l.size}`,
+      picture_url: l.imageUrl ?? undefined,
       currency_id: "ARS",
-      quantity: item.quantity,
-      unit_price: item.product.price,
+      quantity: l.quantity,
+      unit_price: l.unitPrice,
     }));
 
     // Add shipping as an item
     if (shippingCost > 0) {
       mpItems.push({
         id: "shipping",
-        title: `Envío - ${customer.shippingZoneLabel || customer.shippingZone}`,
+        title: `Envío - ${val.zonaLabel}`,
         description: "Costo de envío",
         picture_url: "",
         currency_id: "ARS",
@@ -234,7 +242,7 @@ export async function POST(request: NextRequest) {
 
       sessionId,
 
-      details: { total, items: items.length, preferenceId: mpData.id },
+      details: { total, items: lineas.length, preferenceId: mpData.id },
 
     });
 

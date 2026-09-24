@@ -3,6 +3,7 @@ import { supabaseAdmin } from "@/lib/supabase";
 import { logEvent } from "@/lib/events-server";
 import { insertarPedido } from "@/lib/insertar-pedido";
 import { nombreProlijo, capitalizar, dniProlijo } from "@/lib/prolijo";
+import { valorarCarrito } from "@/lib/valorar-carrito";
 
 interface CartItem {
   product: {
@@ -48,14 +49,20 @@ function generarReferencia(): string {
 export async function POST(request: NextRequest) {
   try {
     const data: WhatsAppOrder = await request.json();
-    const { items, customer, shippingCost, total, sessionId } = data;
+    const { items, customer, sessionId } = data;
 
-    if (!items || items.length === 0) {
-      return NextResponse.json(
-        { error: "No hay productos en el carrito" },
-        { status: 400 }
-      );
+    // Precios (los de transferencia), stock y envío salen de la base, no del navegador
+    const val = await valorarCarrito(
+      (items ?? []).map((i) => ({ variantId: i.variant?.id, productId: i.product?.id, quantity: i.quantity })),
+      customer?.shippingZone,
+      "transferencia",
+      data.total,
+      sessionId
+    );
+    if (!val.ok) {
+      return NextResponse.json({ error: val.error, limpiarCarrito: val.limpiarCarrito ?? false }, { status: val.status });
     }
+    const { lineas, subtotal, shippingCost, total } = val;
 
     const externalReference = generarReferencia();
 
@@ -72,7 +79,7 @@ export async function POST(request: NextRequest) {
       shipping_postal_code: customer.postalCode,
       shipping_zone: customer.shippingZone,
       notes: customer.notes || null,
-      subtotal: total - shippingCost,
+      subtotal,
       shipping_cost: shippingCost,
       total,
       // Queda pendiente a propósito: el pago se acuerda por chat y lo
@@ -95,18 +102,18 @@ export async function POST(request: NextRequest) {
 
     const orderId = creada.data.id;
 
-    const orderItems = items.map((item) => ({
+    const orderItems = lineas.map((l) => ({
       order_id: orderId,
-      product_id: item.product.id,
-      product_code: item.product.codigo ?? null,
-      variant_id: item.variant.id,
-      product_name: item.product.name,
-      product_brand: item.product.brand,
-      variant_size: item.variant.size,
-      size: item.variant.size,
-      quantity: item.quantity,
-      unit_price: item.product.transferPrice ?? item.product.price,
-      total_price: (item.product.transferPrice ?? item.product.price) * item.quantity,
+      product_id: l.productId,
+      product_code: l.productCode,
+      variant_id: l.variantId,
+      product_name: l.productName,
+      product_brand: l.productBrand,
+      variant_size: l.size,
+      size: l.size,
+      quantity: l.quantity,
+      unit_price: l.unitPrice,
+      total_price: l.totalPrice,
     }));
 
     const { error: errorItems } = await supabaseAdmin
@@ -127,7 +134,7 @@ export async function POST(request: NextRequest) {
     await logEvent("whatsapp_order_created", {
       ref: externalReference,
       sessionId,
-      details: { total, items: items.length },
+      details: { total, items: lineas.length },
     });
 
     return NextResponse.json({

@@ -55,6 +55,9 @@ En el SQL Editor de Supabase, correr **los dos archivos en este orden**:
    tomaba.
 9. `supabase-migration-numero.sql` — número de pedido corto (`#1043`) que ve
    el cliente; la referencia larga queda para MercadoPago.
+10. `supabase-migration-privacidad.sql` — **obligatoria antes de abrir al
+    público**: elimina políticas que dejaban leer `orders` y `order_items` con
+    la clave pública.
 
 Sin el segundo archivo el checkout falla en cuanto alguien intenta pagar.
 

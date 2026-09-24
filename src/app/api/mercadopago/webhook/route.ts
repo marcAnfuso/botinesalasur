@@ -29,12 +29,22 @@ export async function POST(request: NextRequest) {
     // Con la clave secreta cargada, sólo se aceptan avisos firmados por
     // MercadoPago. Sin la clave se sigue procesando (el pago igual se
     // reconsulta contra la API), pero queda avisado en los logs.
+    // MercadoPago también avisa por "merchant_order" y otros temas, sin
+    // data.id y con otra firma. No hacen falta: el pago llega con su propio
+    // aviso. Se contestan 200 y se anotan como ignorados, no como rechazados.
+    const dataId = request.nextUrl.searchParams.get("data.id");
+    if (!dataId) {
+      const topic = request.nextUrl.searchParams.get("topic") || request.nextUrl.searchParams.get("type");
+      await logEvent("webhook_ignored", { details: { topic, motivo: "sin data.id" } });
+      return NextResponse.json({ received: true, ignored: true }, { status: 200 });
+    }
+
     if (MP_WEBHOOK_SECRET) {
       const firma = verificarFirmaMercadoPago({
         secret: MP_WEBHOOK_SECRET,
         xSignature: request.headers.get("x-signature"),
         xRequestId: request.headers.get("x-request-id"),
-        dataId: request.nextUrl.searchParams.get("data.id"),
+        dataId,
       });
       if (!firma.valida) {
         console.warn("Webhook rechazado:", firma.motivo);
