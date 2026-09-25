@@ -326,7 +326,7 @@ export interface ConfirmacionMail {
 const WHATSAPP_TIENDA = "https://wa.me/message/CJPQFIY4XTSJC1";
 const VERDE = "#16a34a";
 
-// El nombre se guarda en mayúsculas; el saludo va "Marcos", no "MARCOS"
+// El saludo va por el primer nombre: "Marcos"
 function primerNombre(nombre: string): string {
   const p = nombre.trim().split(/\s+/)[0] || "";
   return p.charAt(0).toUpperCase() + p.slice(1).toLowerCase();

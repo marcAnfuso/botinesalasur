@@ -78,7 +78,7 @@ export async function sendOrderConfirmationEmail(data: OrderEmailData) {
 
   const fromEmail = process.env.RESEND_FROM_EMAIL || "onboarding@resend.dev";
   const datos = { ...data, baseUrl: BASE_URL };
-  // El nombre se guarda en mayúsculas; el asunto saluda "Marcos", no "MARCOS"
+  // El asunto saluda por el primer nombre: "Marcos"
   const crudo = data.customerName.trim().split(/\s+/)[0] || "";
   const nombre = crudo.charAt(0).toUpperCase() + crudo.slice(1).toLowerCase();
 

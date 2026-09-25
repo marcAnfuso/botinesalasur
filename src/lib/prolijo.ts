@@ -1,18 +1,24 @@
-// Lo que la gente escribe en el checkout ("alan mariano", "san isidro 1133")
+// Lo que la gente escribe en el checkout ("alan forino", "san isidro 1133")
 // se guarda prolijo, así el mail, el panel y la etiqueta de envío quedan
-// parejos. El nombre va en mayúsculas, como en el DNI y en el correo.
+// parejos: "Alan Forino", "San Isidro 1133".
 const espacios = (s: string) => s.replace(/\s+/g, " ").trim();
 
-export const nombreProlijo = (s: string) => espacios(s).toUpperCase();
-
 const MINUSCULAS = new Set(["de", "del", "la", "las", "los", "y", "e", "el"]);
+const inicial = (p: string) => p.charAt(0).toUpperCase() + p.slice(1);
+
 export function capitalizar(s: string): string {
   return espacios(s)
     .toLowerCase()
     .split(" ")
-    .map((p, i) => (i > 0 && MINUSCULAS.has(p) ? p : p.charAt(0).toUpperCase() + p.slice(1)))
+    .map((p, i) => {
+      if (i > 0 && MINUSCULAS.has(p)) return p;
+      // "juan-pablo" y "o'connor" llevan mayúscula después del guion o apóstrofo
+      return p.split(/([-'])/).map((t) => (t === "-" || t === "'" ? t : inicial(t))).join("");
+    })
     .join(" ");
 }
+
+export const nombreProlijo = (s: string) => capitalizar(s);
 
 export const dniProlijo = (s: string) => s.replace(/\D/g, "");
 

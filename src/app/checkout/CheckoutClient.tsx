@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useEffect } from "react";
+import { nombreProlijo, capitalizar, dniProlijo, emailProlijo } from "@/lib/prolijo";
 import Image from "next/image";
 import Link from "next/link";
 import { useCart } from "@/context/CartContext";
@@ -179,14 +180,14 @@ export default function CheckoutClient({ zonas }: { zonas: ShippingZone[] }) {
 
     const message = `*Nuevo Pedido - Botinesala Sur*${numero ? ` · #${numero}` : ""}
 
-*Cliente:* ${formData.name}
-*DNI:* ${formData.dni}
-*Email:* ${formData.email}
+*Cliente:* ${nombreProlijo(formData.name)}
+*DNI:* ${dniProlijo(formData.dni)}
+*Email:* ${emailProlijo(formData.email) ?? formData.email.trim()}
 *Teléfono:* ${formData.phone}
 
 *Dirección de envío:*
-${formData.address}${formData.floorApt ? ` — ${formData.floorApt}` : ""}
-${formData.city}, ${formData.province}
+${capitalizar(formData.address)}${formData.floorApt ? ` — ${formData.floorApt.trim().toUpperCase()}` : ""}
+${capitalizar(formData.city)}, ${formData.province}
 CP: ${formData.postalCode}
 Zona: ${zonaElegida?.label ?? formData.shippingZone}
 
