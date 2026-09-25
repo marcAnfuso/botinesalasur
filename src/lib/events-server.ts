@@ -113,3 +113,74 @@ export async function getRecentEvents(opts: {
   if (error || !data) return [];
   return data.map(transformEvent);
 }
+
+// ───────────── resumen para el panel ─────────────
+
+export interface ResumenActividad {
+  dias: number;
+  visitantes: number;
+  movil: number;
+  escritorio: number;
+  vieronProducto: number;
+  agregaronCarrito: number;
+  llegaronCheckout: number;
+  intentaronPagar: number;
+  compraron: number;
+  abandonaronCheckout: number;
+  noTerminaronPago: number;
+  errores: { evento: string; veces: number; ultimo: string; detalle: string }[];
+}
+
+// Cuenta por visitante (sesión), no por evento: 5 clics de una persona son
+// una persona. Lo que Alan y Marc preguntan: cuántos entraron, desde qué
+// aparato, dónde se cayeron y qué falló.
+export async function getResumenActividad(dias: number): Promise<ResumenActividad> {
+  const desde = new Date(Date.now() - dias * 86400000).toISOString();
+  const { data } = await supabaseAdmin
+    .from("events")
+    .select("event, session_id, user_agent, created_at, details")
+    .gte("created_at", desde)
+    .order("created_at", { ascending: false })
+    .limit(5000);
+  const filas = (data ?? []) as { event: string; session_id: string | null; user_agent: string | null; created_at: string; details: Record<string, unknown> | null }[];
+
+  const porSesion = new Map<string, Set<string>>();
+  const aparato = new Map<string, "movil" | "escritorio">();
+  for (const f of filas) {
+    if (!f.session_id) continue;
+    if (!porSesion.has(f.session_id)) porSesion.set(f.session_id, new Set());
+    porSesion.get(f.session_id)!.add(f.event);
+    if (!aparato.has(f.session_id) && f.user_agent) {
+      aparato.set(f.session_id, /Mobi|Android|iPhone|iPad/i.test(f.user_agent) ? "movil" : "escritorio");
+    }
+  }
+  const con = (...evs: string[]) => Array.from(porSesion.values()).filter((s) => evs.some((e) => s.has(e))).length;
+  const sin = (tiene: string[], falta: string[]) =>
+    Array.from(porSesion.values()).filter((s) => tiene.some((e) => s.has(e)) && !falta.some((e) => s.has(e))).length;
+  const PAGO = ["payment_verified", "webhook_payment", "whatsapp_order_created"];
+
+  const errores = new Map<string, { veces: number; ultimo: string; detalle: string }>();
+  for (const f of filas) {
+    if (!["checkout_error", "preference_failed", "price_mismatch", "whatsapp_order_failed", "webhook_rejected"].includes(f.event)) continue;
+    const d = f.details ?? {};
+    const detalle = String(d.error ?? d.motivo ?? d.paso ?? (d.cliente != null ? `cliente $${d.cliente} vs servidor $${d.servidor}` : "")).slice(0, 90);
+    const e = errores.get(f.event);
+    if (e) e.veces += 1;
+    else errores.set(f.event, { veces: 1, ultimo: f.created_at, detalle });
+  }
+
+  return {
+    dias,
+    visitantes: porSesion.size,
+    movil: Array.from(aparato.values()).filter((a) => a === "movil").length,
+    escritorio: Array.from(aparato.values()).filter((a) => a === "escritorio").length,
+    vieronProducto: con("product_view"),
+    agregaronCarrito: con("cart_add"),
+    llegaronCheckout: con("checkout_view"),
+    intentaronPagar: con("checkout_submit"),
+    compraron: con(...PAGO),
+    abandonaronCheckout: sin(["checkout_view"], ["checkout_submit"]),
+    noTerminaronPago: sin(["checkout_submit"], PAGO),
+    errores: Array.from(errores.entries()).map(([evento, e]) => ({ evento, ...e })).sort((a, b) => b.veces - a.veces),
+  };
+}
