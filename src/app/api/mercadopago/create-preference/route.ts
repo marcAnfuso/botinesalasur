@@ -2,7 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { supabaseAdmin } from "@/lib/supabase";
 import { logEvent } from "@/lib/events-server";
 import { insertarPedido } from "@/lib/insertar-pedido";
-import { nombreProlijo, capitalizar, dniProlijo } from "@/lib/prolijo";
+import { nombreProlijo, capitalizar, dniProlijo, emailProlijo } from "@/lib/prolijo";
 import { nombreProducto } from "@/lib/nombre-producto";
 import { valorarCarrito } from "@/lib/valorar-carrito";
 
@@ -79,6 +79,14 @@ export async function POST(request: NextRequest) {
     }
     const { lineas, subtotal, shippingCost, total } = val;
 
+    const email = emailProlijo(customer?.email);
+    if (!email) {
+      return NextResponse.json(
+        { error: "Revisá el email: no parece una dirección válida." },
+        { status: 400 }
+      );
+    }
+
     // Generate unique reference
     const externalReference = generateExternalReference();
 
@@ -86,7 +94,7 @@ export async function POST(request: NextRequest) {
     const { data: order, error: orderError } = await insertarPedido({
       external_reference: externalReference,
       customer_name: nombreProlijo(customer.name),
-      customer_email: customer.email,
+      customer_email: email,
       customer_phone: customer.phone,
       customer_dni: customer.dni ? dniProlijo(customer.dni) || null : null,
       shipping_address: capitalizar(customer.address),
@@ -175,7 +183,7 @@ export async function POST(request: NextRequest) {
       payer: {
         name: customer.name.split(" ")[0],
         surname: customer.name.split(" ").slice(1).join(" ") || "",
-        email: customer.email,
+        email,
         phone: {
           number: customer.phone.replace(/[^0-9]/g, ""),
         },

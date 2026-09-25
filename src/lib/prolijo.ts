@@ -15,3 +15,11 @@ export function capitalizar(s: string): string {
 }
 
 export const dniProlijo = (s: string) => s.replace(/\D/g, "");
+
+// El navegador acepta "juan@gmail" como email. Acá se exige dominio con
+// punto, y se guarda en minúsculas y sin espacios, que es como lo entiende
+// Resend y como lo espera MercadoPago. Devuelve null si no sirve.
+export function emailProlijo(s: string | undefined | null): string | null {
+  const e = (s ?? "").trim().toLowerCase();
+  return /^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/.test(e) ? e : null;
+}

@@ -2,7 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { supabaseAdmin } from "@/lib/supabase";
 import { logEvent } from "@/lib/events-server";
 import { insertarPedido } from "@/lib/insertar-pedido";
-import { nombreProlijo, capitalizar, dniProlijo } from "@/lib/prolijo";
+import { nombreProlijo, capitalizar, dniProlijo, emailProlijo } from "@/lib/prolijo";
 import { valorarCarrito } from "@/lib/valorar-carrito";
 
 interface CartItem {
@@ -64,12 +64,20 @@ export async function POST(request: NextRequest) {
     }
     const { lineas, subtotal, shippingCost, total } = val;
 
+    const email = emailProlijo(customer?.email);
+    if (!email) {
+      return NextResponse.json(
+        { error: "Revisá el email: no parece una dirección válida." },
+        { status: 400 }
+      );
+    }
+
     const externalReference = generarReferencia();
 
     const orden = {
       external_reference: externalReference,
       customer_name: nombreProlijo(customer.name),
-      customer_email: customer.email,
+      customer_email: email,
       customer_phone: customer.phone,
       customer_dni: customer.dni ? dniProlijo(customer.dni) || null : null,
       shipping_address: capitalizar(customer.address),
