@@ -46,9 +46,39 @@ export function jsonLdProducto(p: Product) {
       availability: hayStock ? "https://schema.org/InStock" : "https://schema.org/OutOfStock",
       itemCondition: "https://schema.org/NewCondition",
       seller: { "@type": "Organization", name: "Botinesala Sur" },
+      shippingDetails: ENVIO_SCHEMA,
+      hasMerchantReturnPolicy: CAMBIOS_SCHEMA,
     },
   };
 }
+
+// Los dos bloques que Search Console pide en las fichas de comerciante. Los
+// plazos son los que dice /envios-y-cambios: sale dentro de las 48 h hábiles
+// de confirmado el pago, llega en 3 a 7 días hábiles. El costo del envío no
+// se declara porque no se cobra en la web: se coordina por WhatsApp.
+const ENVIO_SCHEMA = {
+  "@type": "OfferShippingDetails",
+  shippingDestination: { "@type": "DefinedRegion", addressCountry: "AR" },
+  deliveryTime: {
+    "@type": "ShippingDeliveryTime",
+    handlingTime: { "@type": "QuantitativeValue", minValue: 0, maxValue: 2, unitCode: "DAY" },
+    transitTime: { "@type": "QuantitativeValue", minValue: 3, maxValue: 7, unitCode: "DAY" },
+  },
+};
+
+// Cambio de talle dentro de los 7 días, sin uso y en caja; el envío de vuelta
+// corre por cuenta del cliente. Es un cambio, no una devolución de plata.
+const CAMBIOS_SCHEMA = {
+  "@type": "MerchantReturnPolicy",
+  applicableCountry: "AR",
+  returnPolicyCategory: "https://schema.org/MerchantReturnFiniteReturnWindow",
+  merchantReturnDays: 7,
+  itemCondition: "https://schema.org/NewCondition",
+  returnMethod: ["https://schema.org/ReturnByMail", "https://schema.org/ReturnInStore"],
+  returnFees: "https://schema.org/ReturnFeesCustomerResponsibility",
+  refundType: "https://schema.org/ExchangeRefund",
+  merchantReturnLink: `${BASE_URL}/envios-y-cambios`,
+};
 
 export const jsonLdTienda = {
   "@context": "https://schema.org",
