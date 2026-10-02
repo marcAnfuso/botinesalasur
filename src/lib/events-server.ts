@@ -92,6 +92,11 @@ export async function getEventsForOrder(ref: string): Promise<EventRow[]> {
   return todos.map(transformEvent);
 }
 
+// El robot de Meta pide cada página para armar la miniatura de la historia,
+// Google la rastrea, y ninguno de los dos compra. No cuentan como visitas.
+export const esBot = (ua: string | null | undefined) =>
+  !!ua && /bot|crawler|spider|externalagent|externalhit|facebookcatalog|preview|headless|python|curl|wget|slurp|fetch/i.test(ua);
+
 export async function getRecentEvents(opts: {
   filtro?: string;
   limite?: number;
@@ -111,7 +116,7 @@ export async function getRecentEvents(opts: {
 
   const { data, error } = await q;
   if (error || !data) return [];
-  return data.map(transformEvent);
+  return data.filter((row) => !esBot(row.user_agent)).map(transformEvent);
 }
 
 // ───────────── resumen para el panel ─────────────
@@ -142,7 +147,8 @@ export async function getResumenActividad(dias: number): Promise<ResumenActivida
     .gte("created_at", desde)
     .order("created_at", { ascending: false })
     .limit(5000);
-  const filas = (data ?? []) as { event: string; session_id: string | null; user_agent: string | null; created_at: string; details: Record<string, unknown> | null }[];
+  const filas = ((data ?? []) as { event: string; session_id: string | null; user_agent: string | null; created_at: string; details: Record<string, unknown> | null }[])
+    .filter((f) => !esBot(f.user_agent));
 
   const porSesion = new Map<string, Set<string>>();
   const aparato = new Map<string, "movil" | "escritorio">();

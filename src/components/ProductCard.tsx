@@ -17,6 +17,7 @@ export default function ProductCard({ product, priority }: ProductCardProps) {
   const hasStock = inStock.length > 0;
   const sizes = inStock.map((v) => v.size);
   const lowStock = hasStock && inStock.every((v) => v.stock <= 2);
+  const unSoloPar = inStock.length === 1 && inStock[0].stock === 1;
 
   return (
     <Link
@@ -64,15 +65,30 @@ export default function ProductCard({ product, priority }: ProductCardProps) {
           )}
 
           {hasStock ? (
-            <>
-              <p className="mt-3 text-xs text-gray-500 line-clamp-1">
-                <span className="label text-gray-500">Talles</span>{" "}
-                <span className="tnum text-gray-300">{sizes.join(" · ")}</span>
-              </p>
-              {lowStock && (
-                <p className="mt-1.5 text-xs text-primary">Últimos pares</p>
+            // El talle y cuántos quedan se ven desde el catálogo: la mayoría
+            // de los modelos tiene un par de uno o dos talles, y quien no
+            // calza ese número no necesita entrar.
+            <div className="mt-3 flex flex-wrap items-center gap-1.5">
+              {unSoloPar ? (
+                <span className="text-xs text-primary">
+                  Último par · <span className="font-semibold tnum text-white">talle {sizes[0]}</span>
+                </span>
+              ) : (
+                <>
+                  <span className="label text-gray-500 mr-0.5">Talles</span>
+                  {inStock.map((v) => (
+                    <span
+                      key={v.id}
+                      className="tnum text-xs text-gray-200 border border-dark-line bg-dark px-1.5 py-0.5 whitespace-nowrap"
+                      title={v.stock === 1 ? "Último par" : `${v.stock} pares`}
+                    >
+                      {v.size}
+                    </span>
+                  ))}
+                  {lowStock && <span className="text-xs text-primary ml-0.5">Últimos pares</span>}
+                </>
               )}
-            </>
+            </div>
           ) : (
             <p className="mt-3 text-xs text-gray-500">
               Escribinos y te avisamos cuando vuelva

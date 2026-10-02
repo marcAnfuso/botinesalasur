@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { EVENT_NAMES, EventName } from "@/lib/events";
-import { logEvent } from "@/lib/events-server";
+import { esBot, logEvent } from "@/lib/events-server";
 
 // Recibe los eventos que manda el navegador. Es una ruta pública, así que
 // no le cree a nada: sólo nombres conocidos, tamaños acotados, y siempre
@@ -37,6 +37,10 @@ export async function POST(request: NextRequest) {
 
     const path =
       typeof body.path === "string" ? body.path.slice(0, 200) : null;
+
+    if (esBot(request.headers.get("user-agent"))) {
+      return new NextResponse(null, { status: 204 });
+    }
 
     await logEvent(event as EventName, {
       source: "client",

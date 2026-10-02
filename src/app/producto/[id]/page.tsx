@@ -2,7 +2,8 @@ import { notFound, permanentRedirect } from "next/navigation";
 import type { Metadata } from "next";
 import { nombreProducto } from "@/lib/nombre-producto";
 import { descripcionProducto, jsonLdProducto, nombreCategoria, urlAbsoluta } from "@/lib/seo";
-import { getProductById, getProductByCodigo, getProductsByCategory } from "@/lib/supabase-data";
+import { getAlternativas, getProductById, getProductByCodigo, getProductsByCategory } from "@/lib/supabase-data";
+import ProductoVendido from "./ProductoVendido";
 import { urlProducto, leerParamProducto } from "@/lib/producto-url";
 import { CUOTAS_SIN_INTERES } from "@/lib/cuotas";
 import { getShippingZones } from "@/lib/shipping";
@@ -14,6 +15,9 @@ export const revalidate = 60;
 interface ProductoPageProps {
   params: { id: string };
 }
+
+const sePuedeComprar = (p: { active: boolean; variants: { stock: number }[] }) =>
+  p.active && p.variants.some((v) => v.stock > 0);
 
 // La URL puede traer el id viejo (uuid) o el slug con el código al final.
 async function resolver(param: string) {
@@ -42,7 +46,7 @@ export async function generateMetadata({ params }: ProductoPageProps): Promise<M
       images: [{ url: imagen, alt: nombre }],
     },
     twitter: { card: "summary_large_image", title: nombre, description: descripcion, images: [imagen] },
-    robots: product.active ? undefined : { index: false },
+    robots: sePuedeComprar(product) ? undefined : { index: false },
   };
 }
 
@@ -58,6 +62,12 @@ export default async function ProductoPage({ params }: ProductoPageProps) {
   const canonica = urlProducto(product);
   if (`/producto/${params.id}` !== canonica) {
     permanentRedirect(canonica);
+  }
+
+  // Un botín vendido o dado de baja sigue teniendo link en historias viejas:
+  // en vez de un 404 se ofrecen los que sí hay, de su talle si se puede.
+  if (!sePuedeComprar(product)) {
+    return <ProductoVendido product={product} alternativas={await getAlternativas(product)} />;
   }
 
   // Productos relacionados (misma categoría)

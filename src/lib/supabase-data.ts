@@ -135,8 +135,12 @@ export async function getFeaturedProducts(): Promise<Product[]> {
 }
 
 // Obtener un producto por ID
+// Las dos lecturas de la ficha usan la clave de servidor: la política
+// pública sólo deja ver productos activos, y la ficha de uno vendido o
+// desactivado tiene que seguir abriendo (desde una historia vieja de
+// Instagram, por ejemplo) para ofrecer alternativas en vez de un 404.
 export async function getProductById(id: string): Promise<Product | null> {
-  const { data: product, error: productError } = await supabase
+  const { data: product, error: productError } = await supabaseAdmin
     .from("products")
     .select("*")
     .eq("id", id)
@@ -147,7 +151,7 @@ export async function getProductById(id: string): Promise<Product | null> {
     return null;
   }
 
-  const { data: variants } = await supabase
+  const { data: variants } = await supabaseAdmin
     .from("product_variants")
     .select("*")
     .eq("product_id", id);
@@ -158,18 +162,28 @@ export async function getProductById(id: string): Promise<Product | null> {
 // Obtener un producto por su código corto (#0032 → 32): lo usa la URL con nombre
 export async function getProductByCodigo(codigo: number): Promise<Product | null> {
   // codigo no está en los tipos generados de Supabase: se consulta sin tipar
-  const { data, error } = await supabase
+  const { data, error } = await supabaseAdmin
     .from("products")
     .select("*")
     .eq("codigo" as never, codigo as never)
     .maybeSingle();
   const product = data as any;
   if (error || !product) return null;
-  const { data: variants } = await supabase
+  const { data: variants } = await supabaseAdmin
     .from("product_variants")
     .select("*")
     .eq("product_id", product.id);
   return transformProduct(product, variants || []);
+}
+
+// Qué ofrecer cuando un botín ya se vendió: primero los de la misma
+// categoría que tengan alguno de sus talles, después el resto con stock.
+export async function getAlternativas(vendido: Product, limite = 8): Promise<Product[]> {
+  const todos = (await getProducts()).filter((p) => p.id !== vendido.id && p.variants.some((v) => v.stock > 0));
+  const talles = new Set(vendido.variants.map((v) => v.size));
+  const puntaje = (p: Product) =>
+    (p.category === vendido.category ? 2 : 0) + (p.variants.some((v) => v.stock > 0 && talles.has(v.size)) ? 3 : 0) + (p.brand === vendido.brand ? 1 : 0);
+  return todos.sort((a, b) => puntaje(b) - puntaje(a)).slice(0, limite);
 }
 
 // Formatear precio
