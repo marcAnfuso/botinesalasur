@@ -130,6 +130,7 @@ export default function ProductoClient({
                     src={img}
                     alt={`${product.name} - ${idx + 1}`}
                     fill
+                    sizes="80px"
                     className="object-cover"
                   />
                 </div>

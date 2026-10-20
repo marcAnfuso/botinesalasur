@@ -685,6 +685,7 @@ ${formData.notes ? `*Notas:* ${formData.notes}` : ""}${referencia ? `\n\nSeguí 
                       src={item.product.imageUrl}
                       alt={item.product.name}
                       fill
+                      sizes="64px"
                       className="object-cover"
                     />
                     <span className="absolute -top-1 -right-1 w-5 h-5 bg-primary text-white text-xs rounded-full flex items-center justify-center">

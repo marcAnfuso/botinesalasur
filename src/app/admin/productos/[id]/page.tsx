@@ -632,6 +632,7 @@ export default function EditProductPage({ params }: { params: { id: string } }) 
                   src={formData.image_url}
                   alt={formData.name}
                   fill
+                  sizes="(max-width: 768px) 100vw, 400px"
                   className="object-cover"
                 />
               </div>
