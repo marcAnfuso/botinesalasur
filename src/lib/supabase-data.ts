@@ -331,6 +331,8 @@ function transformOrder(row: any): AdminOrder {
     variantId: item.variant_id,
     productName: item.product_name,
     productBrand: item.product_brand || "",
+    // La foto sale del producto actual; si lo borraron, queda sin foto
+    imageUrl: item.products?.image_url ?? null,
     size: item.size || item.variant_size || "",
     quantity: item.quantity,
     unitPrice: item.unit_price,
@@ -372,7 +374,7 @@ function transformOrder(row: any): AdminOrder {
 export async function getOrders(): Promise<AdminOrder[]> {
   const { data, error } = await supabaseAdmin
     .from("orders")
-    .select("*, order_items(*)")
+    .select("*, order_items(*, products(image_url))")
     .order("created_at", { ascending: false });
 
   if (error || !data) {
@@ -387,7 +389,7 @@ export async function getOrders(): Promise<AdminOrder[]> {
 export async function getOrderById(id: string): Promise<AdminOrder | null> {
   const { data, error } = await supabaseAdmin
     .from("orders")
-    .select("*, order_items(*)")
+    .select("*, order_items(*, products(image_url))")
     .eq("id", id)
     .single();
 

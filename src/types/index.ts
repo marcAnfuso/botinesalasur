@@ -93,6 +93,7 @@ export interface AdminOrderItem {
   variantId: string;
   productName: string;
   productBrand: string;
+  imageUrl: string | null;
   size: string;
   quantity: number;
   unitPrice: number;

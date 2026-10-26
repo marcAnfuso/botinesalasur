@@ -4,7 +4,9 @@ import { useEffect, useRef, useState } from "react";
 import Link from "next/link";
 import { AdminOrder, OrderStatus } from "@/types";
 import { formatPrice } from "@/lib/supabase-data";
+import Image from "next/image";
 import { formatCodigo } from "@/lib/codigo";
+import { urlProducto } from "@/lib/producto-url";
 import {
   ORDER_STATUS_LABELS,
   ORDER_STATUS_CLASSES,
@@ -226,7 +228,21 @@ export default function PedidoDrawer({
               <ul className="divide-y divide-dark-line">
                 {order.items.map((it) => (
                   <li key={it.id} className="px-4 py-3 flex items-start justify-between gap-3">
-                    <div className="min-w-0">
+                    {/* Foto chica para reconocer el botín sin ir a buscarlo a productos */}
+                    <a
+                      href={urlProducto({ id: it.productId, brand: it.productBrand, name: it.productName, codigo: it.productCode })}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      title="Ver el producto en la tienda"
+                      className="relative w-14 h-14 shrink-0 overflow-hidden bg-dark-lighter border border-dark-line"
+                    >
+                      {it.imageUrl ? (
+                        <Image src={it.imageUrl} alt="" fill sizes="56px" className="object-cover" />
+                      ) : (
+                        <span className="absolute inset-0 flex items-center justify-center text-[10px] text-gray-500">sin foto</span>
+                      )}
+                    </a>
+                    <div className="min-w-0 flex-1">
                       <p className="text-white text-sm font-medium">
                         {nombreProducto(it.productBrand, it.productName)}
                       </p>
