@@ -3,7 +3,9 @@ import Image from "next/image";
 import ProductCard from "@/components/ProductCard";
 import { getFeaturedProducts, getProducts } from "@/lib/supabase-data";
 import { Product } from "@/types";
-import { enOferta } from "@/lib/ofertas";
+import { enOferta, descuentoOferta } from "@/lib/ofertas";
+import CintaOfertas from "@/components/ofertas/CintaOfertas";
+import OfertaCardB from "@/components/ofertas/OfertaCardB";
 
 export const revalidate = 60;
 
@@ -232,28 +234,35 @@ export default async function HomePage() {
         </div>
       </section>
 
-      {/* ───────────────────────── Ofertas ───────────────────────── */}
-      {ofertas.length > 0 && (
-        <section className="max-w-7xl mx-auto px-4 pb-16 md:pb-24">
-          <div className="flex items-end justify-between gap-6 mb-8">
-            <h2 className="display text-4xl md:text-5xl text-white">
-              <span className="text-primary">Ofertas</span>
-            </h2>
-            <Link
-              href="/ofertas"
-              className="text-sm text-primary hover:text-primary-light transition-colors whitespace-nowrap"
-            >
-              Ver todas →
-            </Link>
-          </div>
-          <div className="rule-chalk mb-10" />
-          <div className="grid gap-4 grid-cols-2 lg:grid-cols-4">
-            {ofertas.slice(0, 4).map((product) => (
-              <ProductCard key={product.id} product={product} />
-            ))}
-          </div>
-        </section>
-      )}
+      {/* ───────────────────────── Ofertas ─────────────────────────
+          Solo si hay alguna. La cinta y el "hasta −X%" salen del mayor
+          descuento real cargado. */}
+      {ofertas.length > 0 && (() => {
+        const orden = [...ofertas].sort((a, b) => descuentoOferta(b) - descuentoOferta(a));
+        return (
+          <section className="pb-16 md:pb-24 overflow-x-clip">
+            <CintaOfertas maximo={descuentoOferta(orden[0])} cantidad={orden.length} />
+            <div className="max-w-7xl mx-auto px-4 pt-10">
+              <div className="flex items-end justify-between gap-6 mb-6">
+                <div className="flex flex-wrap items-center gap-3">
+                  <h2 className="display text-4xl md:text-5xl text-white">Ofertas</h2>
+                  <span className="sticker-oferta bg-primary text-white display-tight text-sm md:text-base px-2.5 py-1 border border-black">
+                    Hasta −{descuentoOferta(orden[0])}%
+                  </span>
+                </div>
+                <Link href="/ofertas" className="text-sm text-primary hover:text-primary-light transition-colors whitespace-nowrap">
+                  Ver todas →
+                </Link>
+              </div>
+              <div className="grid gap-4 grid-cols-2 lg:grid-cols-4">
+                {orden.slice(0, 4).map((p) => (
+                  <OfertaCardB key={p.id} product={p} />
+                ))}
+              </div>
+            </div>
+          </section>
+        );
+      })()}
 
       {/* ───────────────────────── Destacados ───────────────────────── */}
       {destacados.length > 0 && (
