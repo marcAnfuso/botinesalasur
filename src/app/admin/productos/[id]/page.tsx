@@ -22,6 +22,7 @@ interface Product {
   description: string;
   price: number;
   transfer_price?: number | null;
+  compare_price?: number | null;
   category: string;
   image_url: string;
   featured: boolean;
@@ -44,6 +45,7 @@ export default function EditProductPage({ params }: { params: { id: string } }) 
     description: "",
     price: "",
     transferPrice: "",
+    comparePrice: "",
     category: "futsal",
     image_url: "",
     featured: false,
@@ -66,6 +68,7 @@ export default function EditProductPage({ params }: { params: { id: string } }) 
           description: product.description,
           price: product.price.toString(),
           transferPrice: product.transfer_price != null ? String(product.transfer_price) : "",
+          comparePrice: product.compare_price != null ? String(product.compare_price) : "",
           category: product.category,
           image_url: product.image_url,
           featured: product.featured,
@@ -139,6 +142,7 @@ export default function EditProductPage({ params }: { params: { id: string } }) 
           ...formData,
           price: Number(formData.price),
           transfer_price: formData.transferPrice === "" ? null : Number(formData.transferPrice),
+          compare_price: formData.comparePrice === "" ? null : Number(formData.comparePrice),
         }),
       });
 
@@ -447,6 +451,43 @@ export default function EditProductPage({ params }: { params: { id: string } }) 
                   <p className="mt-1 text-xs text-gray-500">
                     Lo que cobra pagando por transferencia o efectivo. Se muestra en la tienda.
                   </p>
+                </div>
+                <div>
+                  <label className="block text-sm font-medium text-gray-400 mb-1">
+                    Precio antes (oferta, opcional)
+                  </label>
+                  <input
+                    type="number"
+                    name="comparePrice"
+                    value={formData.comparePrice}
+                    onChange={handleChange}
+                    min="0"
+                    className="input-field"
+                    placeholder="Vacío = no está en oferta"
+                  />
+                  {(() => {
+                    const antes = Number(formData.comparePrice);
+                    const ahora = Number(formData.price);
+                    if (!formData.comparePrice) {
+                      return (
+                        <p className="mt-1 text-xs text-gray-500">
+                          Si ponés un precio mayor al de arriba, el botín pasa a Ofertas con este precio tachado.
+                        </p>
+                      );
+                    }
+                    if (antes > ahora && ahora > 0) {
+                      return (
+                        <p className="mt-1 text-xs text-field">
+                          En oferta: −{Math.floor((1 - ahora / antes) * 100)}%. Se cobra el precio de arriba.
+                        </p>
+                      );
+                    }
+                    return (
+                      <p className="mt-1 text-xs text-yellow-500">
+                        Tiene que ser mayor que el precio actual; si no, no se muestra como oferta.
+                      </p>
+                    );
+                  })()}
                 </div>
               </div>
 

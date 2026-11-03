@@ -32,6 +32,7 @@ function transformProduct(
     description: dbProduct.description,
     price: dbProduct.price,
     transferPrice: dbProduct.transfer_price != null ? Number(dbProduct.transfer_price) : null,
+    comparePrice: dbProduct.compare_price != null ? Number(dbProduct.compare_price) : null,
     category: dbProduct.category,
     // Un producto sin foto no puede romper el render: <Image src=""> lanza.
     imageUrl: dbProduct.image_url || "/images/sin-foto.png",

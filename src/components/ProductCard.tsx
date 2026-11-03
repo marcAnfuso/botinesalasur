@@ -6,6 +6,7 @@ import { Product } from "@/types";
 import { formatPrice } from "@/lib/supabase-data";
 import { CUOTAS_SIN_INTERES } from "@/lib/cuotas";
 import { urlProducto } from "@/lib/producto-url";
+import { descuentoOferta, enOferta } from "@/lib/ofertas";
 
 interface ProductCardProps {
   product: Product;
@@ -18,6 +19,7 @@ export default function ProductCard({ product, priority }: ProductCardProps) {
   const sizes = inStock.map((v) => v.size);
   const lowStock = hasStock && inStock.every((v) => v.stock <= 2);
   const unSoloPar = inStock.length === 1 && inStock[0].stock === 1;
+  const oferta = hasStock && enOferta(product);
 
   return (
     <Link
@@ -37,7 +39,11 @@ export default function ProductCard({ product, priority }: ProductCardProps) {
             sizes="(max-width: 640px) 50vw, (max-width: 1024px) 33vw, 25vw"
           />
 
-          {product.featured && hasStock && (
+          {oferta ? (
+            <span className="absolute top-0 left-0 bg-primary text-white label px-2.5 py-1.5">
+              Oferta −{descuentoOferta(product)}%
+            </span>
+          ) : product.featured && hasStock && (
             <span className="absolute top-0 left-0 bg-primary text-white label px-2.5 py-1.5">
               Destacado
             </span>
@@ -97,6 +103,11 @@ export default function ProductCard({ product, priority }: ProductCardProps) {
 
           <div className="mt-auto pt-4 flex items-end justify-between gap-2">
             <div className="min-w-0">
+              {oferta && (
+                <p className="text-xs text-gray-500 line-through tnum">
+                  {formatPrice(product.comparePrice as number)}
+                </p>
+              )}
               <div className="flex flex-wrap items-center gap-x-1.5 gap-y-1.5">
                 <span
                   className={`display text-2xl tnum ${

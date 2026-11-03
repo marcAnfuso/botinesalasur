@@ -11,6 +11,7 @@ import BulkPriceBar from "./BulkPriceBar";
 import { formatCodigo } from "@/lib/codigo";
 import AjusteStock from "@/components/AjusteStock";
 import { urlProducto } from "@/lib/producto-url";
+import { descuentoOferta, enOferta } from "@/lib/ofertas";
 
 interface ProductosAdminClientProps {
   products: Product[];
@@ -265,6 +266,11 @@ export default function ProductosAdminClient({
                           {formatPrice(product.transferPrice)} transferencia
                         </p>
                       )}
+                      {enOferta(product) && (
+                        <p className="text-xs text-primary tnum">
+                          Oferta −{descuentoOferta(product)}% · antes {formatPrice(product.comparePrice as number)}
+                        </p>
+                      )}
 
                       <div className="mt-2 flex flex-wrap items-center gap-x-3 gap-y-1 text-xs">
                         <span
@@ -406,6 +412,11 @@ export default function ProductosAdminClient({
                         {product.transferPrice != null && (
                           <span className="block text-xs text-field tnum">
                             {formatPrice(product.transferPrice)} transferencia
+                          </span>
+                        )}
+                        {enOferta(product) && (
+                          <span className="block text-xs text-primary tnum">
+                            Oferta −{descuentoOferta(product)}%
                           </span>
                         )}
                       </td>

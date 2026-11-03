@@ -3,6 +3,7 @@ import Image from "next/image";
 import ProductCard from "@/components/ProductCard";
 import { getFeaturedProducts, getProducts } from "@/lib/supabase-data";
 import { Product } from "@/types";
+import { enOferta } from "@/lib/ofertas";
 
 export const revalidate = 60;
 
@@ -41,6 +42,7 @@ export default async function HomePage() {
   ]);
 
   const destacados = (featuredProducts.length ? featuredProducts : products).slice(0, 4);
+  const ofertas = products.filter((p) => enOferta(p) && p.variants.some((v) => v.stock > 0));
 
   return (
     <>
@@ -229,6 +231,29 @@ export default async function HomePage() {
           </Link>
         </div>
       </section>
+
+      {/* ───────────────────────── Ofertas ───────────────────────── */}
+      {ofertas.length > 0 && (
+        <section className="max-w-7xl mx-auto px-4 pb-16 md:pb-24">
+          <div className="flex items-end justify-between gap-6 mb-8">
+            <h2 className="display text-4xl md:text-5xl text-white">
+              <span className="text-primary">Ofertas</span>
+            </h2>
+            <Link
+              href="/ofertas"
+              className="text-sm text-primary hover:text-primary-light transition-colors whitespace-nowrap"
+            >
+              Ver todas →
+            </Link>
+          </div>
+          <div className="rule-chalk mb-10" />
+          <div className="grid gap-4 grid-cols-2 lg:grid-cols-4">
+            {ofertas.slice(0, 4).map((product) => (
+              <ProductCard key={product.id} product={product} />
+            ))}
+          </div>
+        </section>
+      )}
 
       {/* ───────────────────────── Destacados ───────────────────────── */}
       {destacados.length > 0 && (

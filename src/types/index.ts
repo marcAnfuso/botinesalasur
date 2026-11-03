@@ -13,6 +13,8 @@ export interface Product {
   price: number;
   // Precio pagando por transferencia o efectivo; null si no se cargó
   transferPrice?: number | null;
+  // Precio "antes" de una oferta; si es mayor que price, el producto está en oferta
+  comparePrice?: number | null;
   category: "futsal" | "sintetico" | "futbol11" | "accesorios";
   imageUrl: string;
   images?: string[];

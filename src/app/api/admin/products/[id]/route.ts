@@ -34,7 +34,7 @@ export async function PUT(
 ) {
   try {
     const body = await request.json();
-    const { name, brand, description, price, transfer_price, category, image_url, featured, active } = body;
+    const { name, brand, description, price, transfer_price, compare_price, category, image_url, featured, active } = body;
 
     const updates: Record<string, any> = {};
     if (name !== undefined) updates.name = name;
@@ -43,6 +43,8 @@ export async function PUT(
     if (price !== undefined) updates.price = Number(price);
     if (transfer_price !== undefined)
       updates.transfer_price = transfer_price ? Number(transfer_price) : null;
+    if (compare_price !== undefined)
+      updates.compare_price = compare_price ? Number(compare_price) : null;
     if (category !== undefined) updates.category = category;
     if (image_url !== undefined) updates.image_url = image_url;
     if (featured !== undefined) updates.featured = featured;
@@ -55,13 +57,14 @@ export async function PUT(
       .select()
       .single();
 
-    // La columna llega con supabase-migration-transferencia.sql. Hasta que
-    // se corra, guardar el producto tiene que seguir funcionando.
-    if (actualizado.error && /transfer_price/i.test(actualizado.error.message)) {
-      const { transfer_price: _omitido, ...sinTransfer } = updates;
+    // transfer_price y compare_price llegan con sus migraciones. Hasta que
+    // se corran, guardar el producto tiene que seguir funcionando.
+    for (const col of ["compare_price", "transfer_price"]) {
+      if (!actualizado.error || !new RegExp(col, "i").test(actualizado.error.message)) continue;
+      delete updates[col];
       actualizado = await supabaseAdmin
         .from("products")
-        .update(sinTransfer)
+        .update(updates)
         .eq("id", params.id)
         .select()
         .single();

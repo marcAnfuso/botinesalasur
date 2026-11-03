@@ -14,6 +14,7 @@ import { formatCodigo } from "@/lib/codigo";
 import GuiaDeTalles from "@/components/GuiaDeTalles";
 import { CUOTAS_SIN_INTERES } from "@/lib/cuotas";
 import { useToast } from "@/components/Toast";
+import { descuentoOferta, enOferta } from "@/lib/ofertas";
 
 interface ProductoClientProps {
   product: Product;
@@ -162,6 +163,16 @@ export default function ProductoClient({
 
           {/* Price */}
           <div>
+            {enOferta(product) && (
+              <p className="flex items-center gap-2 mb-1">
+                <span className="text-base text-gray-500 line-through tnum">
+                  {formatPrice(product.comparePrice as number)}
+                </span>
+                <span className="bg-primary text-white label px-2 py-1">
+                  Oferta −{descuentoOferta(product)}%
+                </span>
+              </p>
+            )}
             <p className="text-3xl font-bold text-white tnum">
               {formatPrice(product.price)}
             </p>

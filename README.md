@@ -58,6 +58,9 @@ En el SQL Editor de Supabase, correr **los dos archivos en este orden**:
 10. `supabase-migration-privacidad.sql` — **obligatoria antes de abrir al
     público**: elimina políticas que dejaban leer `orders` y `order_items` con
     la clave pública.
+11. `supabase-migration-ofertas.sql` — columna `compare_price` ("precio
+    antes") en `products`. Un producto con precio antes mayor al actual
+    aparece en `/ofertas` con el precio viejo tachado.
 
 Sin el segundo archivo el checkout falla en cuanto alguien intenta pagar.
 

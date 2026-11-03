@@ -10,6 +10,7 @@ const CATEGORIAS = [
   { label: "Sintético", href: "/botines/sintetico" },
   { label: "Fútbol 11", href: "/botines/futbol11" },
   { label: "Accesorios", href: "/botines/accesorios" },
+  { label: "Ofertas", href: "/ofertas" },
   { label: "Catálogo completo", href: "/catalogo" },
 ];
 

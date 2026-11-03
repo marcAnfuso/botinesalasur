@@ -6,6 +6,7 @@ import { usePathname, useSearchParams } from "next/navigation";
 export const NAV = [
   { label: "Inicio", href: "/" },
   { label: "Catálogo", href: "/catalogo" },
+  { label: "Ofertas", href: "/ofertas" },
   { label: "Fútsal", href: "/botines/futsal" },
   { label: "Sintético", href: "/botines/sintetico" },
   { label: "Fútbol 11", href: "/botines/futbol11" },

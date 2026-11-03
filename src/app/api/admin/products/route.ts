@@ -32,7 +32,7 @@ export async function GET() {
 export async function POST(request: NextRequest) {
   try {
     const body = await request.json();
-    const { name, brand, description, price, transfer_price, category, image_url, featured, active, variants } = body;
+    const { name, brand, description, price, transfer_price, compare_price, category, image_url, featured, active, variants } = body;
 
     // Validación básica
     if (!name || !brand || !price || !category) {
@@ -43,12 +43,13 @@ export async function POST(request: NextRequest) {
     }
 
     // Crear producto
-    const nuevo = {
+    const nuevo: Record<string, unknown> = {
       name,
       brand,
       description: description || "",
       price: Number(price),
       transfer_price: transfer_price ? Number(transfer_price) : null,
+      compare_price: compare_price ? Number(compare_price) : null,
       category,
       image_url: image_url || "/products/default.jpg",
       featured: featured || false,
@@ -61,13 +62,14 @@ export async function POST(request: NextRequest) {
       .select()
       .single();
 
-    // La columna llega con supabase-migration-transferencia.sql. Hasta que
-    // se corra, guardar el producto tiene que seguir funcionando.
-    if (creado.error && /transfer_price/i.test(creado.error.message)) {
-      const { transfer_price: _omitido, ...sinTransfer } = nuevo;
+    // transfer_price y compare_price llegan con sus migraciones. Hasta que
+    // se corran, crear el producto tiene que seguir funcionando.
+    for (const col of ["compare_price", "transfer_price"]) {
+      if (!creado.error || !new RegExp(col, "i").test(creado.error.message)) continue;
+      delete nuevo[col];
       creado = await supabaseAdmin
         .from("products")
-        .insert(sinTransfer)
+        .insert(nuevo)
         .select()
         .single();
     }
