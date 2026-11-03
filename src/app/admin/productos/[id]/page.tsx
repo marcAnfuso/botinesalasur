@@ -7,6 +7,7 @@ import Image from "next/image";
 import { categories, brands, formatPrice } from "@/lib/supabase-data";
 import { prepararImagen } from "@/lib/preparar-imagen";
 import { useToast } from "@/components/Toast";
+import CampoPrecioTachado from "@/components/admin/CampoPrecioTachado";
 
 interface Variant {
   id: string;
@@ -423,7 +424,7 @@ export default function EditProductPage({ params }: { params: { id: string } }) 
                 </div>
                 <div>
                   <label className="block text-sm font-medium text-gray-400 mb-1">
-                    Precio (ARS)
+                    Precio a pagar (ARS)
                   </label>
                   <input
                     type="number"
@@ -452,43 +453,11 @@ export default function EditProductPage({ params }: { params: { id: string } }) 
                     Lo que cobra pagando por transferencia o efectivo. Se muestra en la tienda.
                   </p>
                 </div>
-                <div>
-                  <label className="block text-sm font-medium text-gray-400 mb-1">
-                    Precio antes (oferta, opcional)
-                  </label>
-                  <input
-                    type="number"
-                    name="comparePrice"
-                    value={formData.comparePrice}
-                    onChange={handleChange}
-                    min="0"
-                    className="input-field"
-                    placeholder="Vacío = no está en oferta"
-                  />
-                  {(() => {
-                    const antes = Number(formData.comparePrice);
-                    const ahora = Number(formData.price);
-                    if (!formData.comparePrice) {
-                      return (
-                        <p className="mt-1 text-xs text-gray-500">
-                          Si ponés un precio mayor al de arriba, el botín pasa a Ofertas con este precio tachado.
-                        </p>
-                      );
-                    }
-                    if (antes > ahora && ahora > 0) {
-                      return (
-                        <p className="mt-1 text-xs text-field">
-                          En oferta: −{Math.floor((1 - ahora / antes) * 100)}%. Se cobra el precio de arriba.
-                        </p>
-                      );
-                    }
-                    return (
-                      <p className="mt-1 text-xs text-yellow-500">
-                        Tiene que ser mayor que el precio actual; si no, no se muestra como oferta.
-                      </p>
-                    );
-                  })()}
-                </div>
+                <CampoPrecioTachado
+                  value={formData.comparePrice}
+                  precio={formData.price}
+                  onChange={handleChange}
+                />
               </div>
 
               {/* Upload de imagen */}

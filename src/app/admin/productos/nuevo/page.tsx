@@ -6,6 +6,7 @@ import Link from "next/link";
 import { categories, brands } from "@/lib/supabase-data";
 import { prepararImagen } from "@/lib/preparar-imagen";
 import { useToast } from "@/components/Toast";
+import CampoPrecioTachado from "@/components/admin/CampoPrecioTachado";
 
 interface Variant {
   size: string;
@@ -25,6 +26,7 @@ export default function NewProductPage() {
     description: "",
     price: "",
     transferPrice: "",
+    comparePrice: "",
     category: "futsal",
     image_url: "",
     featured: false,
@@ -118,6 +120,7 @@ export default function NewProductPage() {
           description: formData.description,
           price: Number(formData.price),
           transfer_price: formData.transferPrice === "" ? null : Number(formData.transferPrice),
+          compare_price: formData.comparePrice === "" ? null : Number(formData.comparePrice),
           category: formData.category,
           image_url: formData.image_url || "/products/default.jpg",
           featured: formData.featured,
@@ -256,7 +259,7 @@ export default function NewProductPage() {
               </div>
               <div>
                 <label className="block text-sm font-medium text-gray-400 mb-1">
-                  Precio (ARS) *
+                  Precio a pagar (ARS) *
                 </label>
                 <input
                   type="number"
@@ -286,6 +289,11 @@ export default function NewProductPage() {
                     Lo que cobra pagando por transferencia o efectivo. Se muestra en la tienda.
                   </p>
                 </div>
+                <CampoPrecioTachado
+                  value={formData.comparePrice}
+                  precio={formData.price}
+                  onChange={handleChange}
+                />
             </div>
 
             <div>
