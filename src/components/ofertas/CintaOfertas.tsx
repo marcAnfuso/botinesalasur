@@ -2,11 +2,10 @@ import Link from "next/link";
 import { CUOTAS_SIN_INTERES } from "@/lib/cuotas";
 
 // Cinta roja que corre de lado a lado. Todo lo que dice es real: el
-// descuento máximo y la cantidad salen de los productos cargados.
-export default function CintaOfertas({ maximo, cantidad }: { maximo: number; cantidad: number }) {
+// descuento máximo sale de los productos cargados.
+export default function CintaOfertas({ maximo }: { maximo: number }) {
   const frases = [
     `Ofertas hasta −${maximo}%`,
-    `${cantidad} ${cantidad === 1 ? "botín rebajado" : "botines rebajados"}`,
     "Hasta agotar stock",
     ...(CUOTAS_SIN_INTERES > 0 ? [`${CUOTAS_SIN_INTERES} cuotas sin interés`] : []),
   ];

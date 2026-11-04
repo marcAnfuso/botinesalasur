@@ -53,7 +53,7 @@ export default async function OfertasPage() {
         <p className="text-gray-400 mt-3">Hasta agotar stock. Pocos pares por modelo.</p>
       </section>
 
-      <CintaOfertas maximo={maximo} cantidad={ofertas.length} />
+      <CintaOfertas maximo={maximo} />
 
       <section className="max-w-7xl mx-auto px-4 py-8 md:py-10">
         <OfertaCardB product={top} grande />

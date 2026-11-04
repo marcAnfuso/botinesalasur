@@ -241,7 +241,7 @@ export default async function HomePage() {
         const orden = [...ofertas].sort((a, b) => descuentoOferta(b) - descuentoOferta(a));
         return (
           <section className="pb-16 md:pb-24 overflow-x-clip">
-            <CintaOfertas maximo={descuentoOferta(orden[0])} cantidad={orden.length} />
+            <CintaOfertas maximo={descuentoOferta(orden[0])} />
             <div className="max-w-7xl mx-auto px-4 pt-10">
               <div className="flex items-end justify-between gap-6 mb-6">
                 <div className="flex flex-wrap items-center gap-3">
