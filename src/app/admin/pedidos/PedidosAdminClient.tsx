@@ -164,6 +164,23 @@ export default function PedidosAdminClient({
     }
   };
 
+  // Solo pedidos cancelados y sin pago aprobado; el servidor lo vuelve a chequear
+  const borrarPedido = async (id: string) => {
+    try {
+      const res = await fetch(`/api/admin/orders/${id}`, { method: "DELETE" });
+      const data = await res.json().catch(() => ({}));
+      if (!res.ok) {
+        toast.error(data.error || "No se pudo borrar el pedido");
+        return;
+      }
+      cerrar();
+      setOrders((prev) => prev.filter((o) => o.id !== id));
+      toast.success("Pedido borrado");
+    } catch {
+      toast.error("Error de conexión al borrar el pedido");
+    }
+  };
+
   return (
     <div>
       <div className="mb-8">
@@ -337,6 +354,7 @@ export default function PedidosAdminClient({
             onAnterior={i > 0 ? () => irA(lista[i - 1].id) : null}
             onSiguiente={i >= 0 && i < lista.length - 1 ? () => irA(lista[i + 1].id) : null}
             onCambiarEstado={(status) => changeStatus(abierto.id, status)}
+            onBorrar={() => borrarPedido(abierto.id)}
           />
         );
       })()}

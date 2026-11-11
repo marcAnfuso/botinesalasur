@@ -37,6 +37,7 @@ interface PedidoDrawerProps {
   onAnterior: (() => void) | null;
   onSiguiente: (() => void) | null;
   onCambiarEstado: (status: OrderStatus) => void;
+  onBorrar: () => Promise<void>;
 }
 
 // Panel lateral con el detalle de un pedido. Se abre encima del listado sin
@@ -50,7 +51,11 @@ export default function PedidoDrawer({
   onAnterior,
   onSiguiente,
   onCambiarEstado,
+  onBorrar,
 }: PedidoDrawerProps) {
+  const [confirmandoBorrar, setConfirmandoBorrar] = useState(false);
+  const [borrando, setBorrando] = useState(false);
+  useEffect(() => setConfirmandoBorrar(false), [order.id, order.status]);
   const cerrarRef = useRef<HTMLButtonElement>(null);
   const panelRef = useRef<HTMLDivElement>(null);
   const [eventos, setEventos] = useState<Evento[] | null>(null);
@@ -353,6 +358,57 @@ export default function PedidoDrawer({
               </ol>
             )}
           </section>
+
+          {/* Borrar: solo pedidos cancelados y sin pago aprobado */}
+          {order.status === "cancelled" && (
+            <section className="border border-dark-line bg-dark-card p-4">
+              {order.paymentStatus === "paid" ? (
+                <p className="text-xs text-gray-400">
+                  Este pedido tiene un pago aprobado, así que no se puede borrar: queda como registro.
+                </p>
+              ) : !confirmandoBorrar ? (
+                <button
+                  type="button"
+                  onClick={() => setConfirmandoBorrar(true)}
+                  className="text-sm text-red-400 hover:text-red-300 transition-colors"
+                >
+                  Borrar este pedido
+                </button>
+              ) : (
+                <div>
+                  <p className="text-sm text-white">
+                    ¿Borrar el pedido {numeroPedido(order.numero, order.externalReference)} de {order.customer.name}?
+                  </p>
+                  <p className="text-xs text-gray-400 mt-1">Se borra para siempre, con sus productos. El stock no cambia.</p>
+                  <div className="mt-3 flex gap-2">
+                    <button
+                      type="button"
+                      disabled={borrando}
+                      onClick={async () => {
+                        setBorrando(true);
+                        try {
+                          await onBorrar();
+                        } finally {
+                          setBorrando(false);
+                        }
+                      }}
+                      className="px-3 py-1.5 text-sm font-medium bg-red-600 hover:bg-red-700 text-white rounded disabled:opacity-50"
+                    >
+                      {borrando ? "Borrando…" : "Sí, borrar"}
+                    </button>
+                    <button
+                      type="button"
+                      disabled={borrando}
+                      onClick={() => setConfirmandoBorrar(false)}
+                      className="px-3 py-1.5 text-sm text-gray-300 hover:text-white border border-dark-line rounded"
+                    >
+                      No
+                    </button>
+                  </div>
+                </div>
+              )}
+            </section>
+          )}
 
           <p className="text-xs text-gray-500 pb-2">
             <Link href={`/admin/pedidos/${order.id}`} className="hover:text-white transition-colors">
