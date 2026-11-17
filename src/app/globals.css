@@ -106,7 +106,7 @@ button:focus-visible {
    --------------------------------------------------------------- */
 
 .display {
-  font-family: var(--font-display), var(--font-inter), sans-serif;
+  font-family: var(--font-display, var(--font-inter, system-ui)), sans-serif;
   font-weight: 900;
   font-style: italic;
   text-transform: uppercase;
@@ -115,7 +115,7 @@ button:focus-visible {
 }
 
 .display-tight {
-  font-family: var(--font-display), var(--font-inter), sans-serif;
+  font-family: var(--font-display, var(--font-inter, system-ui)), sans-serif;
   font-weight: 800;
   font-style: italic;
   text-transform: uppercase;

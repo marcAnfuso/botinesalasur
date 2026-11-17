@@ -13,6 +13,7 @@ const inter = Inter({
   subsets: ["latin"],
   variable: "--font-inter",
   display: "swap",
+  fallback: ["system-ui", "Arial", "sans-serif"],
 });
 
 // Voz de titulares: grotesca condensada, peso 900, itálica real.
@@ -21,6 +22,7 @@ const archivo = Archivo({
   style: ["normal", "italic"],
   variable: "--font-display",
   display: "swap",
+  fallback: ["system-ui", "Arial", "sans-serif"],
 });
 
 const BASE_URL = process.env.NEXT_PUBLIC_BASE_URL || "https://botinesalasur.com.ar";
