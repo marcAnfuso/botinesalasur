@@ -5,6 +5,7 @@ import { Suspense, useEffect, useState } from "react";
 import { useSearchParams } from "next/navigation";
 import { useCart } from "@/context/CartContext";
 import { track } from "@/lib/events";
+import { metaEvent } from "@/lib/meta";
 import { formatPrice } from "@/lib/supabase-data";
 import { formatCodigo } from "@/lib/codigo";
 
@@ -230,6 +231,22 @@ function CheckoutResultContent() {
         track("result_view", { status, verified: Boolean(data?.verified) }, externalRef);
         // Recién acá se vacía el carrito: el pago ya está confirmado.
         if (data?.verified) clearCart();
+        // Venta a Meta Ads. Una vez por pedido aunque recargue la página; el
+        // servidor manda la misma con el mismo id y Meta la cuenta una sola vez.
+        const refPago = data?.payment?.external_reference || externalRef;
+        if (data?.verified && refPago && data.payment?.amount) {
+          const clave = `bas-meta-${refPago}`;
+          try {
+            if (!localStorage.getItem(clave)) {
+              metaEvent(
+                "Purchase",
+                { value: data.payment.amount, currency: "ARS", num_items: data.payment.items?.reduce((a: number, i: { quantity: number }) => a + i.quantity, 0) },
+                `purchase-${refPago}`
+              );
+              localStorage.setItem(clave, "1");
+            }
+          } catch {}
+        }
       } catch (error) {
         console.error("Error verifying payment:", error);
       } finally {

@@ -33,7 +33,7 @@ export function CartProvider({ children }: { children: ReactNode }) {
   }, [items, isHydrated]);
 
   const addItem = (product: Product, variant: ProductVariant, quantity: number = 1) => {
-    track("cart_add", { productId: product.id, name: product.name, brand: product.brand, size: variant.size, quantity });
+    track("cart_add", { productId: product.id, name: product.name, brand: product.brand, size: variant.size, quantity, price: product.price * quantity });
     setItems((currentItems) => {
       const existingIndex = currentItems.findIndex(
         (item) => item.product.id === product.id && item.variant.id === variant.id

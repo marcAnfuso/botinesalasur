@@ -77,6 +77,7 @@ Todas están documentadas en `.env.example`. Las imprescindibles:
 | `ADMIN_PASSWORD` | Acceso al panel. Sin ella el panel queda cerrado |
 | `ADMIN_SESSION_SECRET` | Opcional: firma de la cookie de sesión (`openssl rand -hex 32`) |
 | `RESEND_API_KEY`, `RESEND_FROM_EMAIL`, `NOTIFICATION_EMAIL` | Envío de mails |
+| `META_CAPI_TOKEN` | Opcional: informa ventas y pedidos a Meta Ads desde el servidor. Sin él, solo funciona el píxel del navegador |
 
 `NEXT_PUBLIC_BASE_URL` se resuelve en tiempo de build: si la cambiás, hay que
 volver a desplegar.
@@ -159,6 +160,16 @@ celular, email, código postal, provincia (lista fija, con el código que usa la
 API de Correo en `src/lib/provincias.ts`), localidad, dirección, piso/dpto y
 aclaraciones. Desde el panel, el pedido tiene un botón que copia esos datos en
 el orden del formulario de MiCorreo.
+
+## Meta Ads
+
+El píxel de Meta se carga en todas las páginas menos el panel y registra
+`PageView`, `ViewContent`, `AddToCart`, `InitiateCheckout` y `Purchase`.
+Con `META_CAPI_TOKEN` cargado, el servidor también informa por la API de
+conversiones la venta aprobada (`Purchase`, desde el webhook de MercadoPago)
+y el pedido por WhatsApp (`Lead`). La venta lleva el mismo `event_id` por los
+dos lados (`purchase-<referencia>`), así Meta la cuenta una sola vez. Los
+errores de envío aparecen en `/admin/actividad`.
 
 ## Despliegue
 

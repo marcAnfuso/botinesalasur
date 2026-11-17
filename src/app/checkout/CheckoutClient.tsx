@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import { nombreProlijo, capitalizar, dniProlijo, emailProlijo } from "@/lib/prolijo";
 import Image from "next/image";
 import Link from "next/link";
@@ -8,6 +8,7 @@ import { useCart } from "@/context/CartContext";
 import { formatPrice } from "@/lib/supabase-data";
 import { ShippingZone, costosPorZona } from "@/lib/shipping";
 import { track, getSessionId } from "@/lib/events";
+import { metaCookies } from "@/lib/meta";
 import { formatCodigo } from "@/lib/codigo";
 import { PROVINCIAS } from "@/lib/provincias";
 import { nombreProducto } from "@/lib/nombre-producto";
@@ -51,12 +52,15 @@ export default function CheckoutClient({ zonas }: { zonas: ShippingZone[] }) {
   const totalTransfer = subtotalTransfer + shippingCost;
   const hayDescuentoTransfer = subtotalTransfer < subtotal;
 
+  // Una vez por visita, apenas el carrito está cargado: al entrar recargando
+  // la página, el carrito se lee del navegador después del primer render.
+  const vistaRegistrada = useRef(false);
   useEffect(() => {
-    if (items.length > 0) {
+    if (!vistaRegistrada.current && items.length > 0) {
+      vistaRegistrada.current = true;
       track("checkout_view", { items: items.length, subtotal });
     }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []);
+  }, [items.length, subtotal]);
 
   const handleChange = (
     e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement>
@@ -101,6 +105,7 @@ export default function CheckoutClient({ zonas }: { zonas: ShippingZone[] }) {
           shippingCost,
           total,
           sessionId: getSessionId(),
+          meta: metaCookies(),
         }),
       });
 
@@ -147,6 +152,7 @@ export default function CheckoutClient({ zonas }: { zonas: ShippingZone[] }) {
           shippingCost,
           total: totalTransfer,
           sessionId: getSessionId(),
+          meta: metaCookies(),
         }),
       });
       const data = await res.json();

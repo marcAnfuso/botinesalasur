@@ -4,6 +4,7 @@ import { Inter, Archivo } from "next/font/google";
 import "./globals.css";
 import { CartProvider } from "@/context/CartContext";
 import SiteChrome from "@/components/SiteChrome";
+import MetaPixel from "@/components/MetaPixel";
 import Header from "@/components/Header";
 import Footer from "@/components/Footer";
 import { ToastProvider } from "@/components/Toast";
@@ -97,6 +98,7 @@ export default function RootLayout({
 -->`,
           }}
         />
+        <MetaPixel />
         <CartProvider>
           <ToastProvider>
             <SiteChrome header={<Header />} footer={<Footer />}>

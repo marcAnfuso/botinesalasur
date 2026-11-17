@@ -167,7 +167,7 @@ export async function getResumenActividad(dias: number): Promise<ResumenActivida
 
   const errores = new Map<string, { veces: number; ultimo: string; detalle: string }>();
   for (const f of filas) {
-    if (!["checkout_error", "preference_failed", "price_mismatch", "whatsapp_order_failed", "webhook_rejected"].includes(f.event)) continue;
+    if (!["checkout_error", "preference_failed", "price_mismatch", "whatsapp_order_failed", "webhook_rejected", "meta_capi_error"].includes(f.event)) continue;
     const d = f.details ?? {};
     const detalle = String(d.error ?? d.motivo ?? d.paso ?? (d.cliente != null ? `cliente $${d.cliente} vs servidor $${d.servidor}` : "")).slice(0, 90);
     const e = errores.get(f.event);

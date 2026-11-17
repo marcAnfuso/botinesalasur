@@ -2,6 +2,8 @@ import { NextRequest, NextResponse } from "next/server";
 import { supabaseAdmin } from "@/lib/supabase";
 import { logEvent } from "@/lib/events-server";
 import { insertarPedido } from "@/lib/insertar-pedido";
+import { BASE_URL } from "@/lib/seo";
+import { enviarEventoMeta, origenDelPedido } from "@/lib/meta-capi";
 import { nombreProlijo, capitalizar, dniProlijo, emailProlijo } from "@/lib/prolijo";
 import { valorarCarrito } from "@/lib/valorar-carrito";
 
@@ -37,6 +39,7 @@ interface WhatsAppOrder {
   shippingCost: number;
   total: number;
   sessionId?: string;
+  meta?: { fbp?: string; fbc?: string };
 }
 
 function generarReferencia(): string {
@@ -143,6 +146,28 @@ export async function POST(request: NextRequest) {
       ref: externalReference,
       sessionId,
       details: { total, items: lineas.length },
+    });
+
+    // A Meta Ads como "Lead": es un pedido sin pagar todavía
+    await enviarEventoMeta({
+      evento: "Lead",
+      eventId: `lead-${externalReference}`,
+      valor: total,
+      contenidos: lineas.map((l) => ({ id: l.productId, quantity: l.quantity, item_price: l.unitPrice })),
+      cliente: {
+        email,
+        telefono: customer.phone,
+        nombre: customer.name,
+        ciudad: customer.city,
+        provincia: customer.province,
+        cp: customer.postalCode,
+        idExterno: email,
+        fbp: data.meta?.fbp,
+        fbc: data.meta?.fbc,
+        ...origenDelPedido(request.headers),
+      },
+      url: `${BASE_URL}/checkout`,
+      ref: externalReference,
     });
 
     return NextResponse.json({

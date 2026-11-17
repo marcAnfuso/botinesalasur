@@ -42,7 +42,7 @@ export default function ProductoClient({
   const toast = useToast();
 
   useEffect(() => {
-    track("product_view", { productId: product.id, name: product.name, brand: product.brand });
+    track("product_view", { productId: product.id, name: product.name, brand: product.brand, price: product.price });
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [product.id]);
 

@@ -7,6 +7,8 @@ import {
 } from "@/lib/email";
 import { verificarFirmaMercadoPago } from "@/lib/mercadopago-signature";
 import { logEvent } from "@/lib/events-server";
+import { enviarEventoMeta } from "@/lib/meta-capi";
+import { BASE_URL } from "@/lib/seo";
 import { getShippingZones } from "@/lib/shipping";
 import { nombreProducto } from "@/lib/nombre-producto";
 
@@ -124,6 +126,7 @@ async function processPayment(payment: {
   date_approved?: string;
   payment_method_id?: string;
   payment_type_id?: string;
+  metadata?: { fbp?: string | null; fbc?: string | null; ip?: string | null; ua?: string | null };
 }) {
   const paymentId = payment.id.toString();
   const status = payment.status;
@@ -221,6 +224,35 @@ async function processPayment(payment: {
     await sendPaymentNotifications(order, paymentId, {
       paymentMethod: payment.payment_type_id ?? null,
       paidAt: payment.date_approved ?? null,
+    });
+
+    // Venta confirmada → Meta Ads. El mismo event_id que manda el navegador
+    // desde la página de resultado, así Meta la cuenta una sola vez.
+    const m = payment.metadata ?? {};
+    await enviarEventoMeta({
+      evento: "Purchase",
+      eventId: `purchase-${externalReference}`,
+      valor: amount,
+      contenidos: (order.order_items ?? []).map((it: { product_id: string; quantity: number; unit_price: number }) => ({
+        id: it.product_id,
+        quantity: it.quantity,
+        item_price: Number(it.unit_price),
+      })),
+      cliente: {
+        email: order.customer_email,
+        telefono: order.customer_phone,
+        nombre: order.customer_name,
+        ciudad: order.shipping_city,
+        provincia: order.shipping_province,
+        cp: order.shipping_postal_code,
+        idExterno: order.customer_email,
+        fbp: m.fbp,
+        fbc: m.fbc,
+        ip: m.ip,
+        userAgent: m.ua,
+      },
+      url: `${BASE_URL}/checkout`,
+      ref: externalReference,
     });
   }
 

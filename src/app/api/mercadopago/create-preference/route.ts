@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { supabaseAdmin } from "@/lib/supabase";
 import { logEvent } from "@/lib/events-server";
 import { insertarPedido } from "@/lib/insertar-pedido";
+import { origenDelPedido } from "@/lib/meta-capi";
 import { nombreProlijo, capitalizar, dniProlijo, emailProlijo } from "@/lib/prolijo";
 import { nombreProducto } from "@/lib/nombre-producto";
 import { valorarCarrito } from "@/lib/valorar-carrito";
@@ -44,6 +45,7 @@ interface CheckoutData {
   shippingCost: number;
   total: number;
   sessionId?: string;
+  meta?: { fbp?: string; fbc?: string };
 }
 
 function generateExternalReference(): string {
@@ -201,6 +203,15 @@ export async function POST(request: NextRequest) {
       notification_url: `${BASE_URL}/api/mercadopago/webhook`,
       external_reference: externalReference,
       statement_descriptor: "BOTINESALA SUR",
+      // Vuelven con el pago al webhook, que informa la venta a Meta Ads
+      metadata: {
+        fbp: typeof data.meta?.fbp === "string" ? data.meta.fbp.slice(0, 200) : null,
+        fbc: typeof data.meta?.fbc === "string" ? data.meta.fbc.slice(0, 300) : null,
+        ...(() => {
+          const o = origenDelPedido(request.headers);
+          return { ip: o.ip, ua: o.userAgent?.slice(0, 300) ?? null };
+        })(),
+      },
       expires: true,
       expiration_date_from: new Date().toISOString(),
       expiration_date_to: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000).toISOString(),

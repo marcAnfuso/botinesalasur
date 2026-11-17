@@ -1,3 +1,5 @@
+import { metaEvent } from "./meta";
+
 // Registro de actividad de compra — parte compartida (nombres y cliente).
 // El lado servidor vive en events-server.ts para no arrastrar la service
 // role key al navegador.
@@ -29,6 +31,8 @@ export const EVENT_NAMES = [
   "webhook_payment",
   "payment_verified",
   "order_lookup",
+  "meta_capi_sent",
+  "meta_capi_error",
 ] as const;
 
 export type EventName = (typeof EVENT_NAMES)[number];
@@ -59,6 +63,8 @@ export const EVENT_LABELS: Record<EventName, string> = {
   webhook_payment: "Estado de pago",
   payment_verified: "Pago verificado",
   order_lookup: "El cliente consultó su pedido",
+  meta_capi_sent: "Venta informada a Meta",
+  meta_capi_error: "No se pudo informar a Meta",
 };
 
 export const EVENTOS_DE_ERROR: EventName[] = [
@@ -68,6 +74,7 @@ export const EVENTOS_DE_ERROR: EventName[] = [
   "webhook_rejected",
   "price_mismatch",
   "webhook_order_not_found",
+  "meta_capi_error",
 ];
 
 const SESSION_KEY = "bas-session";
@@ -91,6 +98,18 @@ export function getSessionId(): string {
   }
 }
 
+// Los pasos que también le interesan a Meta Ads, con su nombre estándar
+function alPixel(event: EventName, d: Record<string, unknown>): void {
+  const id = typeof d.productId === "string" ? [d.productId] : undefined;
+  const precio = typeof d.price === "number" ? d.price : undefined;
+  if (event === "product_view")
+    metaEvent("ViewContent", { content_ids: id, content_type: "product", content_name: d.name, value: precio, currency: "ARS" });
+  else if (event === "cart_add")
+    metaEvent("AddToCart", { content_ids: id, content_type: "product", content_name: d.name, value: precio, currency: "ARS" });
+  else if (event === "checkout_view")
+    metaEvent("InitiateCheckout", { num_items: d.items, value: d.subtotal, currency: "ARS" });
+}
+
 // Manda un evento desde el navegador. Nunca falla ni bloquea: si el envío no
 // sale, la compra sigue igual.
 export function track(
@@ -99,6 +118,7 @@ export function track(
   ref?: string | null
 ): void {
   if (typeof window === "undefined") return;
+  alPixel(event, details);
 
   const body = JSON.stringify({
     event,
